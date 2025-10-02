@@ -1,6 +1,7 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const menuItems = [
   { icon: Home, label: "لوحة التحكم", path: "/" },
@@ -15,6 +16,8 @@ const menuItems = [
 ];
 
 export const AppSidebar = () => {
+  const { isAdmin } = useUserRole();
+
   return (
     <aside className="w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0">
       <nav className="p-4 space-y-2">
@@ -35,6 +38,22 @@ export const AppSidebar = () => {
             <span>{item.label}</span>
           </NavLink>
         ))}
+        
+        {isAdmin && (
+          <NavLink
+            to="/roles"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
+              )
+            }
+          >
+            <Shield className="h-5 w-5 flex-shrink-0" />
+            <span>إدارة الأدوار</span>
+          </NavLink>
+        )}
       </nav>
     </aside>
   );

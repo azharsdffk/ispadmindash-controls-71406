@@ -3,12 +3,14 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, UserPlus, MapPin, Phone, Mail, Edit, Trash2 } from "lucide-react";
+import { Users, UserPlus, MapPin, Phone, Mail, Edit, Trash2, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Subscriber = {
   id: string;
@@ -25,6 +27,7 @@ const Subscribers = () => {
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAdmin, isAccountant, isTechnician, loading: roleLoading } = useUserRole();
 
   const fetchSubscribers = async () => {
     try {
@@ -60,8 +63,21 @@ const Subscribers = () => {
   };
 
   useEffect(() => {
-    fetchSubscribers();
-  }, []);
+    if (!roleLoading) {
+      fetchSubscribers();
+    }
+  }, [roleLoading]);
+
+  const canManageSubscribers = isAdmin || isAccountant;
+  const hasAccess = isAdmin || isAccountant || isTechnician;
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -77,13 +93,25 @@ const Subscribers = () => {
                 <Users className="h-8 w-8 text-primary" />
                 <h1 className="text-3xl font-bold">المشتركين</h1>
               </div>
-              <Button onClick={() => setAddSubscriberOpen(true)}>
-                <UserPlus className="h-5 w-5 ml-2" />
-                إضافة مشترك
-              </Button>
+              {canManageSubscribers && (
+                <Button onClick={() => setAddSubscriberOpen(true)}>
+                  <UserPlus className="h-5 w-5 ml-2" />
+                  إضافة مشترك
+                </Button>
+              )}
             </div>
 
-            <Card>
+            {!hasAccess && (
+              <Alert variant="destructive">
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  ليس لديك صلاحية الوصول إلى بيانات المشتركين. يرجى الاتصال بالمسؤول لتعيين الدور المناسب.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {hasAccess && (
+              <Card>
               <CardHeader>
                 <CardTitle>قائمة المشتركين ({subscribers.length})</CardTitle>
               </CardHeader>
@@ -158,6 +186,7 @@ const Subscribers = () => {
                 )}
               </CardContent>
             </Card>
+            )}
           </div>
         </main>
       </div>
