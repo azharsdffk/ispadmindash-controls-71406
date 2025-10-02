@@ -10,12 +10,14 @@ import { IssueInvoiceModal } from "@/components/modals/IssueInvoiceModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatCurrency, Currency } from "@/lib/currency";
 
 type Invoice = {
   id: string;
   invoice_number: string;
   subscriber_id: string;
   amount: number;
+  currency: Currency;
   status: string;
   issue_date: string;
   due_date: string;
@@ -115,7 +117,7 @@ const Invoices = () => {
                         <TableRow key={invoice.id}>
                           <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
                           <TableCell>{invoice.subscribers?.name}</TableCell>
-                          <TableCell>{invoice.amount.toLocaleString()} ع.د</TableCell>
+                          <TableCell>{formatCurrency(invoice.amount, invoice.currency || "IQD")}</TableCell>
                           <TableCell>{new Date(invoice.issue_date).toLocaleDateString('ar-IQ')}</TableCell>
                           <TableCell>{new Date(invoice.due_date).toLocaleDateString('ar-IQ')}</TableCell>
                           <TableCell>{getStatusBadge(invoice.status)}</TableCell>

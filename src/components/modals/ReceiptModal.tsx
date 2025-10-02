@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Currency, getCurrencyLabel, formatCurrency } from "@/lib/currency";
 
 interface ReceiptModalProps {
   open: boolean;
@@ -24,6 +25,7 @@ export const ReceiptModal = ({ open, onOpenChange }: ReceiptModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [discount, setDiscount] = useState("");
   const [notes, setNotes] = useState("");
+  const [currency, setCurrency] = useState<Currency>("IQD");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +49,7 @@ export const ReceiptModal = ({ open, onOpenChange }: ReceiptModalProps) => {
       setPaymentMethod("");
       setDiscount("");
       setNotes("");
+      setCurrency("IQD");
     }, 1000);
   };
 
@@ -73,9 +76,22 @@ export const ReceiptModal = ({ open, onOpenChange }: ReceiptModalProps) => {
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="currency">العملة *</Label>
+            <Select value={currency} onValueChange={(val) => setCurrency(val as Currency)}>
+              <SelectTrigger id="currency">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="IQD">{getCurrencyLabel("IQD")}</SelectItem>
+                <SelectItem value="USD">{getCurrencyLabel("USD")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">المبلغ (ريال) *</Label>
+              <Label htmlFor="amount">المبلغ *</Label>
               <Input
                 id="amount"
                 type="number"
@@ -88,7 +104,7 @@ export const ReceiptModal = ({ open, onOpenChange }: ReceiptModalProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="discount">الخصم (ريال)</Label>
+              <Label htmlFor="discount">الخصم</Label>
               <Input
                 id="discount"
                 type="number"
@@ -130,15 +146,15 @@ export const ReceiptModal = ({ open, onOpenChange }: ReceiptModalProps) => {
             <div className="bg-muted p-4 rounded-lg">
               <div className="flex justify-between text-sm mb-2">
                 <span>المبلغ الأصلي:</span>
-                <span className="font-medium">{amount} ريال</span>
+                <span className="font-medium">{formatCurrency(parseFloat(amount), currency)}</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
                 <span>الخصم:</span>
-                <span className="font-medium text-destructive">-{discount} ريال</span>
+                <span className="font-medium text-destructive">-{formatCurrency(parseFloat(discount), currency)}</span>
               </div>
               <div className="border-t pt-2 flex justify-between font-bold">
                 <span>الصافي:</span>
-                <span className="text-primary">{(parseFloat(amount) - parseFloat(discount)).toFixed(2)} ريال</span>
+                <span className="text-primary">{formatCurrency(parseFloat(amount) - parseFloat(discount), currency)}</span>
               </div>
             </div>
           )}

@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Currency, getCurrencyLabel } from "@/lib/currency";
 
 interface VoucherModalProps {
   open: boolean;
@@ -24,6 +25,7 @@ export const VoucherModal = ({ open, onOpenChange }: VoucherModalProps) => {
   const [amount, setAmount] = useState("");
   const [account, setAccount] = useState("");
   const [description, setDescription] = useState("");
+  const [currency, setCurrency] = useState<Currency>("IQD");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,6 +46,7 @@ export const VoucherModal = ({ open, onOpenChange }: VoucherModalProps) => {
       setAmount("");
       setAccount("");
       setDescription("");
+      setCurrency("IQD");
     }, 1000);
   };
 
@@ -75,7 +78,20 @@ export const VoucherModal = ({ open, onOpenChange }: VoucherModalProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">المبلغ (ريال) *</Label>
+            <Label htmlFor="currency">العملة *</Label>
+            <Select value={currency} onValueChange={(val) => setCurrency(val as Currency)}>
+              <SelectTrigger id="currency">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="IQD">{getCurrencyLabel("IQD")}</SelectItem>
+                <SelectItem value="USD">{getCurrencyLabel("USD")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount">المبلغ *</Label>
             <Input
               id="amount"
               type="number"

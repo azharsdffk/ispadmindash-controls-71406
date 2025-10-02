@@ -11,6 +11,7 @@ import { VoucherModal } from "@/components/modals/VoucherModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency, Currency } from "@/lib/currency";
 
 const Vouchers = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -96,7 +97,6 @@ const Vouchers = () => {
                         <TableHead className="text-right">رقم السند</TableHead>
                         <TableHead className="text-right">النوع</TableHead>
                         <TableHead className="text-right">المبلغ</TableHead>
-                        <TableHead className="text-right">العملة</TableHead>
                         <TableHead className="text-right">الوصف</TableHead>
                         <TableHead className="text-right">التاريخ</TableHead>
                       </TableRow>
@@ -111,9 +111,8 @@ const Vouchers = () => {
                             </Badge>
                           </TableCell>
                           <TableCell className="font-semibold">
-                            {Number(voucher.amount).toLocaleString()}
+                            {formatCurrency(Number(voucher.amount), (voucher.currency as Currency) || "IQD")}
                           </TableCell>
-                          <TableCell>{voucher.currency}</TableCell>
                           <TableCell className="max-w-xs truncate">{voucher.description}</TableCell>
                           <TableCell>
                             {new Date(voucher.created_at).toLocaleDateString("ar-IQ")}

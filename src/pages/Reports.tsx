@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 
 const Reports = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -135,21 +136,21 @@ const Reports = () => {
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">إجمالي الإيرادات</p>
                     <p className="text-2xl font-bold text-success flex items-center gap-2">
-                      {stats.totalRevenue.toLocaleString()} د.ع
+                      {formatCurrency(stats.totalRevenue)}
                       <TrendingUp className="h-5 w-5" />
                     </p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">إجمالي المصروفات</p>
                     <p className="text-2xl font-bold text-destructive flex items-center gap-2">
-                      {stats.totalExpenses.toLocaleString()} د.ع
+                      {formatCurrency(stats.totalExpenses)}
                       <TrendingDown className="h-5 w-5" />
                     </p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">صافي الربح</p>
                     <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {netProfit.toLocaleString()} د.ع
+                      {formatCurrency(netProfit)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">هامش ربح: {profitMargin}%</p>
                   </div>
