@@ -108,7 +108,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">234</div>
-                  <p className="text-xs text-muted-foreground mt-1">بقيمة 125,000 ريال</p>
+                  <p className="text-xs text-muted-foreground mt-1">بقيمة 125,000 دينار عراقي</p>
                 </CardContent>
               </Card>
 
@@ -277,7 +277,7 @@ const Index = () => {
                       </div>
                       <div>
                         <p className="font-medium">تم إصدار فاتورة</p>
-                        <p className="text-sm text-muted-foreground">فاتورة #1234 - 500 ريال</p>
+                        <p className="text-sm text-muted-foreground">فاتورة #1234 - 500 دينار عراقي</p>
                       </div>
                     </div>
                     <span className="text-sm text-muted-foreground">منذ 15 دقيقة</span>
