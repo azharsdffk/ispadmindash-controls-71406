@@ -1,22 +1,23 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const menuItems = [
   { icon: Home, label: "الرئيسية", path: "/" },
-  { icon: LayoutDashboard, label: "لوحة التحكم المتقدمة", path: "/dashboard" },
+  { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard" },
   { icon: User, label: "بوابة العميل", path: "/portal" },
-  { icon: Package, label: "إدارة الباقات", path: "/plans" },
+  { icon: Package, label: "الباقات", path: "/plans" },
   { icon: Bell, label: "الإشعارات", path: "/notifications" },
   { icon: MapPin, label: "تتبع الموظفين", path: "/tracking" },
+  { icon: Calendar, label: "الجدولة", path: "/schedule" },
   { icon: Users, label: "المشتركين", path: "/subscribers" },
   { icon: FileText, label: "الفواتير", path: "/invoices" },
-  { icon: DollarSign, label: "السندات المالية", path: "/vouchers" },
+  { icon: DollarSign, label: "السندات", path: "/vouchers" },
   { icon: Wrench, label: "الصيانة", path: "/maintenance" },
   { icon: BarChart3, label: "التقارير", path: "/reports" },
-  { icon: UserCog, label: "إدارة الموظفين", path: "/employees" },
-  { icon: Download, label: "استيراد البيانات", path: "/import" },
+  { icon: UserCog, label: "الموظفين", path: "/employees" },
+  { icon: Download, label: "استيراد", path: "/import" },
   { icon: Settings, label: "الإعدادات", path: "/settings" },
 ];
 
