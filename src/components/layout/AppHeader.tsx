@@ -1,4 +1,4 @@
-import { Settings, Bell, User } from "lucide-react";
+import { Settings, Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AppHeaderProps {
   onOpenSettings: () => void;
 }
 
 export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
+  const { signOut, user } = useAuth();
   return (
     <header className="h-16 border-b bg-gradient-to-r from-primary to-primary-hover text-primary-foreground shadow-md sticky top-0 z-50">
       <div className="flex items-center justify-between h-full px-6">
@@ -59,12 +61,22 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                <div className="flex flex-col gap-1">
+                  <div>حسابي</div>
+                  {user?.email && (
+                    <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
+                  )}
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>الملف الشخصي</DropdownMenuItem>
               <DropdownMenuItem onClick={onOpenSettings}>الإعدادات</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">تسجيل الخروج</DropdownMenuItem>
+              <DropdownMenuItem onClick={signOut} className="text-destructive">
+                <LogOut className="ml-2 h-4 w-4" />
+                تسجيل الخروج
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
