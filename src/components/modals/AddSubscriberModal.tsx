@@ -11,15 +11,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddSubscriberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const subscriberSchema = z.object({
   name: z.string().min(3, "الاسم يجب أن يكون 3 أحرف على الأقل"),
-  phone: z.string().regex(/^(\+964|0)?7[3-9]\d{8}$/, "رقم الهاتف غير صحيح"),
+  phone: z.string().regex(/^(\+964|0)?7[3-9]\d{8}$/, "رقم الهاتف غير صحيح (مثال: 07xxxxxxxxx)"),
   email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
   address: z.string().optional(),
   plan: z.string().optional(),
@@ -28,7 +30,7 @@ const subscriberSchema = z.object({
   addressNotes: z.string().optional(),
 });
 
-export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalProps) => {
+export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscriberModalProps) => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -40,26 +42,54 @@ export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalPro
     addressNotes: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form data
     try {
-      subscriberSchema.parse({
+      // Validate form data
+      const validatedData = subscriberSchema.parse({
         ...formData,
         latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
         longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
       });
+
+      // Insert into database
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase.from('subscribers').insert({
+        name: validatedData.name,
+        phone: validatedData.phone,
+        email: validatedData.email || null,
+        address: validatedData.address || null,
+        plan: validatedData.plan || null,
+        latitude: validatedData.latitude || null,
+        longitude: validatedData.longitude || null,
+        address_notes: validatedData.addressNotes || null,
+        created_by: user?.id,
+      });
+
+      if (error) throw error;
+      
+      toast.success("تم إضافة المشترك بنجاح");
+      onOpenChange(false);
+      setFormData({ 
+        name: "", 
+        phone: "", 
+        email: "", 
+        address: "", 
+        plan: "basic", 
+        latitude: "", 
+        longitude: "", 
+        addressNotes: "" 
+      });
+      onSuccess?.();
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.issues[0].message);
-        return;
+      } else {
+        toast.error("فشل إضافة المشترك");
       }
     }
-    
-    toast.success("تم إضافة المشترك بنجاح");
-    onOpenChange(false);
-    setFormData({ name: "", phone: "", email: "", address: "", plan: "basic", latitude: "", longitude: "", addressNotes: "" });
   };
 
   return (
@@ -90,7 +120,7 @@ export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalPro
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="+966 50 000 0000"
+              placeholder="07xxxxxxxxx"
             />
           </div>
 

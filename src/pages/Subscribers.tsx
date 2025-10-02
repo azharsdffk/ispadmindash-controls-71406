@@ -2,14 +2,66 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Users, UserPlus, MapPin, Phone, Mail, Edit, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+type Subscriber = {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  plan?: string;
+  balance: number;
+};
 
 const Subscribers = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSubscribers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscribers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSubscribers(data || []);
+    } catch (error: any) {
+      toast.error("فشل تحميل المشتركين: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا المشترك؟")) return;
+
+    try {
+      const { error } = await supabase
+        .from('subscribers')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("تم حذف المشترك بنجاح");
+      fetchSubscribers();
+    } catch (error: any) {
+      toast.error("فشل حذف المشترك: " + error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscribers();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -33,10 +85,77 @@ const Subscribers = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>قائمة المشتركين</CardTitle>
+                <CardTitle>قائمة المشتركين ({subscribers.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">قريباً: قائمة بجميع المشتركين</p>
+                {loading ? (
+                  <div className="text-center py-8">جاري التحميل...</div>
+                ) : subscribers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    لا يوجد مشتركين حالياً. أضف مشترك جديد للبدء.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>الاسم</TableHead>
+                        <TableHead>الهاتف</TableHead>
+                        <TableHead>البريد</TableHead>
+                        <TableHead>العنوان</TableHead>
+                        <TableHead>الخطة</TableHead>
+                        <TableHead>الرصيد</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {subscribers.map((subscriber) => (
+                        <TableRow key={subscriber.id}>
+                          <TableCell className="font-medium">{subscriber.name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              {subscriber.phone}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {subscriber.email && (
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-muted-foreground" />
+                                {subscriber.email}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {subscriber.address && (
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                {subscriber.address}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>{subscriber.plan || "-"}</TableCell>
+                          <TableCell className={subscriber.balance < 0 ? "text-destructive" : "text-success"}>
+                            {subscriber.balance.toLocaleString()} ع.د
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="icon">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleDelete(subscriber.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -44,7 +163,11 @@ const Subscribers = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <AddSubscriberModal open={addSubscriberOpen} onOpenChange={setAddSubscriberOpen} />
+      <AddSubscriberModal 
+        open={addSubscriberOpen} 
+        onOpenChange={setAddSubscriberOpen}
+        onSuccess={fetchSubscribers}
+      />
     </div>
   );
 };

@@ -2,14 +2,69 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, FilePlus } from "lucide-react";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { FileText, FilePlus, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
 import { IssueInvoiceModal } from "@/components/modals/IssueInvoiceModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+type Invoice = {
+  id: string;
+  invoice_number: string;
+  subscriber_id: string;
+  amount: number;
+  status: string;
+  issue_date: string;
+  due_date: string;
+  subscribers?: {
+    name: string;
+  };
+};
 
 const Invoices = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [issueInvoiceOpen, setIssueInvoiceOpen] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchInvoices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select(`
+          *,
+          subscribers (
+            name
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setInvoices(data || []);
+    } catch (error: any) {
+      toast.error("فشل تحميل الفواتير: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+      paid: { label: 'مدفوعة', variant: 'default' },
+      pending: { label: 'معلقة', variant: 'secondary' },
+      overdue: { label: 'متأخرة', variant: 'destructive' },
+      cancelled: { label: 'ملغاة', variant: 'outline' },
+    };
+    const statusInfo = statusMap[status] || { label: status, variant: 'outline' as const };
+    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -33,10 +88,47 @@ const Invoices = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>قائمة الفواتير</CardTitle>
+                <CardTitle>قائمة الفواتير ({invoices.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">قريباً: قائمة بجميع الفواتير</p>
+                {loading ? (
+                  <div className="text-center py-8">جاري التحميل...</div>
+                ) : invoices.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    لا يوجد فواتير حالياً. أضف فاتورة جديدة للبدء.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>رقم الفاتورة</TableHead>
+                        <TableHead>المشترك</TableHead>
+                        <TableHead>المبلغ</TableHead>
+                        <TableHead>تاريخ الإصدار</TableHead>
+                        <TableHead>تاريخ الاستحقاق</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {invoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                          <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                          <TableCell>{invoice.subscribers?.name}</TableCell>
+                          <TableCell>{invoice.amount.toLocaleString()} ع.د</TableCell>
+                          <TableCell>{new Date(invoice.issue_date).toLocaleDateString('ar-IQ')}</TableCell>
+                          <TableCell>{new Date(invoice.due_date).toLocaleDateString('ar-IQ')}</TableCell>
+                          <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="icon">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </div>
