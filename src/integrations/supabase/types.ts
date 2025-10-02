@@ -47,6 +47,112 @@ export type Database = {
         }
         Relationships: []
       }
+      complaints: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          complaint_number: string
+          created_at: string | null
+          created_by: string | null
+          description: string
+          id: string
+          priority: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          subscriber_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          complaint_number?: string
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          subscriber_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          complaint_number?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          subscriber_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connection_history: {
+        Row: {
+          connection_quality: string | null
+          download_speed: number | null
+          id: string
+          ip_address: unknown | null
+          notes: string | null
+          recorded_at: string | null
+          recorded_by: string | null
+          status: string
+          subscriber_id: string
+          upload_speed: number | null
+        }
+        Insert: {
+          connection_quality?: string | null
+          download_speed?: number | null
+          id?: string
+          ip_address?: unknown | null
+          notes?: string | null
+          recorded_at?: string | null
+          recorded_by?: string | null
+          status: string
+          subscriber_id: string
+          upload_speed?: number | null
+        }
+        Update: {
+          connection_quality?: string | null
+          download_speed?: number | null
+          id?: string
+          ip_address?: unknown | null
+          notes?: string | null
+          recorded_at?: string | null
+          recorded_by?: string | null
+          status?: string
+          subscriber_id?: string
+          upload_speed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_history_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_locations: {
         Row: {
           accuracy: number | null
@@ -460,6 +566,84 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      packages: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          description: string | null
+          features: Json | null
+          id: string
+          monthly_price: number
+          name: string
+          name_en: string | null
+          speed_mbps: number
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          monthly_price?: number
+          name: string
+          name_en?: string | null
+          speed_mbps: number
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          monthly_price?: number
+          name?: string
+          name_en?: string | null
+          speed_mbps?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -740,6 +924,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_complaint_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string
