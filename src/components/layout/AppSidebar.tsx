@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 
@@ -9,6 +9,8 @@ const menuItems = [
   { icon: DollarSign, label: "السندات المالية", path: "/vouchers" },
   { icon: Wrench, label: "الصيانة", path: "/maintenance" },
   { icon: BarChart3, label: "التقارير", path: "/reports" },
+  { icon: UserCog, label: "إدارة الموظفين", path: "/employees" },
+  { icon: Download, label: "استيراد البيانات", path: "/import" },
   { icon: Settings, label: "الإعدادات", path: "/settings" },
 ];
 

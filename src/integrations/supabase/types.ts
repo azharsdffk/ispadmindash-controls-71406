@@ -80,6 +80,45 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          employee_code: string
+          full_name: string
+          id: string
+          phone: string
+          position: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          employee_code: string
+          full_name: string
+          id?: string
+          phone: string
+          position?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          employee_code?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          position?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           created_at: string | null
@@ -107,6 +146,51 @@ export type Database = {
           id?: string
           rate?: number
           to_currency?: Database["public"]["Enums"]["currency_type"]
+        }
+        Relationships: []
+      }
+      expense_vouchers: {
+        Row: {
+          amount: number
+          approved_by: string | null
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          description: string | null
+          expense_type: string
+          id: string
+          paid_to: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          voucher_number: string
+        }
+        Insert: {
+          amount: number
+          approved_by?: string | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string | null
+          expense_type: string
+          id?: string
+          paid_to?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          voucher_number?: string
+        }
+        Update: {
+          amount?: number
+          approved_by?: string | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string | null
+          expense_type?: string
+          id?: string
+          paid_to?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          voucher_number?: string
         }
         Relationships: []
       }
@@ -140,6 +224,93 @@ export type Database = {
           id?: string
           name?: string
           radius_meters?: number
+        }
+        Relationships: []
+      }
+      import_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          import_type: string
+          imported_by: string | null
+          records_failed: number | null
+          records_imported: number | null
+          source: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          import_type: string
+          imported_by?: string | null
+          records_failed?: number | null
+          records_imported?: number | null
+          source: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          import_type?: string
+          imported_by?: string | null
+          records_failed?: number | null
+          records_imported?: number | null
+          source?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          id: string
+          item_code: string | null
+          item_name: string
+          min_stock_level: number | null
+          notes: string | null
+          quantity: number
+          supplier: string | null
+          unit: string
+          unit_price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          id?: string
+          item_code?: string | null
+          item_name: string
+          min_stock_level?: number | null
+          notes?: string | null
+          quantity?: number
+          supplier?: string | null
+          unit?: string
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          id?: string
+          item_code?: string | null
+          item_name?: string
+          min_stock_level?: number | null
+          notes?: string | null
+          quantity?: number
+          supplier?: string | null
+          unit?: string
+          unit_price?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -198,6 +369,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      location_tracking_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          tracking_enabled: boolean | null
+          update_interval_minutes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          tracking_enabled?: boolean | null
+          update_interval_minutes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          tracking_enabled?: boolean | null
+          update_interval_minutes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       maintenance_tickets: {
         Row: {
@@ -323,6 +521,7 @@ export type Database = {
           id: string
           phone: string | null
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           created_at?: string | null
@@ -330,6 +529,7 @@ export type Database = {
           id: string
           phone?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           created_at?: string | null
@@ -337,17 +537,80 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
+      }
+      schedule: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_time: string | null
+          id: string
+          location: string | null
+          priority: string | null
+          start_time: string
+          status: string | null
+          subscriber_id: string | null
+          task_type: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          location?: string | null
+          priority?: string | null
+          start_time: string
+          status?: string | null
+          subscriber_id?: string | null
+          task_type?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          location?: string | null
+          priority?: string | null
+          start_time?: string
+          status?: string | null
+          subscriber_id?: string | null
+          task_type?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {
           address: string | null
+          address_notes: string | null
           balance: number | null
           created_at: string | null
           created_by: string | null
           email: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           phone: string
           plan: string | null
@@ -355,11 +618,14 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_notes?: string | null
           balance?: number | null
           created_at?: string | null
           created_by?: string | null
           email?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           phone: string
           plan?: string | null
@@ -367,11 +633,14 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_notes?: string | null
           balance?: number | null
           created_at?: string | null
           created_by?: string | null
           email?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           phone?: string
           plan?: string | null

@@ -23,6 +23,9 @@ export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalPro
     email: "",
     address: "",
     plan: "basic",
+    latitude: "",
+    longitude: "",
+    addressNotes: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,7 +36,7 @@ export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalPro
     }
     toast.success("تم إضافة المشترك بنجاح");
     onOpenChange(false);
-    setFormData({ name: "", phone: "", email: "", address: "", plan: "basic" });
+    setFormData({ name: "", phone: "", email: "", address: "", plan: "basic", latitude: "", longitude: "", addressNotes: "" });
   };
 
   return (
@@ -102,6 +105,41 @@ export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalPro
               <option value="premium">متقدمة - 500 ميجا</option>
               <option value="ultimate">فائقة - 1 جيجا</option>
             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="latitude">خط العرض</Label>
+              <Input
+                id="latitude"
+                type="number"
+                step="any"
+                value={formData.latitude}
+                onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                placeholder="33.3152"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longitude">خط الطول</Label>
+              <Input
+                id="longitude"
+                type="number"
+                step="any"
+                value={formData.longitude}
+                onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                placeholder="44.3661"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="addressNotes">ملاحظات الموقع</Label>
+            <Input
+              id="addressNotes"
+              value={formData.addressNotes}
+              onChange={(e) => setFormData({ ...formData, addressNotes: e.target.value })}
+              placeholder="معلومات إضافية عن الموقع"
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
