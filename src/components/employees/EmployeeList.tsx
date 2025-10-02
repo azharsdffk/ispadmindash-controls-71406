@@ -15,16 +15,37 @@ export const EmployeeList = () => {
     try {
       const { data, error } = await supabase
         .from("employees")
-        .select(`
-          *,
-          profiles!inner(full_name, phone, username),
-          user_roles!inner(role)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setEmployees(data || []);
+
+      // Fetch profiles and roles separately for each employee
+      const employeesWithDetails = await Promise.all(
+        (data || []).map(async (employee) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name, phone, username")
+            .eq("id", employee.user_id)
+            .single();
+
+          const { data: role } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", employee.user_id)
+            .single();
+
+          return {
+            ...employee,
+            profiles: profile,
+            user_roles: role,
+          };
+        })
+      );
+
+      setEmployees(employeesWithDetails);
     } catch (error: any) {
+      console.error("Error loading employees:", error);
       toast({
         title: "خطأ",
         description: "فشل تحميل بيانات الموظفين",
