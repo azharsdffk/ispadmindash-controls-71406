@@ -12,6 +12,7 @@ import Plans from "./pages/Plans";
 import Notifications from "./pages/Notifications";
 import EmployeeTracking from "./pages/EmployeeTracking";
 import Schedule from "./pages/Schedule";
+import Inventory from "./pages/Inventory";
 import Subscribers from "./pages/Subscribers";
 import Invoices from "./pages/Invoices";
 import Vouchers from "./pages/Vouchers";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/tracking" element={<ProtectedRoute><EmployeeTracking /></ProtectedRoute>} />
             <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
             <Route path="/subscribers" element={<ProtectedRoute><Subscribers /></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
             <Route path="/vouchers" element={<ProtectedRoute><Vouchers /></ProtectedRoute>} />
