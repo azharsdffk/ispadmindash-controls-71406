@@ -2,16 +2,53 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Plus } from "lucide-react";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { DollarSign, Plus, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { ReceiptModal } from "@/components/modals/ReceiptModal";
 import { VoucherModal } from "@/components/modals/VoucherModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Vouchers = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
+  const [vouchers, setVouchers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadVouchers();
+  }, []);
+
+  const loadVouchers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("vouchers")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setVouchers(data || []);
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل السندات",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setReceiptOpen(false);
+    setVoucherOpen(false);
+    loadVouchers();
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -44,7 +81,48 @@ const Vouchers = () => {
                 <CardTitle>قائمة السندات المالية</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">قريباً: قائمة بجميع السندات المالية</p>
+                {loading ? (
+                  <div className="flex justify-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : vouchers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    لا توجد سندات مالية
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">رقم السند</TableHead>
+                        <TableHead className="text-right">النوع</TableHead>
+                        <TableHead className="text-right">المبلغ</TableHead>
+                        <TableHead className="text-right">العملة</TableHead>
+                        <TableHead className="text-right">الوصف</TableHead>
+                        <TableHead className="text-right">التاريخ</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {vouchers.map((voucher) => (
+                        <TableRow key={voucher.id}>
+                          <TableCell className="font-medium">{voucher.voucher_number}</TableCell>
+                          <TableCell>
+                            <Badge variant={voucher.voucher_type === "income" ? "default" : "destructive"}>
+                              {voucher.voucher_type === "income" ? "قبض" : "صرف"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-semibold">
+                            {Number(voucher.amount).toLocaleString()}
+                          </TableCell>
+                          <TableCell>{voucher.currency}</TableCell>
+                          <TableCell className="max-w-xs truncate">{voucher.description}</TableCell>
+                          <TableCell>
+                            {new Date(voucher.created_at).toLocaleDateString("ar-IQ")}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -52,8 +130,8 @@ const Vouchers = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <ReceiptModal open={receiptOpen} onOpenChange={setReceiptOpen} />
-      <VoucherModal open={voucherOpen} onOpenChange={setVoucherOpen} />
+      <ReceiptModal open={receiptOpen} onOpenChange={(open) => !open && handleModalClose()} />
+      <VoucherModal open={voucherOpen} onOpenChange={(open) => !open && handleModalClose()} />
     </div>
   );
 };
