@@ -8,6 +8,7 @@ import { MaintenanceTicketModal } from "@/components/modals/MaintenanceTicketMod
 import { ReceiptModal } from "@/components/modals/ReceiptModal";
 import { VoucherModal } from "@/components/modals/VoucherModal";
 import { ScheduleTechnicianModal } from "@/components/modals/ScheduleTechnicianModal";
+import { AIChatbot } from "@/components/ai/AIChatbot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -308,6 +309,7 @@ const Index = () => {
       <ReceiptModal open={receiptOpen} onOpenChange={setReceiptOpen} />
       <VoucherModal open={voucherOpen} onOpenChange={setVoucherOpen} />
       <ScheduleTechnicianModal open={scheduleTechOpen} onOpenChange={setScheduleTechOpen} />
+      <AIChatbot />
     </div>
   );
 };
