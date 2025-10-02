@@ -153,6 +153,44 @@ export type Database = {
           },
         ]
       }
+      employee_access_logs: {
+        Row: {
+          accessed_by: string
+          action: string
+          created_at: string | null
+          employee_id: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+        }
+        Insert: {
+          accessed_by: string
+          action: string
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Update: {
+          accessed_by?: string
+          action?: string
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_access_logs_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_locations: {
         Row: {
           accuracy: number | null
@@ -777,6 +815,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "schedule_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriber_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          subscriber_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          subscriber_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          subscriber_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriber_users_subscriber_id_fkey"
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"

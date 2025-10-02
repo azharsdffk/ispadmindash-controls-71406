@@ -36,35 +36,23 @@ const RoleManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name');
-
-      if (profilesError) throw profilesError;
-
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      setLoading(true);
       
-      if (authError) throw authError;
-
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      const usersWithRoles = authUsers.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
-        const roles = userRoles?.filter(r => r.user_id === user.id).map(r => r.role) || [];
-        
-        return {
-          id: user.id,
-          email: user.email || '',
-          full_name: profile?.full_name || 'غير محدد',
-          roles,
-        };
+      // Call edge function to get users (secure way)
+      const { data, error } = await supabase.functions.invoke('manage-user-roles', {
+        body: { action: 'list_users' }
       });
 
-      setUsers(usersWithRoles);
+      if (error) throw error;
+
+      const usersWithData = data.users.map((user: any) => ({
+        id: user.id,
+        email: user.email || 'لا يوجد',
+        full_name: user.profile?.full_name || 'غير محدد',
+        roles: user.roles || []
+      }));
+
+      setUsers(usersWithData);
     } catch (error: any) {
       toast.error("فشل تحميل المستخدمين: " + error.message);
     } finally {
@@ -74,34 +62,32 @@ const RoleManagement = () => {
 
   const assignRole = async (userId: string, role: string) => {
     try {
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role: role as 'admin' | 'accountant' | 'technician' });
+      const { data, error } = await supabase.functions.invoke('manage-user-roles', {
+        body: { action: 'assign_role', userId, role }
+      });
 
       if (error) throw error;
       
-      toast.success("تم تعيين الدور بنجاح");
+      toast.success(data.message || "تم تعيين الدور بنجاح");
       fetchUsers();
     } catch (error: any) {
-      if (error.code === '23505') {
-        toast.error("المستخدم لديه هذا الدور بالفعل");
-      } else {
-        toast.error("فشل تعيين الدور: " + error.message);
-      }
+      toast.error("فشل تعيين الدور: " + error.message);
     }
   };
 
   const removeRole = async (userId: string, role: string) => {
+    if (!confirm(`هل أنت متأكد من إزالة دور "${role}" من هذا المستخدم؟`)) {
+      return;
+    }
+
     try {
-      const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId)
-        .eq('role', role as 'admin' | 'accountant' | 'technician');
+      const { data, error } = await supabase.functions.invoke('manage-user-roles', {
+        body: { action: 'remove_role', userId, role }
+      });
 
       if (error) throw error;
       
-      toast.success("تم إزالة الدور بنجاح");
+      toast.success(data.message || "تم إزالة الدور بنجاح");
       fetchUsers();
     } catch (error: any) {
       toast.error("فشل إزالة الدور: " + error.message);
@@ -149,6 +135,7 @@ const RoleManagement = () => {
                       <li><strong>مدير (admin):</strong> وصول كامل لجميع البيانات والإعدادات</li>
                       <li><strong>محاسب (accountant):</strong> وصول كامل للفواتير والمدفوعات والمشتركين</li>
                       <li><strong>فني (technician):</strong> وصول محدود للمشتركين المعينين فقط</li>
+                      <li><strong>عميل (client):</strong> وصول لبياناته الخاصة فقط (فواتير، دفعات، تذاكر)</li>
                     </ul>
                   </div>
                 </div>
@@ -189,9 +176,10 @@ const RoleManagement = () => {
                                     className="cursor-pointer hover:opacity-70"
                                     onClick={() => removeRole(user.id, role)}
                                   >
-                                    {role === 'admin' && 'مدير'}
+                                     {role === 'admin' && 'مدير'}
                                     {role === 'accountant' && 'محاسب'}
                                     {role === 'technician' && 'فني'}
+                                    {role === 'client' && 'عميل'}
                                     {' ✕'}
                                   </Badge>
                                 ))
@@ -207,6 +195,7 @@ const RoleManagement = () => {
                                 <SelectItem value="admin">مدير</SelectItem>
                                 <SelectItem value="accountant">محاسب</SelectItem>
                                 <SelectItem value="technician">فني</SelectItem>
+                                <SelectItem value="client">عميل</SelectItem>
                               </SelectContent>
                             </Select>
                           </TableCell>

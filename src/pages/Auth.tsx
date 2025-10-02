@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { validatePassword } from '@/utils/passwordStrength';
 
 const Auth = () => {
   const { signIn, signUp } = useAuth();
@@ -53,6 +55,15 @@ const Auth = () => {
           setLoading(false);
           return;
         }
+        
+        // Validate password strength
+        const passwordValidation = validatePassword(formData.password);
+        if (!passwordValidation.isValid) {
+          toast.error('كلمة المرور غير قوية بما يكفي');
+          setLoading(false);
+          return;
+        }
+        
         const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.phone);
         if (error) {
           if (error.message.includes('already registered')) {
@@ -149,6 +160,9 @@ const Auth = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {!isLogin && formData.password && (
+                  <PasswordStrengthIndicator password={formData.password} />
+                )}
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
