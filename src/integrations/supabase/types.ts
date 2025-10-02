@@ -47,11 +47,108 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_locations: {
+        Row: {
+          accuracy: number | null
+          created_at: string | null
+          device_info: Json | null
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      exchange_rates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          effective_date: string
+          from_currency: Database["public"]["Enums"]["currency_type"]
+          id: string
+          rate: number
+          to_currency: Database["public"]["Enums"]["currency_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          from_currency: Database["public"]["Enums"]["currency_type"]
+          id?: string
+          rate: number
+          to_currency: Database["public"]["Enums"]["currency_type"]
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          from_currency?: Database["public"]["Enums"]["currency_type"]
+          id?: string
+          rate?: number
+          to_currency?: Database["public"]["Enums"]["currency_type"]
+        }
+        Relationships: []
+      }
+      geofence_zones: {
+        Row: {
+          active: boolean | null
+          center_lat: number
+          center_lng: number
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          radius_meters: number
+        }
+        Insert: {
+          active?: boolean | null
+          center_lat: number
+          center_lng: number
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          radius_meters: number
+        }
+        Update: {
+          active?: boolean | null
+          center_lat?: number
+          center_lng?: number
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          radius_meters?: number
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
           created_at: string | null
           created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
           discount: number | null
           due_date: string
           id: string
@@ -66,6 +163,7 @@ export type Database = {
           amount: number
           created_at?: string | null
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
           discount?: number | null
           due_date: string
           id?: string
@@ -80,6 +178,7 @@ export type Database = {
           amount?: number
           created_at?: string | null
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
           discount?: number | null
           due_date?: string
           id?: string
@@ -168,6 +267,7 @@ export type Database = {
           amount: number
           created_at: string | null
           created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
           id: string
           invoice_id: string | null
           notes: string | null
@@ -179,6 +279,7 @@ export type Database = {
           amount: number
           created_at?: string | null
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
           id?: string
           invoice_id?: string | null
           notes?: string | null
@@ -190,6 +291,7 @@ export type Database = {
           amount?: number
           created_at?: string | null
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
           id?: string
           invoice_id?: string | null
           notes?: string | null
@@ -331,6 +433,7 @@ export type Database = {
           amount: number
           created_at: string | null
           created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
           description: string | null
           expense_type: string | null
           id: string
@@ -342,6 +445,7 @@ export type Database = {
           amount: number
           created_at?: string | null
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
           description?: string | null
           expense_type?: string | null
           id?: string
@@ -353,6 +457,7 @@ export type Database = {
           amount?: number
           created_at?: string | null
           created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
           description?: string | null
           expense_type?: string | null
           id?: string
@@ -400,6 +505,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "accountant" | "technician" | "user"
+      currency_type: "IQD" | "USD"
       invoice_status: "pending" | "paid" | "overdue" | "cancelled"
       payment_method: "cash" | "bank_transfer" | "card" | "other"
       ticket_priority: "low" | "medium" | "high" | "urgent"
@@ -533,6 +639,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "accountant", "technician", "user"],
+      currency_type: ["IQD", "USD"],
       invoice_status: ["pending", "paid", "overdue", "cancelled"],
       payment_method: ["cash", "bank_transfer", "card", "other"],
       ticket_priority: ["low", "medium", "high", "urgent"],
