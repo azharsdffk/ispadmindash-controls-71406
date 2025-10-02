@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -9,6 +9,7 @@ const menuItems = [
   { icon: User, label: "بوابة العميل", path: "/portal" },
   { icon: Package, label: "إدارة الباقات", path: "/plans" },
   { icon: Bell, label: "الإشعارات", path: "/notifications" },
+  { icon: MapPin, label: "تتبع الموظفين", path: "/tracking" },
   { icon: Users, label: "المشتركين", path: "/subscribers" },
   { icon: FileText, label: "الفواتير", path: "/invoices" },
   { icon: DollarSign, label: "السندات المالية", path: "/vouchers" },

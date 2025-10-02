@@ -1,0 +1,337 @@
+import { AppHeader } from "@/components/layout/AppHeader";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { SettingsModal } from "@/components/modals/SettingsModal";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { MapPin, Users, Navigation, AlertCircle, Clock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { useUserRole } from "@/hooks/useUserRole";
+
+interface EmployeeLocation {
+  id: string;
+  user_id: string;
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  recorded_at: string;
+  employee?: {
+    full_name: string;
+    position: string | null;
+    phone: string;
+  };
+}
+
+const EmployeeTracking = () => {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [locations, setLocations] = useState<EmployeeLocation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin, loading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    if (!roleLoading && isAdmin) {
+      fetchEmployeeLocations();
+      subscribeToLocationUpdates();
+    }
+  }, [roleLoading, isAdmin]);
+
+  const fetchEmployeeLocations = async () => {
+    try {
+      setLoading(true);
+      
+      // Get latest location for each employee
+      const { data: employeeData } = await supabase
+        .from('employees')
+        .select('user_id, full_name, position, phone');
+
+      if (!employeeData) {
+        setLoading(false);
+        return;
+      }
+
+      const locationsWithEmployees: EmployeeLocation[] = [];
+
+      for (const employee of employeeData) {
+        const { data: locationData } = await supabase
+          .from('employee_locations')
+          .select('*')
+          .eq('user_id', employee.user_id)
+          .order('recorded_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (locationData) {
+          locationsWithEmployees.push({
+            ...locationData,
+            employee: {
+              full_name: employee.full_name,
+              position: employee.position,
+              phone: employee.phone,
+            },
+          });
+        }
+      }
+
+      setLocations(locationsWithEmployees);
+    } catch (error) {
+      console.error('Error fetching employee locations:', error);
+      toast.error('فشل تحميل مواقع الموظفين');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const subscribeToLocationUpdates = () => {
+    const channel = supabase
+      .channel('location-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'employee_locations',
+        },
+        () => {
+          fetchEmployeeLocations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const getTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffMs = now.getTime() - time.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return 'الآن';
+    if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `منذ ${diffDays} يوم`;
+  };
+
+  const getStatusColor = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffMins = Math.floor((now.getTime() - time.getTime()) / 60000);
+
+    if (diffMins < 15) return 'success';
+    if (diffMins < 60) return 'warning';
+    return 'destructive';
+  };
+
+  const openInMaps = (lat: number, lng: number) => {
+    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+  };
+
+  if (roleLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        <div className="flex flex-1 w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-y-auto">
+            <Alert variant="destructive">
+              <AlertDescription>
+                ليس لديك صلاحية الوصول إلى هذه الصفحة
+              </AlertDescription>
+            </Alert>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+      <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+      
+      <div className="flex flex-1 w-full">
+        <AppSidebar />
+        
+        <main className="flex-1 p-6 overflow-y-auto">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="flex items-center gap-3">
+              <MapPin className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-3xl font-bold">تتبع الموظفين</h1>
+                <p className="text-sm text-muted-foreground">
+                  تتبع مواقع الموظفين في الوقت الفعلي
+                </p>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    إجمالي الموظفين
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">{locations.length}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Navigation className="h-4 w-4 text-success" />
+                    نشط الآن
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-success">
+                    {locations.filter(loc => {
+                      const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
+                      return diffMins < 15;
+                    }).length}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-warning" />
+                    غير نشط
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-warning">
+                    {locations.filter(loc => {
+                      const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
+                      return diffMins >= 60;
+                    }).length}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Map Placeholder */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  خريطة المواقع
+                </CardTitle>
+                <CardDescription>
+                  عرض مواقع الموظفين على الخريطة
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted rounded-lg p-12 text-center">
+                  <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-2">
+                    يتطلب مفتاح Mapbox API لعرض الخريطة التفاعلية
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    المواقع معروضة في القائمة أدناه
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Employee Locations List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>مواقع الموظفين</CardTitle>
+                <CardDescription>
+                  آخر موقع مسجل لكل موظف
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {locations.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">لا توجد بيانات موقع متاحة</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {locations.map((location) => (
+                      <Card key={location.id} className="border-l-4" style={{
+                        borderLeftColor: `hsl(var(--${getStatusColor(location.recorded_at)}))`
+                      }}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-semibold">
+                                  {location.employee?.full_name || 'موظف'}
+                                </h3>
+                                <Badge variant={getStatusColor(location.recorded_at) as any}>
+                                  {getTimeAgo(location.recorded_at)}
+                                </Badge>
+                              </div>
+                              
+                              {location.employee?.position && (
+                                <p className="text-sm text-muted-foreground mb-1">
+                                  {location.employee.position}
+                                </p>
+                              )}
+                              
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  <span>
+                                    {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                                  </span>
+                                </div>
+                                
+                                {location.accuracy && (
+                                  <div>
+                                    دقة: {location.accuracy.toFixed(0)}م
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <p className="text-xs text-muted-foreground mt-2">
+                                آخر تحديث: {new Date(location.recorded_at).toLocaleString('ar-IQ')}
+                              </p>
+                            </div>
+                            
+                            <button
+                              onClick={() => openInMaps(location.latitude, location.longitude)}
+                              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+                            >
+                              <Navigation className="h-4 w-4" />
+                              عرض
+                            </button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </div>
+  );
+};
+
+export default EmployeeTracking;
