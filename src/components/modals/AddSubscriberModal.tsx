@@ -10,25 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { subscriberFormSchema, sanitizeInput } from "@/utils/inputValidation";
+import { trackSubscriberEdit } from "@/utils/piiTracking";
 
 interface AddSubscriberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
-
-const subscriberSchema = z.object({
-  name: z.string().min(3, "الاسم يجب أن يكون 3 أحرف على الأقل"),
-  phone: z.string().regex(/^(\+964|0)?7[3-9]\d{8}$/, "رقم الهاتف غير صحيح (مثال: 07xxxxxxxxx)"),
-  email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
-  address: z.string().optional(),
-  plan: z.string().optional(),
-  latitude: z.number().min(-90).max(90, "خط العرض يجب أن يكون بين -90 و 90").optional(),
-  longitude: z.number().min(-180).max(180, "خط الطول يجب أن يكون بين -180 و 180").optional(),
-  addressNotes: z.string().optional(),
-});
 
 export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscriberModalProps) => {
   const [formData, setFormData] = useState({
@@ -46,17 +36,24 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
     e.preventDefault();
     
     try {
-      // Validate form data
-      const validatedData = subscriberSchema.parse({
-        ...formData,
+      // Sanitize inputs
+      const sanitizedData = {
+        name: sanitizeInput(formData.name),
+        phone: sanitizeInput(formData.phone),
+        email: sanitizeInput(formData.email),
+        address: sanitizeInput(formData.address),
+        plan: formData.plan,
         latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
         longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-      });
+      };
+
+      // Validate form data
+      const validatedData = subscriberFormSchema.parse(sanitizedData);
 
       // Insert into database
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase.from('subscribers').insert({
+      const { data: newSubscriber, error } = await supabase.from('subscribers').insert({
         name: validatedData.name,
         phone: validatedData.phone,
         email: validatedData.email || null,
@@ -64,11 +61,15 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         plan: validatedData.plan || null,
         latitude: validatedData.latitude || null,
         longitude: validatedData.longitude || null,
-        address_notes: validatedData.addressNotes || null,
         created_by: user?.id,
-      });
+      }).select().single();
 
       if (error) throw error;
+      
+      // Track PII access for audit
+      if (newSubscriber) {
+        await trackSubscriberEdit(newSubscriber.id, ['name', 'phone', 'email', 'address']);
+      }
       
       toast.success("تم إضافة المشترك بنجاح");
       onOpenChange(false);
@@ -83,10 +84,11 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         addressNotes: "" 
       });
       onSuccess?.();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
+    } catch (error: any) {
+      if (error?.name === 'ZodError') {
         toast.error(error.issues[0].message);
       } else {
+        console.error('Add subscriber error:', error);
         toast.error("فشل إضافة المشترك");
       }
     }

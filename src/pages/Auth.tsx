@@ -9,6 +9,7 @@ import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { validatePassword } from '@/utils/passwordStrength';
+import { signupSchema, loginSchema, emailSchema, sanitizeInput } from '@/utils/inputValidation';
 
 const Auth = () => {
   const { signIn, signUp } = useAuth();
@@ -28,8 +29,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase());
+      
       if (isForgotPassword) {
-        const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        // Validate email
+        const validatedEmail = emailSchema.parse(sanitizedEmail);
+        
+        const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
           redirectTo: `${window.location.origin}/auth`,
         });
         if (error) {
@@ -39,7 +46,13 @@ const Auth = () => {
           setIsForgotPassword(false);
         }
       } else if (isLogin) {
-        const { error } = await signIn(formData.email, formData.password);
+        // Validate login data
+        const validatedData = loginSchema.parse({
+          email: sanitizedEmail,
+          password: formData.password,
+        });
+        
+        const { error } = await signIn(validatedData.email, validatedData.password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
@@ -50,21 +63,21 @@ const Auth = () => {
           toast.success('تم تسجيل الدخول بنجاح');
         }
       } else {
-        if (!formData.fullName) {
-          toast.error('الرجاء إدخال الاسم الكامل');
-          setLoading(false);
-          return;
-        }
+        // Validate signup data
+        const validatedData = signupSchema.parse({
+          email: sanitizedEmail,
+          password: formData.password,
+          fullName: sanitizeInput(formData.fullName),
+          phone: formData.phone ? sanitizeInput(formData.phone) : undefined,
+        });
         
-        // Validate password strength
-        const passwordValidation = validatePassword(formData.password);
-        if (!passwordValidation.isValid) {
-          toast.error('كلمة المرور غير قوية بما يكفي');
-          setLoading(false);
-          return;
-        }
+        const { error } = await signUp(
+          validatedData.email, 
+          validatedData.password, 
+          validatedData.fullName, 
+          validatedData.phone
+        );
         
-        const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.phone);
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('هذا البريد الإلكتروني مسجل بالفعل');
@@ -75,8 +88,13 @@ const Auth = () => {
           toast.success('تم إنشاء الحساب بنجاح');
         }
       }
-    } catch (error) {
-      toast.error('حدث خطأ غير متوقع');
+    } catch (error: any) {
+      if (error?.name === 'ZodError') {
+        toast.error(error.issues[0].message);
+      } else {
+        console.error('Auth error:', error);
+        toast.error('حدث خطأ غير متوقع');
+      }
     } finally {
       setLoading(false);
     }
