@@ -6,11 +6,27 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
 interface AddEmployeeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const employeeSchema = z.object({
+  fullName: z.string().min(3, "الاسم يجب أن يكون 3 أحرف على الأقل"),
+  phone: z.string().regex(/^(\+964|0)?7[3-9]\d{8}$/, "رقم الهاتف غير صحيح"),
+  email: z.string().email("البريد الإلكتروني غير صحيح"),
+  username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل").optional().or(z.literal("")),
+  password: z.string()
+    .min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+    .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير")
+    .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم")
+    .regex(/[^A-Za-z0-9]/, "كلمة المرور يجب أن تحتوي على رمز خاص"),
+  employeeCode: z.string().optional(),
+  position: z.string().optional(),
+  role: z.enum(["admin", "accountant", "technician"]),
+});
 
 export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) => {
   const { toast } = useToast();
@@ -29,13 +45,18 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.fullName || !formData.phone || !formData.email || !formData.password) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      });
-      return;
+    // Validate form data
+    try {
+      employeeSchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "خطأ في البيانات",
+          description: error.issues[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setLoading(true);

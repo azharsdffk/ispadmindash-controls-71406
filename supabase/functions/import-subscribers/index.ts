@@ -6,6 +6,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting map
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const limit = rateLimitMap.get(userId);
+  
+  if (!limit || now > limit.resetTime) {
+    rateLimitMap.set(userId, { count: 1, resetTime: now + 60000 });
+    return true;
+  }
+  
+  if (limit.count >= 10) {
+    return false;
+  }
+  
+  limit.count++;
+  return true;
+}
+
+function validatePhone(phone: string): boolean {
+  return /^(\+964|0)?7[3-9]\d{8}$/.test(phone);
+}
+
+function validateEmail(email: string): boolean {
+  return !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validateCoordinates(lat?: number, lng?: number): boolean {
+  if (lat !== undefined && (lat < -90 || lat > 90)) return false;
+  if (lng !== undefined && (lng < -180 || lng > 180)) return false;
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -30,6 +64,14 @@ serve(async (req) => {
 
     if (!user) {
       throw new Error('Unauthorized');
+    }
+
+    // Rate limiting check
+    if (!checkRateLimit(user.id)) {
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Create import log
@@ -77,6 +119,31 @@ serve(async (req) => {
             }
           });
 
+          // Validate data
+          if (!subscriber.name || !subscriber.phone) {
+            failed++;
+            errors.push(`Row ${i}: Missing required fields`);
+            continue;
+          }
+
+          if (!validatePhone(subscriber.phone)) {
+            failed++;
+            errors.push(`Row ${i}: Invalid phone number`);
+            continue;
+          }
+
+          if (subscriber.email && !validateEmail(subscriber.email)) {
+            failed++;
+            errors.push(`Row ${i}: Invalid email`);
+            continue;
+          }
+
+          if (!validateCoordinates(subscriber.latitude, subscriber.longitude)) {
+            failed++;
+            errors.push(`Row ${i}: Invalid coordinates`);
+            continue;
+          }
+
           if (subscriber.name && subscriber.phone) {
             const { error } = await supabaseClient
               .from('subscribers')
@@ -91,9 +158,6 @@ serve(async (req) => {
             } else {
               imported++;
             }
-          } else {
-            failed++;
-            errors.push(`Row ${i}: Missing required fields`);
           }
         }
       } else if (url) {

@@ -10,11 +10,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { z } from "zod";
 
 interface AddSubscriberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const subscriberSchema = z.object({
+  name: z.string().min(3, "الاسم يجب أن يكون 3 أحرف على الأقل"),
+  phone: z.string().regex(/^(\+964|0)?7[3-9]\d{8}$/, "رقم الهاتف غير صحيح"),
+  email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
+  address: z.string().optional(),
+  plan: z.string().optional(),
+  latitude: z.number().min(-90).max(90, "خط العرض يجب أن يكون بين -90 و 90").optional(),
+  longitude: z.number().min(-180).max(180, "خط الطول يجب أن يكون بين -180 و 180").optional(),
+  addressNotes: z.string().optional(),
+});
 
 export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalProps) => {
   const [formData, setFormData] = useState({
@@ -30,10 +42,21 @@ export const AddSubscriberModal = ({ open, onOpenChange }: AddSubscriberModalPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) {
-      toast.error("الرجاء ملء الحقول المطلوبة");
-      return;
+    
+    // Validate form data
+    try {
+      subscriberSchema.parse({
+        ...formData,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message);
+        return;
+      }
     }
+    
     toast.success("تم إضافة المشترك بنجاح");
     onOpenChange(false);
     setFormData({ name: "", phone: "", email: "", address: "", plan: "basic", latitude: "", longitude: "", addressNotes: "" });
