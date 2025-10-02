@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 
 const Settings = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -22,12 +23,21 @@ const Settings = () => {
               <h1 className="text-3xl font-bold">الإعدادات</h1>
             </div>
 
+            <NotificationSettings />
+
             <Card>
               <CardHeader>
                 <CardTitle>إعدادات النظام</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">قريباً: إعدادات مفصلة للنظام</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">العملة الافتراضية</p>
+                      <p className="text-sm text-muted-foreground">الدينار العراقي (IQD)</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
