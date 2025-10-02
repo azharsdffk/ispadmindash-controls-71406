@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,28 +10,77 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
 interface MaintenanceTicketModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export const MaintenanceTicketModal = ({ open, onOpenChange }: MaintenanceTicketModalProps) => {
+const ticketSchema = z.object({
+  subscriber_id: z.string().uuid("يجب اختيار مشترك"),
+  issue_description: z.string().min(5, "الوصف يجب أن يكون 5 أحرف على الأقل"),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
+});
+
+export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: MaintenanceTicketModalProps) => {
+  const [subscribers, setSubscribers] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    title: "",
-    subscriber: "",
+    subscriber_id: "",
     priority: "medium",
-    description: "",
+    issue_description: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.subscriber) {
-      toast.error("الرجاء ملء الحقول المطلوبة");
-      return;
+  useEffect(() => {
+    if (open) {
+      loadSubscribers();
     }
-    toast.success("تم فتح تذكرة الصيانة بنجاح");
-    onOpenChange(false);
+  }, [open]);
+
+  const loadSubscribers = async () => {
+    const { data } = await supabase
+      .from("subscribers")
+      .select("id, name, phone")
+      .order("name");
+    if (data) setSubscribers(data);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const validatedData = ticketSchema.parse(formData);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Generate ticket number
+      const ticketNumber = `TKT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${Date.now().toString().slice(-6)}`;
+      
+      const { error } = await supabase.from("maintenance_tickets").insert([{
+        ticket_number: ticketNumber,
+        subscriber_id: validatedData.subscriber_id,
+        issue_description: validatedData.issue_description,
+        priority: validatedData.priority as any,
+        status: "open" as const,
+        created_by: user?.id,
+      }]);
+
+      if (error) throw error;
+
+      toast.success("تم فتح تذكرة الصيانة بنجاح");
+      onOpenChange(false);
+      setFormData({ subscriber_id: "", priority: "medium", issue_description: "" });
+      onSuccess?.();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message);
+      } else {
+        console.error("Error creating ticket:", error);
+        toast.error("فشل فتح تذكرة الصيانة");
+      }
+    }
   };
 
   return (
@@ -44,29 +93,20 @@ export const MaintenanceTicketModal = ({ open, onOpenChange }: MaintenanceTicket
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">عنوان المشكلة *</Label>
-            <Input
-              id="title"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="مثال: انقطاع الإنترنت"
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="subscriber">المشترك *</Label>
             <select
               id="subscriber"
               required
               className="w-full px-3 py-2 border rounded-md bg-background"
-              value={formData.subscriber}
-              onChange={(e) => setFormData({ ...formData, subscriber: e.target.value })}
+              value={formData.subscriber_id}
+              onChange={(e) => setFormData({ ...formData, subscriber_id: e.target.value })}
             >
               <option value="">اختر المشترك</option>
-              <option value="1">أحمد محمد - 0501234567</option>
-              <option value="2">فاطمة علي - 0507654321</option>
-              <option value="3">محمد خالد - 0509876543</option>
+              {subscribers.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name} - {sub.phone}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -86,12 +126,13 @@ export const MaintenanceTicketModal = ({ open, onOpenChange }: MaintenanceTicket
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">الوصف</Label>
+            <Label htmlFor="description">الوصف *</Label>
             <textarea
               id="description"
+              required
               className="w-full min-h-[100px] px-3 py-2 border rounded-md bg-background"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={formData.issue_description}
+              onChange={(e) => setFormData({ ...formData, issue_description: e.target.value })}
               placeholder="اشرح المشكلة بالتفصيل..."
             />
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,28 +16,98 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
 interface IssueInvoiceModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export const IssueInvoiceModal = ({ open, onOpenChange }: IssueInvoiceModalProps) => {
-  const [date, setDate] = useState<Date>();
+const invoiceSchema = z.object({
+  subscriber_id: z.string().uuid("يجب اختيار مشترك"),
+  amount: z.number().positive("المبلغ يجب أن يكون أكبر من صفر"),
+  discount: z.number().min(0, "الخصم لا يمكن أن يكون سالباً"),
+  due_date: z.date(),
+  currency: z.enum(["IQD", "USD"]),
+});
+
+export const IssueInvoiceModal = ({ open, onOpenChange, onSuccess }: IssueInvoiceModalProps) => {
+  const [dueDate, setDueDate] = useState<Date>();
+  const [subscribers, setSubscribers] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    subscriber: "",
+    subscriber_id: "",
     amount: "",
     discount: "0",
+    currency: "IQD" as "IQD" | "USD",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.subscriber || !formData.amount || !date) {
-      toast.error("الرجاء ملء جميع الحقول المطلوبة");
-      return;
+  useEffect(() => {
+    if (open) {
+      loadSubscribers();
     }
-    toast.success("تم إصدار الفاتورة بنجاح");
-    onOpenChange(false);
+  }, [open]);
+
+  const loadSubscribers = async () => {
+    const { data } = await supabase
+      .from("subscribers")
+      .select("id, name, phone")
+      .order("name");
+    if (data) setSubscribers(data);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (!dueDate) {
+        toast.error("الرجاء اختيار تاريخ الاستحقاق");
+        return;
+      }
+
+      const validatedData = invoiceSchema.parse({
+        subscriber_id: formData.subscriber_id,
+        amount: parseFloat(formData.amount),
+        discount: parseFloat(formData.discount),
+        due_date: dueDate,
+        currency: formData.currency,
+      });
+
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const netAmount = validatedData.amount - validatedData.discount;
+      
+      // Generate invoice number
+      const invoiceNumber = `INV-${format(new Date(), "yyyyMM")}-${Date.now().toString().slice(-6)}`;
+      
+      const { error } = await supabase.from("invoices").insert([{
+        invoice_number: invoiceNumber,
+        subscriber_id: validatedData.subscriber_id,
+        amount: validatedData.amount,
+        discount: validatedData.discount,
+        net_amount: netAmount,
+        due_date: format(validatedData.due_date, "yyyy-MM-dd"),
+        issue_date: format(new Date(), "yyyy-MM-dd"),
+        currency: validatedData.currency,
+        status: "pending" as const,
+        created_by: user?.id,
+      }]);
+
+      if (error) throw error;
+
+      toast.success("تم إصدار الفاتورة بنجاح");
+      onOpenChange(false);
+      setFormData({ subscriber_id: "", amount: "", discount: "0", currency: "IQD" });
+      setDueDate(undefined);
+      onSuccess?.();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message);
+      } else {
+        toast.error("فشل إصدار الفاتورة");
+      }
+    }
   };
 
   return (
@@ -55,18 +125,33 @@ export const IssueInvoiceModal = ({ open, onOpenChange }: IssueInvoiceModalProps
               id="subscriber"
               required
               className="w-full px-3 py-2 border rounded-md bg-background"
-              value={formData.subscriber}
-              onChange={(e) => setFormData({ ...formData, subscriber: e.target.value })}
+              value={formData.subscriber_id}
+              onChange={(e) => setFormData({ ...formData, subscriber_id: e.target.value })}
             >
               <option value="">اختر المشترك</option>
-              <option value="1">أحمد محمد - 0501234567</option>
-              <option value="2">فاطمة علي - 0507654321</option>
-              <option value="3">محمد خالد - 0509876543</option>
+              {subscribers.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name} - {sub.phone}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">المبلغ (ريال) *</Label>
+            <Label htmlFor="currency">العملة *</Label>
+            <select
+              id="currency"
+              className="w-full px-3 py-2 border rounded-md bg-background"
+              value={formData.currency}
+              onChange={(e) => setFormData({ ...formData, currency: e.target.value as "IQD" | "USD" })}
+            >
+              <option value="IQD">دينار عراقي (ع.د)</option>
+              <option value="USD">دولار أمريكي ($)</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount">المبلغ *</Label>
             <Input
               id="amount"
               required
@@ -80,7 +165,7 @@ export const IssueInvoiceModal = ({ open, onOpenChange }: IssueInvoiceModalProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="discount">الخصم (ريال)</Label>
+            <Label htmlFor="discount">الخصم</Label>
             <Input
               id="discount"
               type="number"
@@ -100,18 +185,18 @@ export const IssueInvoiceModal = ({ open, onOpenChange }: IssueInvoiceModalProps
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-right font-normal",
-                    !date && "text-muted-foreground"
+                    !dueDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="ml-2 h-4 w-4" />
-                  {date ? format(date, "PPP", { locale: ar }) : "اختر التاريخ"}
+                  {dueDate ? format(dueDate, "PPP", { locale: ar }) : "اختر التاريخ"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={date}
-                  onSelect={setDate}
+                  selected={dueDate}
+                  onSelect={setDueDate}
                   initialFocus
                   className="pointer-events-auto"
                 />

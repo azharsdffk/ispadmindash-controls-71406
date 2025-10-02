@@ -136,7 +136,11 @@ const Invoices = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <IssueInvoiceModal open={issueInvoiceOpen} onOpenChange={setIssueInvoiceOpen} />
+      <IssueInvoiceModal 
+        open={issueInvoiceOpen} 
+        onOpenChange={setIssueInvoiceOpen}
+        onSuccess={fetchInvoices}
+      />
     </div>
   );
 };

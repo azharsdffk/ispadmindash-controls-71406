@@ -147,7 +147,11 @@ const Maintenance = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <MaintenanceTicketModal open={maintenanceTicketOpen} onOpenChange={setMaintenanceTicketOpen} />
+      <MaintenanceTicketModal 
+        open={maintenanceTicketOpen} 
+        onOpenChange={setMaintenanceTicketOpen}
+        onSuccess={fetchTickets}
+      />
       <ScheduleTechnicianModal open={scheduleTechOpen} onOpenChange={setScheduleTechOpen} />
     </div>
   );
