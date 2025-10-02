@@ -1,14 +1,14 @@
-import { Preferences } from '@capacitor/preferences';
+import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 
 /**
- * تخزين آمن للـ Tokens
+ * تخزين آمن للـ Tokens باستخدام Keychain (iOS) و Keystore (Android)
  */
 export const secureStorage = {
   /**
    * حفظ Access Token
    */
   setAccessToken: async (token: string) => {
-    await Preferences.set({
+    await SecureStoragePlugin.set({
       key: 'access_token',
       value: token
     });
@@ -18,15 +18,19 @@ export const secureStorage = {
    * الحصول على Access Token
    */
   getAccessToken: async (): Promise<string | null> => {
-    const { value } = await Preferences.get({ key: 'access_token' });
-    return value;
+    try {
+      const { value } = await SecureStoragePlugin.get({ key: 'access_token' });
+      return value;
+    } catch {
+      return null;
+    }
   },
 
   /**
    * حفظ Refresh Token
    */
   setRefreshToken: async (token: string) => {
-    await Preferences.set({
+    await SecureStoragePlugin.set({
       key: 'refresh_token',
       value: token
     });
@@ -36,23 +40,27 @@ export const secureStorage = {
    * الحصول على Refresh Token
    */
   getRefreshToken: async (): Promise<string | null> => {
-    const { value } = await Preferences.get({ key: 'refresh_token' });
-    return value;
+    try {
+      const { value } = await SecureStoragePlugin.get({ key: 'refresh_token' });
+      return value;
+    } catch {
+      return null;
+    }
   },
 
   /**
    * حذف جميع الـ Tokens
    */
   clearTokens: async () => {
-    await Preferences.remove({ key: 'access_token' });
-    await Preferences.remove({ key: 'refresh_token' });
+    await SecureStoragePlugin.remove({ key: 'access_token' });
+    await SecureStoragePlugin.remove({ key: 'refresh_token' });
   },
 
   /**
    * حفظ بيانات المستخدم
    */
   setUserData: async (userData: any) => {
-    await Preferences.set({
+    await SecureStoragePlugin.set({
       key: 'user_data',
       value: JSON.stringify(userData)
     });
@@ -62,14 +70,18 @@ export const secureStorage = {
    * الحصول على بيانات المستخدم
    */
   getUserData: async (): Promise<any | null> => {
-    const { value } = await Preferences.get({ key: 'user_data' });
-    return value ? JSON.parse(value) : null;
+    try {
+      const { value } = await SecureStoragePlugin.get({ key: 'user_data' });
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
   },
 
   /**
    * حذف جميع البيانات
    */
   clearAll: async () => {
-    await Preferences.clear();
+    await SecureStoragePlugin.clear();
   }
 };

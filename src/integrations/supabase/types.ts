@@ -104,13 +104,6 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "complaints_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
-            referencedColumns: ["id"]
-          },
         ]
       }
       connection_history: {
@@ -156,13 +149,6 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "connection_history_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
             referencedColumns: ["id"]
           },
         ]
@@ -573,13 +559,6 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "invoices_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
-            referencedColumns: ["id"]
-          },
         ]
       }
       location_tracking_settings: {
@@ -661,13 +640,6 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "maintenance_tickets_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
             referencedColumns: ["id"]
           },
           {
@@ -836,13 +808,6 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "payments_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
-            referencedColumns: ["id"]
-          },
         ]
       }
       pii_access_logs: {
@@ -882,13 +847,6 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pii_access_logs_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
             referencedColumns: ["id"]
           },
         ]
@@ -1007,13 +965,6 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "schedule_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
-            referencedColumns: ["id"]
-          },
         ]
       }
       subscriber_users: {
@@ -1041,13 +992,6 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subscriber_users_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_with_logging"
             referencedColumns: ["id"]
           },
         ]
@@ -1189,54 +1133,7 @@ export type Database = {
       }
     }
     Views: {
-      subscribers_with_logging: {
-        Row: {
-          address: string | null
-          address_notes: string | null
-          balance: number | null
-          created_at: string | null
-          created_by: string | null
-          email: string | null
-          id: string | null
-          latitude: number | null
-          longitude: number | null
-          name: string | null
-          phone: string | null
-          plan: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          address?: string | null
-          address_notes?: string | null
-          balance?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          email?: string | null
-          id?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          name?: string | null
-          phone?: string | null
-          plan?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          address?: string | null
-          address_notes?: string | null
-          balance?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          email?: string | null
-          id?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          name?: string | null
-          phone?: string | null
-          plan?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       generate_complaint_number: {

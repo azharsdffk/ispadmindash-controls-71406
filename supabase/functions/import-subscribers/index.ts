@@ -1,8 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -24,6 +26,28 @@ function checkRateLimit(userId: string): boolean {
   
   limit.count++;
   return true;
+}
+
+// Sanitize CSV values to prevent CSV injection
+function sanitizeCSVValue(value: string): string {
+  if (!value) return value;
+  
+  // Remove leading characters that could trigger formulas
+  const dangerousChars = ['=', '+', '-', '@', '\t', '\r'];
+  let sanitized = value.trim();
+  
+  while (dangerousChars.some(char => sanitized.startsWith(char))) {
+    sanitized = sanitized.substring(1);
+  }
+  
+  // Remove potential command injection patterns
+  sanitized = sanitized
+    .replace(/\|/g, '')
+    .replace(/;/g, '')
+    .replace(/`/g, '')
+    .replace(/\$/g, '');
+  
+  return sanitized;
 }
 
 function validatePhone(phone: string): boolean {
@@ -92,7 +116,7 @@ serve(async (req) => {
       if (source === 'file' && content) {
         // Parse CSV/Excel file
         const lines = content.split('\n');
-        const headers = lines[0].split(',').map((h: string) => h.trim().toLowerCase());
+        const headers = lines[0].split(',').map((h: string) => sanitizeCSVValue(h.trim().toLowerCase()));
         
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i].trim()) continue;
@@ -101,7 +125,7 @@ serve(async (req) => {
           const subscriber: any = {};
           
           headers.forEach((header: string, index: number) => {
-            const value = values[index]?.trim();
+            const value = sanitizeCSVValue(values[index]?.trim() || '');
             if (header.includes('name') || header.includes('اسم')) {
               subscriber.name = value;
             } else if (header.includes('phone') || header.includes('هاتف')) {
