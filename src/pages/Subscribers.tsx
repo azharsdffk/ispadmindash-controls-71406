@@ -38,6 +38,12 @@ const Subscribers = () => {
 
       if (error) throw error;
       setSubscribers(data || []);
+
+      // Track PII access for compliance
+      if (data && data.length > 0) {
+        const { trackSubscriberView } = await import('@/utils/piiTracking');
+        data.forEach(subscriber => trackSubscriberView(subscriber.id));
+      }
     } catch (error: any) {
       toast.error("فشل تحميل المشتركين: " + error.message);
     } finally {

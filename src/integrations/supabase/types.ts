@@ -338,6 +338,44 @@ export type Database = {
         }
         Relationships: []
       }
+      geofence_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          latitude: number
+          longitude: number
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          latitude: number
+          longitude: number
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geofence_events_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "geofence_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geofence_zones: {
         Row: {
           active: boolean | null
@@ -347,6 +385,9 @@ export type Database = {
           created_by: string | null
           id: string
           name: string
+          notification_message: string | null
+          notify_on_enter: boolean | null
+          notify_on_exit: boolean | null
           radius_meters: number
         }
         Insert: {
@@ -357,6 +398,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           name: string
+          notification_message?: string | null
+          notify_on_enter?: boolean | null
+          notify_on_exit?: boolean | null
           radius_meters: number
         }
         Update: {
@@ -367,6 +411,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           name?: string
+          notification_message?: string | null
+          notify_on_enter?: boolean | null
+          notify_on_exit?: boolean | null
           radius_meters?: number
         }
         Relationships: []
@@ -682,6 +729,33 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          token_hash: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          token_hash: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token_hash?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -736,6 +810,47 @@ export type Database = {
           },
         ]
       }
+      pii_access_logs: {
+        Row: {
+          access_type: string
+          accessed_fields: string[]
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          subscriber_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type: string
+          accessed_fields: string[]
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          subscriber_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string
+          accessed_fields?: string[]
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          subscriber_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pii_access_logs_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -760,6 +875,36 @@ export type Database = {
           phone?: string | null
           updated_at?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      rate_limit_attempts: {
+        Row: {
+          attempt_type: string
+          attempts: number | null
+          blocked_until: string | null
+          first_attempt_at: string | null
+          id: string
+          identifier: string
+          last_attempt_at: string | null
+        }
+        Insert: {
+          attempt_type: string
+          attempts?: number | null
+          blocked_until?: string | null
+          first_attempt_at?: string | null
+          id?: string
+          identifier: string
+          last_attempt_at?: string | null
+        }
+        Update: {
+          attempt_type?: string
+          attempts?: number | null
+          blocked_until?: string | null
+          first_attempt_at?: string | null
+          id?: string
+          identifier?: string
+          last_attempt_at?: string | null
         }
         Relationships: []
       }
