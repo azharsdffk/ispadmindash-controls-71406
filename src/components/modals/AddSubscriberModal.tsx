@@ -24,49 +24,56 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    phone_secondary: "",
     email: "",
     address: "",
-    plan: "basic",
+    username: "",
+    plan: "",
     latitude: "",
     longitude: "",
     addressNotes: "",
+    statusComment: "",
   });
+  
+  const [packages, setPackages] = useState<Array<{ id: string; name: string; speed_mbps: number }>>([]);
+
+  // Load packages on mount
+  useState(() => {
+    loadPackages();
+  });
+  
+  const loadPackages = async () => {
+    const { data } = await supabase
+      .from('packages')
+      .select('id, name, speed_mbps')
+      .eq('active', true)
+      .order('speed_mbps');
+    if (data) setPackages(data);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      // Sanitize inputs
-      const sanitizedData = {
-        name: sanitizeInput(formData.name),
-        phone: sanitizeInput(formData.phone),
-        email: sanitizeInput(formData.email),
-        address: sanitizeInput(formData.address),
-        plan: formData.plan,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-      };
-
-      // Validate form data
-      const validatedData = subscriberFormSchema.parse(sanitizedData);
-
-      // Insert into database
       const { data: { user } } = await supabase.auth.getUser();
       
       const { data: newSubscriber, error } = await supabase.from('subscribers').insert({
-        name: validatedData.name,
-        phone: validatedData.phone,
-        email: validatedData.email || null,
-        address: validatedData.address || null,
-        plan: validatedData.plan || null,
-        latitude: validatedData.latitude || null,
-        longitude: validatedData.longitude || null,
+        name: sanitizeInput(formData.name),
+        phone: sanitizeInput(formData.phone),
+        phone_secondary: formData.phone_secondary ? sanitizeInput(formData.phone_secondary) : null,
+        username: formData.username ? sanitizeInput(formData.username) : null,
+        email: formData.email ? sanitizeInput(formData.email) : null,
+        address: formData.address ? sanitizeInput(formData.address) : null,
+        address_notes: formData.addressNotes ? sanitizeInput(formData.addressNotes) : null,
+        plan: formData.plan || null,
+        status_comment: formData.statusComment ? sanitizeInput(formData.statusComment) : null,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         created_by: user?.id,
       }).select().single();
 
       if (error) throw error;
       
-      // Track PII access for audit
       if (newSubscriber) {
         await trackSubscriberEdit(newSubscriber.id, ['name', 'phone', 'email', 'address']);
       }
@@ -76,21 +83,20 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
       setFormData({ 
         name: "", 
         phone: "", 
+        phone_secondary: "",
         email: "", 
-        address: "", 
-        plan: "basic", 
+        address: "",
+        username: "",
+        plan: "", 
         latitude: "", 
         longitude: "", 
-        addressNotes: "" 
+        addressNotes: "",
+        statusComment: "",
       });
       onSuccess?.();
     } catch (error: any) {
-      if (error?.name === 'ZodError') {
-        toast.error(error.issues[0].message);
-      } else {
-        console.error('Add subscriber error:', error);
-        toast.error("فشل إضافة المشترك");
-      }
+      console.error('Add subscriber error:', error);
+      toast.error("فشل إضافة المشترك: " + (error.message || ''));
     }
   };
 
@@ -127,6 +133,27 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="phone_secondary">رقم هاتف ثاني</Label>
+            <Input
+              id="phone_secondary"
+              type="tel"
+              value={formData.phone_secondary}
+              onChange={(e) => setFormData({ ...formData, phone_secondary: e.target.value })}
+              placeholder="07xxxxxxxxx"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="username">اسم المستخدم</Label>
+            <Input
+              id="username"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              placeholder="اسم المستخدم للمشترك"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="email">البريد الإلكتروني</Label>
             <Input
               id="email"
@@ -155,10 +182,12 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
               value={formData.plan}
               onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
             >
-              <option value="basic">أساسية - 100 ميجا</option>
-              <option value="standard">متوسطة - 250 ميجا</option>
-              <option value="premium">متقدمة - 500 ميجا</option>
-              <option value="ultimate">فائقة - 1 جيجا</option>
+              <option value="">اختر الباقة</option>
+              {packages.map((pkg) => (
+                <option key={pkg.id} value={pkg.name}>
+                  {pkg.name} - {pkg.speed_mbps} ميجابايت
+                </option>
+              ))}
             </select>
           </div>
 
@@ -194,6 +223,16 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
               value={formData.addressNotes}
               onChange={(e) => setFormData({ ...formData, addressNotes: e.target.value })}
               placeholder="معلومات إضافية عن الموقع"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="statusComment">التعليق على حالة المشترك</Label>
+            <Input
+              id="statusComment"
+              value={formData.statusComment}
+              onChange={(e) => setFormData({ ...formData, statusComment: e.target.value })}
+              placeholder="حالة المشترك أو أي ملاحظات"
             />
           </div>
 

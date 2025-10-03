@@ -3,10 +3,11 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, UserPlus, MapPin, Phone, Mail, Edit, Trash2, Shield } from "lucide-react";
+import { Users, UserPlus, MapPin, Phone, Mail, Edit, Trash2, Shield, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { SubscriberAuditModal } from "@/components/modals/SubscriberAuditModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -25,9 +26,16 @@ type Subscriber = {
 const Subscribers = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
+  const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [selectedSubscriber, setSelectedSubscriber] = useState<{ id: string; name: string } | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin, isAccountant, isTechnician, loading: roleLoading } = useUserRole();
+
+  const openAuditModal = (subscriber: Subscriber) => {
+    setSelectedSubscriber({ id: subscriber.id, name: subscriber.name });
+    setAuditModalOpen(true);
+  };
 
   const fetchSubscribers = async () => {
     try {
@@ -173,6 +181,14 @@ const Subscribers = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => openAuditModal(subscriber)}
+                                title="سجل التدقيق"
+                              >
+                                <History className="h-4 w-4 text-info" />
+                              </Button>
                               <Button variant="ghost" size="icon">
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -203,6 +219,14 @@ const Subscribers = () => {
         onOpenChange={setAddSubscriberOpen}
         onSuccess={fetchSubscribers}
       />
+      {selectedSubscriber && (
+        <SubscriberAuditModal
+          open={auditModalOpen}
+          onOpenChange={setAuditModalOpen}
+          subscriberId={selectedSubscriber.id}
+          subscriberName={selectedSubscriber.name}
+        />
+      )}
     </div>
   );
 };

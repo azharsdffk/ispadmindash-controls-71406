@@ -967,6 +967,56 @@ export type Database = {
           },
         ]
       }
+      subscriber_audit_trail: {
+        Row: {
+          action: string
+          changed_at: string | null
+          changed_by: string | null
+          field_name: string | null
+          id: string
+          ip_address: unknown | null
+          new_value: string | null
+          notes: string | null
+          old_value: string | null
+          subscriber_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          changed_at?: string | null
+          changed_by?: string | null
+          field_name?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_value?: string | null
+          notes?: string | null
+          old_value?: string | null
+          subscriber_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          field_name?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_value?: string | null
+          notes?: string | null
+          old_value?: string | null
+          subscriber_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriber_audit_trail_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriber_users: {
         Row: {
           created_at: string | null
@@ -1009,8 +1059,11 @@ export type Database = {
           longitude: number | null
           name: string
           phone: string
+          phone_secondary: string | null
           plan: string | null
+          status_comment: string | null
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           address?: string | null
@@ -1024,8 +1077,11 @@ export type Database = {
           longitude?: number | null
           name: string
           phone: string
+          phone_secondary?: string | null
           plan?: string | null
+          status_comment?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           address?: string | null
@@ -1039,8 +1095,11 @@ export type Database = {
           longitude?: number | null
           name?: string
           phone?: string
+          phone_secondary?: string | null
           plan?: string | null
+          status_comment?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
