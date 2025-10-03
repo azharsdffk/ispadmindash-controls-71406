@@ -121,13 +121,15 @@ const Dashboard = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="shadow-md">
+              <Card className="stat-card-hover animate-fade-in border-l-4 border-l-primary">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">إجمالي المشتركين</CardTitle>
-                  <Users className="h-5 w-5 text-primary" />
+                  <div className="p-3 rounded-lg bg-gradient-primary">
+                    <Users className="h-5 w-5 text-primary-foreground" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{stats.totalSubscribers}</div>
+                  <div className="text-3xl font-bold text-gradient-primary">{stats.totalSubscribers}</div>
                   <p className="text-xs text-success flex items-center gap-1 mt-2">
                     <TrendingUp className="h-3 w-3" />
                     {stats.activeSubscribers} نشط
@@ -135,23 +137,27 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-md">
+              <Card className="stat-card-hover animate-fade-in border-l-4 border-l-success" style={{animationDelay: '0.1s'}}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">الإيرادات الكلية</CardTitle>
-                  <DollarSign className="h-5 w-5 text-success" />
+                  <div className="p-3 rounded-lg bg-gradient-success">
+                    <DollarSign className="h-5 w-5 text-success-foreground" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{stats.totalRevenue.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-gradient-success">{stats.totalRevenue.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground mt-2">
                     {stats.pendingInvoices} فاتورة معلقة
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="shadow-md">
+              <Card className="stat-card-hover animate-fade-in border-l-4 border-l-warning" style={{animationDelay: '0.2s'}}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">تذاكر الصيانة</CardTitle>
-                  <Wrench className="h-5 w-5 text-warning" />
+                  <div className="p-3 rounded-lg bg-gradient-warning">
+                    <Wrench className="h-5 w-5 text-warning-foreground" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{stats.openTickets}</div>
@@ -166,9 +172,11 @@ const Dashboard = () => {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Monthly Revenue Chart */}
-              <Card>
+              <Card className="animate-slide-up glass-effect">
                 <CardHeader>
-                  <CardTitle>الإيرادات الشهرية</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    📈 الإيرادات الشهرية
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -185,9 +193,11 @@ const Dashboard = () => {
               </Card>
 
               {/* Subscribers by Plan */}
-              <Card>
+              <Card className="animate-slide-up glass-effect" style={{animationDelay: '0.1s'}}>
                 <CardHeader>
-                  <CardTitle>توزيع المشتركين حسب الباقة</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    📊 توزيع المشتركين حسب الباقة
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -213,9 +223,11 @@ const Dashboard = () => {
               </Card>
 
               {/* Tickets by Status */}
-              <Card className="lg:col-span-2">
+              <Card className="lg:col-span-2 animate-slide-up glass-effect" style={{animationDelay: '0.2s'}}>
                 <CardHeader>
-                  <CardTitle>حالة تذاكر الصيانة</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    🎫 حالة تذاكر الصيانة
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>

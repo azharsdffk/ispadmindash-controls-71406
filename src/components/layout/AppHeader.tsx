@@ -17,11 +17,11 @@ interface AppHeaderProps {
 export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   const { signOut, user } = useAuth();
   return (
-    <header className="h-16 border-b bg-gradient-to-r from-primary to-primary-hover text-primary-foreground shadow-md sticky top-0 z-50">
-      <div className="flex items-center justify-between h-full px-6">
+    <header className="h-16 border-b bg-gradient-primary text-primary-foreground shadow-lg sticky top-0 z-50 backdrop-blur-md">
+      <div className="flex items-center justify-between h-full px-6 animate-fade-in">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
-            <span className="text-2xl font-bold">ISP</span>
+          <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-110 transition-transform duration-300 shadow-glow">
+            <span className="text-2xl font-bold animate-pulse-glow">ISP</span>
           </div>
           <div>
             <h1 className="text-xl font-bold">نظام إدارة الإنترنت</h1>
