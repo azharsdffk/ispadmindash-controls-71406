@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,11 +37,6 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
   
   const [packages, setPackages] = useState<Array<{ id: string; name: string; speed_mbps: number }>>([]);
 
-  // Load packages on mount
-  useState(() => {
-    loadPackages();
-  });
-  
   const loadPackages = async () => {
     const { data } = await supabase
       .from('packages')
@@ -50,6 +45,11 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
       .order('speed_mbps');
     if (data) setPackages(data);
   };
+
+  // Load packages on mount
+  useEffect(() => {
+    loadPackages();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
