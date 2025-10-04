@@ -17,10 +17,14 @@ type Subscriber = {
   id: string;
   name: string;
   phone: string;
+  phone_secondary?: string;
+  username?: string;
   email?: string;
   address?: string;
   plan?: string;
   balance: number;
+  status_comment?: string;
+  address_notes?: string;
 };
 
 const Subscribers = () => {
@@ -141,23 +145,45 @@ const Subscribers = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>الاسم</TableHead>
-                        <TableHead>الهاتف</TableHead>
+                        <TableHead>اسم المستخدم</TableHead>
+                        <TableHead>الهاتف الأساسي</TableHead>
+                        <TableHead>الهاتف الثاني</TableHead>
                         <TableHead>البريد</TableHead>
                         <TableHead>العنوان</TableHead>
                         <TableHead>الخطة</TableHead>
+                        <TableHead>الحالة</TableHead>
                         <TableHead>الرصيد</TableHead>
                         <TableHead>الإجراءات</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {subscribers.map((subscriber) => (
-                        <TableRow key={subscriber.id}>
+                        <TableRow key={subscriber.id} className="hover:bg-muted/50 transition-colors">
                           <TableCell className="font-medium">{subscriber.name}</TableCell>
+                          <TableCell>
+                            {subscriber.username ? (
+                              <span className="text-sm px-2 py-1 bg-accent/10 rounded-md">
+                                {subscriber.username}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4 text-muted-foreground" />
                               {subscriber.phone}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {subscriber.phone_secondary ? (
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-info" />
+                                {subscriber.phone_secondary}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             {subscriber.email && (
@@ -171,12 +197,31 @@ const Subscribers = () => {
                             {subscriber.address && (
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                                {subscriber.address}
+                                <span className="max-w-[150px] truncate" title={subscriber.address}>
+                                  {subscriber.address}
+                                </span>
                               </div>
                             )}
                           </TableCell>
-                          <TableCell>{subscriber.plan || "-"}</TableCell>
-                          <TableCell className={subscriber.balance < 0 ? "text-destructive" : "text-success"}>
+                          <TableCell>
+                            {subscriber.plan ? (
+                              <span className="px-2 py-1 bg-gradient-primary text-primary-foreground rounded-md text-sm font-medium">
+                                {subscriber.plan}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {subscriber.status_comment ? (
+                              <span className="text-sm text-muted-foreground max-w-[120px] truncate block" title={subscriber.status_comment}>
+                                {subscriber.status_comment}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className={subscriber.balance < 0 ? "text-destructive font-bold" : "text-success font-bold"}>
                             {subscriber.balance.toLocaleString()} ع.د
                           </TableCell>
                           <TableCell>
@@ -186,19 +231,29 @@ const Subscribers = () => {
                                 size="icon"
                                 onClick={() => openAuditModal(subscriber)}
                                 title="سجل التدقيق"
+                                className="hover:bg-info/10"
                               >
                                 <History className="h-4 w-4 text-info" />
-                              </Button>
-                              <Button variant="ghost" size="icon">
-                                <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
                                 variant="ghost" 
                                 size="icon"
-                                onClick={() => handleDelete(subscriber.id)}
+                                title="تعديل"
+                                className="hover:bg-primary/10"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Edit className="h-4 w-4 text-primary" />
                               </Button>
+                              {isAdmin && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleDelete(subscriber.id)}
+                                  title="حذف"
+                                  className="hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
