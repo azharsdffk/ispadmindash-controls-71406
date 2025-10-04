@@ -338,6 +338,39 @@ export type Database = {
         }
         Relationships: []
       }
+      external_imports: {
+        Row: {
+          created_at: string | null
+          id: string
+          imported_at: string | null
+          imported_by: string | null
+          raw_data: Json | null
+          records_processed: number | null
+          source: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          raw_data?: Json | null
+          records_processed?: number | null
+          source: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          raw_data?: Json | null
+          records_processed?: number | null
+          source?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       geofence_events: {
         Row: {
           created_at: string | null
