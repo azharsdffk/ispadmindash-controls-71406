@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -47,19 +47,34 @@ export const AppSidebar = () => {
         ))}
         
         {isAdmin && (
-          <NavLink
-            to="/roles"
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
-              )
-            }
-          >
-            <Shield className="h-5 w-5 flex-shrink-0" />
-            <span>إدارة الأدوار</span>
-          </NavLink>
+          <>
+            <NavLink
+              to="/roles"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
+                )
+              }
+            >
+              <Shield className="h-5 w-5 flex-shrink-0" />
+              <span>إدارة الأدوار</span>
+            </NavLink>
+            <NavLink
+              to="/permissions"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
+                )
+              }
+            >
+              <Key className="h-5 w-5 flex-shrink-0" />
+              <span>إدارة الصلاحيات</span>
+            </NavLink>
+          </>
         )}
       </nav>
     </aside>

@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import Employees from "./pages/Employees";
 import DataImport from "./pages/DataImport";
 import RoleManagement from "./pages/RoleManagement";
+import PermissionsManagement from "./pages/PermissionsManagement";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
             <Route path="/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
             <Route path="/roles" element={<ProtectedRoute><RoleManagement /></ProtectedRoute>} />
+            <Route path="/permissions" element={<ProtectedRoute><PermissionsManagement /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
