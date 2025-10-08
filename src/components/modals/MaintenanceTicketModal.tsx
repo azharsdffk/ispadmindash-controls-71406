@@ -13,9 +13,16 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { QuickSubscriberLookup } from "./QuickSubscriberLookup";
-import { Search, MapPin, User, Phone, Wifi } from "lucide-react";
+import { Search, MapPin, User, Phone, Wifi, Download, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MaintenanceTicketModalProps {
   open: boolean;
@@ -39,6 +46,11 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
     priority: "medium",
     issue_description: "",
   });
+  
+  // External import states
+  const [serviceId, setServiceId] = useState("");
+  const [dataSource, setDataSource] = useState<"sas" | "national_project">("sas");
+  const [importLoading, setImportLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -76,6 +88,59 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
   const handleSubscriberSelected = (subscriber: any) => {
     setSelectedSubscriberData(subscriber);
     setFormData({ ...formData, subscriber_id: subscriber.id });
+  };
+
+  const handleImportSubscriber = async () => {
+    if (!serviceId.trim()) {
+      toast.error("الرجاء إدخال رقم الخدمة");
+      return;
+    }
+
+    setImportLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("يجب تسجيل الدخول");
+
+      const response = await supabase.functions.invoke('import-subscribers', {
+        body: {
+          source: dataSource === "sas" ? "sas" : "national_project",
+          url: serviceId,
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      const { imported, failed, errors } = response.data;
+      
+      if (imported > 0) {
+        toast.success(`تم استيراد ${imported} مشترك بنجاح`);
+        
+        // Refresh subscribers list
+        await loadSubscribers();
+        
+        // Try to find the imported subscriber
+        const { data: foundSubscribers } = await supabase
+          .from('subscribers')
+          .select('*')
+          .or(`phone.eq.${serviceId},username.eq.${serviceId}`)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (foundSubscribers && foundSubscribers.length > 0) {
+          const foundSubscriber = foundSubscribers[0];
+          setSelectedSubscriberData(foundSubscriber);
+          setFormData({ ...formData, subscriber_id: foundSubscriber.id });
+          toast.success("تم تحديد المشترك تلقائياً");
+        }
+      } else {
+        toast.error(`فشل الاستيراد: ${errors?.[0] || 'خطأ غير معروف'}`);
+      }
+    } catch (error: any) {
+      console.error('Import error:', error);
+      toast.error("فشل استيراد البيانات: " + (error.message || 'خطأ في الاتصال'));
+    } finally {
+      setImportLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,6 +196,66 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* سحب بيانات المشتركين من المصادر الخارجية */}
+            <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    سحب بيانات المشتركين
+                  </Label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="md:col-span-1">
+                    <Label htmlFor="serviceId">رقم الخدمة</Label>
+                    <Input
+                      id="serviceId"
+                      value={serviceId}
+                      onChange={(e) => setServiceId(e.target.value)}
+                      placeholder="أدخل رقم الخدمة"
+                      disabled={importLoading}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="source">المصدر</Label>
+                    <Select value={dataSource} onValueChange={(v) => setDataSource(v as "sas" | "national_project")}>
+                      <SelectTrigger id="source" disabled={importLoading}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sas">SAS</SelectItem>
+                        <SelectItem value="national_project">المشروع الوطني</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button
+                      type="button"
+                      onClick={handleImportSubscriber}
+                      disabled={importLoading || !serviceId.trim()}
+                      className="w-full"
+                      variant="default"
+                    >
+                      {importLoading ? (
+                        <>
+                          <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                          جاري السحب...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="ml-2 h-4 w-4" />
+                          سحب البيانات
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* بحث سريع عن مشترك */}
             <Card className="border-primary/20">
               <CardContent className="pt-6">
