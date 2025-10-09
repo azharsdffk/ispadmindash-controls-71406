@@ -1,4 +1,4 @@
-import { Settings, Bell, User, LogOut } from "lucide-react";
+import { Settings, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface AppHeaderProps {
   onOpenSettings: () => void;
@@ -30,15 +31,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-foreground hover:bg-white/20 relative"
-            title="الإشعارات"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
-          </Button>
+          <NotificationBell />
 
           <Button
             variant="ghost"
