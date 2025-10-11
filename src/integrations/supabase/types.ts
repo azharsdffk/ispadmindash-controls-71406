@@ -621,6 +621,39 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          created_at: string | null
+          email: string
+          error_message: string | null
+          id: string
+          ip_address: unknown | null
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       maintenance_tickets: {
         Row: {
           created_at: string | null
@@ -680,6 +713,13 @@ export type Database = {
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_tickets_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1278,9 +1318,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_packages: {
+        Row: {
+          active: boolean | null
+          description: string | null
+          id: string | null
+          name: string | null
+          name_en: string | null
+          speed_mbps: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          name_en?: string | null
+          speed_mbps?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          name_en?: string | null
+          speed_mbps?: number | null
+        }
+        Relationships: []
+      }
+      technicians_public: {
+        Row: {
+          available: boolean | null
+          id: string | null
+          name: string | null
+          specialization: string | null
+        }
+        Insert: {
+          available?: boolean | null
+          id?: string | null
+          name?: string | null
+          specialization?: string | null
+        }
+        Update: {
+          available?: boolean | null
+          id?: string | null
+          name?: string | null
+          specialization?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      check_password_reset_rate_limit: {
+        Args: { p_identifier: string }
+        Returns: boolean
+      }
       generate_complaint_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1307,6 +1398,17 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_login_attempt: {
+        Args: {
+          p_email: string
+          p_error_message?: string
+          p_ip_address: unknown
+          p_success: boolean
+          p_user_agent: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       process_payment_transaction: {
         Args: {
