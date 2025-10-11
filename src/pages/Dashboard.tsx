@@ -176,33 +176,37 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col" dir="rtl">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
       
       <div className="flex flex-1 w-full">
         <AppSidebar />
         
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-6 overflow-y-auto custom-scrollbar">
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between animate-fade-in">
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <div className="space-y-1">
+                <h1 className="text-4xl font-bold text-gradient-primary drop-shadow-sm">
                   لوحة التحكم الاحترافية
                 </h1>
-                <p className="text-muted-foreground mt-1">مرحباً بك في نظام إدارة مزود خدمة الإنترنت المتطور</p>
+                <p className="text-muted-foreground text-lg">مرحباً بك في نظام إدارة مزود خدمة الإنترنت المتطور 🚀</p>
+              </div>
+              <div className="glass-effect px-6 py-3 rounded-xl">
+                <p className="text-sm text-muted-foreground">آخر تحديث</p>
+                <p className="font-bold text-foreground">{new Date().toLocaleDateString('ar-IQ')}</p>
               </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard
                 title="إجمالي المشتركين"
                 value={stats.totalSubscribers}
                 icon={Users}
-                gradient="bg-gradient-to-br from-blue-600 to-blue-400"
+                gradient="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400"
                 borderColor="border-l-blue-600"
                 subtitle={
-                  <p className="text-xs text-green-600 flex items-center gap-1">
+                  <p className="text-xs text-green-600 flex items-center gap-1 font-medium">
                     <TrendingUp className="h-3 w-3" />
                     {stats.activeSubscribers} نشط
                   </p>
@@ -213,10 +217,10 @@ const Dashboard = () => {
                 title="الإيرادات الكلية"
                 value={`${stats.totalRevenue.toLocaleString()} د.ع`}
                 icon={DollarSign}
-                gradient="bg-gradient-to-br from-green-600 to-green-400"
+                gradient="bg-gradient-to-br from-green-600 via-green-500 to-emerald-400"
                 borderColor="border-l-green-600"
                 subtitle={
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground font-medium">
                     {stats.pendingInvoices} فاتورة معلقة
                   </p>
                 }
@@ -227,10 +231,10 @@ const Dashboard = () => {
                 title="تذاكر نشطة"
                 value={stats.openTickets}
                 icon={Wrench}
-                gradient="bg-gradient-to-br from-orange-600 to-orange-400"
+                gradient="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400"
                 borderColor="border-l-orange-600"
                 subtitle={
-                  <p className="text-xs text-red-600 flex items-center gap-1">
+                  <p className="text-xs text-red-600 flex items-center gap-1 font-medium">
                     <AlertCircle className="h-3 w-3" />
                     {stats.urgentTickets} عاجلة
                   </p>
@@ -242,10 +246,10 @@ const Dashboard = () => {
                 title="تذاكر محلولة"
                 value={stats.completedTickets}
                 icon={CheckCircle2}
-                gradient="bg-gradient-to-br from-purple-600 to-purple-400"
+                gradient="bg-gradient-to-br from-purple-600 via-purple-500 to-violet-400"
                 borderColor="border-l-purple-600"
                 subtitle={
-                  <p className="text-xs text-green-600 flex items-center gap-1">
+                  <p className="text-xs text-green-600 flex items-center gap-1 font-medium">
                     <TrendingUp className="h-3 w-3" />
                     +15% هذا الشهر
                   </p>

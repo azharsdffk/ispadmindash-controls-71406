@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Enhanced Professional Design System */
+
 @layer utilities {
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-[1.02];
