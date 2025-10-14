@@ -44,10 +44,10 @@ export default function PermissionsManagement() {
   }, [hasPermission, permissionsLoading, navigate]);
 
   useEffect(() => {
-    if (hasPermission('manage_roles')) {
+    if (!permissionsLoading && hasPermission('manage_roles')) {
       fetchData();
     }
-  }, [hasPermission]);
+  }, [permissionsLoading]);
 
   const fetchData = async () => {
     setLoading(true);
