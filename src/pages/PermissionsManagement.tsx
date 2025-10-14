@@ -106,7 +106,13 @@ export default function PermissionsManagement() {
 
         if (error) throw error;
 
-        currentPerms.delete(permissionId);
+        const newPerms = new Set(currentPerms);
+        newPerms.delete(permissionId);
+        
+        const newRolePermissions = new Map(rolePermissions);
+        newRolePermissions.set(role, newPerms);
+        setRolePermissions(newRolePermissions);
+        
         toast.success('تم إزالة الصلاحية بنجاح');
       } else {
         // إضافة الصلاحية
@@ -114,16 +120,35 @@ export default function PermissionsManagement() {
           .from('role_permissions')
           .insert([{ role, permission_id: permissionId }]);
 
-        if (error) throw error;
+        if (error) {
+          // تحقق من التكرار
+          if (error.code === '23505') {
+            toast.info('هذه الصلاحية موجودة مسبقاً');
+            // تحديث الحالة المحلية فقط
+            const newPerms = new Set(currentPerms);
+            newPerms.add(permissionId);
+            const newRolePermissions = new Map(rolePermissions);
+            newRolePermissions.set(role, newPerms);
+            setRolePermissions(newRolePermissions);
+            return;
+          }
+          throw error;
+        }
 
-        currentPerms.add(permissionId);
+        const newPerms = new Set(currentPerms);
+        newPerms.add(permissionId);
+        
+        const newRolePermissions = new Map(rolePermissions);
+        newRolePermissions.set(role, newPerms);
+        setRolePermissions(newRolePermissions);
+        
         toast.success('تم إضافة الصلاحية بنجاح');
       }
-
-      setRolePermissions(new Map(rolePermissions));
     } catch (error) {
       console.error('Error toggling permission:', error);
       toast.error('حدث خطأ أثناء تحديث الصلاحية');
+      // إعادة تحميل البيانات في حالة الخطأ
+      fetchData();
     }
   };
 
