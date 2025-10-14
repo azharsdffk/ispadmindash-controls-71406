@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { SettingsModal } from "@/components/modals/SettingsModal";
@@ -12,6 +13,7 @@ import { AIChatbot } from "@/components/ai/AIChatbot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   UserPlus,
   FileText,
@@ -28,6 +30,8 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { isAccountant, isAdmin, loading } = useUserRole();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
   const [issueInvoiceOpen, setIssueInvoiceOpen] = useState(false);
@@ -35,6 +39,13 @@ const Index = () => {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
+
+  // إعادة توجيه المحاسب تلقائياً إلى لوحته الخاصة
+  useEffect(() => {
+    if (!loading && isAccountant && !isAdmin) {
+      navigate('/accountant', { replace: true });
+    }
+  }, [isAccountant, isAdmin, loading, navigate]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -75,6 +86,14 @@ const Index = () => {
   const handleDiscount = () => {
     toast.info("تطبيق خصم على العنصر المحدد");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
