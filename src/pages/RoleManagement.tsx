@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, AlertCircle } from "lucide-react";
+import { Shield, AlertCircle, UserPlus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { AddUserModal } from "@/components/modals/AddUserModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -22,6 +23,7 @@ type UserWithRoles = {
 
 const RoleManagement = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [addUserOpen, setAddUserOpen] = useState(false);
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin, loading: roleLoading } = useUserRole();
@@ -117,9 +119,18 @@ const RoleManagement = () => {
         
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center gap-3">
-              <Shield className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold">إدارة الأدوار والصلاحيات</h1>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield className="h-8 w-8 text-primary" />
+                <div>
+                  <h1 className="text-3xl font-bold">إدارة المستخدمين والصلاحيات</h1>
+                  <p className="text-muted-foreground mt-1">إنشاء حسابات جديدة وإدارة أدوار المستخدمين</p>
+                </div>
+              </div>
+              <Button onClick={() => setAddUserOpen(true)} className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                إضافة مستخدم جديد
+              </Button>
             </div>
 
             <Card className="border-warning bg-warning/5">
@@ -211,6 +222,11 @@ const RoleManagement = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <AddUserModal 
+        open={addUserOpen} 
+        onOpenChange={setAddUserOpen}
+        onUserCreated={fetchUsers}
+      />
     </div>
   );
 };
