@@ -260,7 +260,10 @@ export default function UserAccountsManagement() {
                           <Badge variant="secondary">{user.login_count}</Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ar })}
+                          {user.created_at 
+                            ? format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ar })
+                            : '-'
+                          }
                         </TableCell>
                         <TableCell>
                           <Select
