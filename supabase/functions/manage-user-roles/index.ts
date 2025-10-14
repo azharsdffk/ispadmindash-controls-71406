@@ -71,12 +71,16 @@ serve(async (req) => {
         .from('user_roles')
         .select('*');
 
-      const usersWithData = authUsers.users.map(authUser => ({
-        id: authUser.id,
-        email: authUser.email,
-        profile: profiles?.find(p => p.id === authUser.id),
-        roles: userRoles?.filter(r => r.user_id === authUser.id).map(r => r.role) || []
-      }));
+      const usersWithData = authUsers.users.map(authUser => {
+        const profile = profiles?.find(p => p.id === authUser.id);
+        return {
+          id: authUser.id,
+          email: authUser.email || '',
+          full_name: profile?.full_name || 'غير محدد',
+          created_at: authUser.created_at,
+          roles: userRoles?.filter(r => r.user_id === authUser.id).map(r => r.role) || []
+        };
+      });
 
       return new Response(
         JSON.stringify({ users: usersWithData }),
