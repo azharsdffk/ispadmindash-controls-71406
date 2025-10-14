@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import AccountantDashboard from "./pages/AccountantDashboard";
 import CustomerPortal from "./pages/CustomerPortal";
 import Plans from "./pages/Plans";
 import Notifications from "./pages/Notifications";
@@ -39,6 +40,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/accountant" element={<ProtectedRoute allowedRoles={['accountant', 'admin']}><AccountantDashboard /></ProtectedRoute>} />
             {/* صفحات المحاسب والمدير */}
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Dashboard /></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Invoices /></ProtectedRoute>} />
