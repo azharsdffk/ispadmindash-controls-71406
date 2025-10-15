@@ -13,10 +13,10 @@ const menuItems: Array<{
 }> = [
   { icon: Home, label: "الرئيسية", path: "/", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
   { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard", permission: "view_dashboard", roles: ['admin'] },
-  { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: null, roles: ['accountant'] },
+  { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: null, roles: ['admin', 'accountant'] },
   { icon: User, label: "بوابة العميل", path: "/portal", permission: null, roles: ['admin'] },
-  { icon: Package, label: "الباقات", path: "/plans", permission: "view_packages", roles: ['admin', 'accountant'] },
-  { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin', 'accountant'] },
+  { icon: Package, label: "الباقات", path: "/plans", permission: "view_packages", roles: ['admin'] },
+  { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin'] },
   { icon: MapPin, label: "التتبع", path: "/tracking", permission: "view_location_tracking", roles: ['admin'] },
   { icon: Calendar, label: "الجدولة", path: "/schedule", permission: "view_schedule", roles: ['admin'] },
   { icon: Box, label: "المخزون", path: "/inventory", permission: "view_inventory", roles: ['admin', 'accountant'] },
