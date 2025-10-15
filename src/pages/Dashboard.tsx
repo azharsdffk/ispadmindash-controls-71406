@@ -1,16 +1,18 @@
 import { AppHeader } from "@/components/layout/AppHeader";
+import { useNavigate } from "react-router-dom";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import { Users, TrendingUp, DollarSign, Wrench, AlertCircle, Activity, CheckCircle2, Clock } from "lucide-react";
+import { Users, TrendingUp, DollarSign, Wrench, AlertCircle, Activity, CheckCircle2, Clock, Calculator, ArrowLeft } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { toast } from "sonner";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [stats, setStats] = useState({
     totalSubscribers: 0,
@@ -197,6 +199,29 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* Quick Access to Accountant Dashboard */}
+            <Card 
+              className="glass-effect hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-primary/20 hover:border-primary/40"
+              onClick={() => navigate('/accountant')}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600">
+                      <Calculator className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">لوحة المحاسب المتقدمة</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        الوصول إلى النظام المحاسبي الاحترافي - التقارير، القيود، دفتر الأستاذ
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowLeft className="h-6 w-6 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard
@@ -335,7 +360,10 @@ const Dashboard = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => {
+                        const percentValue = typeof percent === 'number' ? percent : 0;
+                        return `${name} ${(percentValue * 100).toFixed(0)}%`;
+                      }}
                       outerRadius={90}
                       fill="#8884d8"
                       dataKey="value"
