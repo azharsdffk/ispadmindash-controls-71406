@@ -13,6 +13,8 @@ import { AccountingEntries } from '@/components/accountant/AccountingEntries';
 import { GeneralLedger } from '@/components/accountant/GeneralLedger';
 import { FinancialCharts } from '@/components/accountant/FinancialCharts';
 import { AdvancedReports } from '@/components/accountant/AdvancedReports';
+import { BalanceSheet } from '@/components/accountant/BalanceSheet';
+import { AccountingNotifications } from '@/components/accountant/AccountingNotifications';
 
 export default function AccountantDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -219,16 +221,20 @@ export default function AccountantDashboard() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-6 lg:w-auto">
+              <TabsList className="grid w-full grid-cols-7 lg:w-auto">
                 <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
                 <TabsTrigger value="financial">التحليل المالي</TabsTrigger>
                 <TabsTrigger value="entries">القيود المحاسبية</TabsTrigger>
                 <TabsTrigger value="ledger">دفتر الأستاذ</TabsTrigger>
+                <TabsTrigger value="balance">الميزانية</TabsTrigger>
                 <TabsTrigger value="operations">العمليات</TabsTrigger>
                 <TabsTrigger value="reports">التقارير</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
+                {/* الإشعارات المحاسبية */}
+                <AccountingNotifications />
+
                 {/* بطاقات الإحصائيات الرئيسية */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
@@ -627,6 +633,10 @@ export default function AccountantDashboard() {
 
               <TabsContent value="ledger" className="space-y-4">
                 <GeneralLedger />
+              </TabsContent>
+
+              <TabsContent value="balance" className="space-y-4">
+                <BalanceSheet />
               </TabsContent>
 
               <TabsContent value="operations" className="space-y-4">
