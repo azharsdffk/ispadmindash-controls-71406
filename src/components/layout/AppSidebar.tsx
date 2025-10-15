@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole, type AppRole } from "@/hooks/useUserRole";
@@ -81,6 +81,23 @@ export const AppSidebar = () => {
             </NavLink>
           );
         })}
+        
+        {isAccountant && (
+          <NavLink
+            to="/accountant/permissions"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
+              )
+            }
+          >
+            <FileCheck className="h-5 w-5 flex-shrink-0" />
+            <span>صلاحياتي</span>
+          </NavLink>
+        )}
+        
         
         {isAdmin && (
           <>

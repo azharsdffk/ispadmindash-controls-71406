@@ -24,6 +24,7 @@ import Employees from "./pages/Employees";
 import DataImport from "./pages/DataImport";
 import RoleManagement from "./pages/RoleManagement";
 import PermissionsManagement from "./pages/PermissionsManagement";
+import AccountantPermissions from "./pages/AccountantPermissions";
 import UserAccountsManagement from "./pages/UserAccountsManagement";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/accountant" element={<ProtectedRoute allowedRoles={['accountant', 'admin']}><AccountantDashboard /></ProtectedRoute>} />
+            <Route path="/accountant/permissions" element={<ProtectedRoute allowedRoles={['accountant']}><AccountantPermissions /></ProtectedRoute>} />
             {/* صفحات المحاسب والمدير */}
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Dashboard /></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Invoices /></ProtectedRoute>} />
