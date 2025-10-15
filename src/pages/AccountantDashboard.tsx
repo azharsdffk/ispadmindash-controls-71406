@@ -9,6 +9,10 @@ import { formatCurrency } from '@/lib/currency';
 import { DollarSign, TrendingUp, TrendingDown, FileText, CreditCard, Package, AlertCircle, Wallet, ArrowUpRight, ArrowDownRight, PieChart, BarChart3, Receipt, Calculator, Users, Clock } from 'lucide-react';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AccountingEntries } from '@/components/accountant/AccountingEntries';
+import { GeneralLedger } from '@/components/accountant/GeneralLedger';
+import { FinancialCharts } from '@/components/accountant/FinancialCharts';
+import { AdvancedReports } from '@/components/accountant/AdvancedReports';
 
 export default function AccountantDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -215,9 +219,11 @@ export default function AccountantDashboard() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+              <TabsList className="grid w-full grid-cols-6 lg:w-auto">
                 <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
                 <TabsTrigger value="financial">التحليل المالي</TabsTrigger>
+                <TabsTrigger value="entries">القيود المحاسبية</TabsTrigger>
+                <TabsTrigger value="ledger">دفتر الأستاذ</TabsTrigger>
                 <TabsTrigger value="operations">العمليات</TabsTrigger>
                 <TabsTrigger value="reports">التقارير</TabsTrigger>
               </TabsList>
@@ -564,6 +570,8 @@ export default function AccountantDashboard() {
               </TabsContent>
 
               <TabsContent value="financial" className="space-y-4">
+                <FinancialCharts />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader>
@@ -611,6 +619,14 @@ export default function AccountantDashboard() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="entries" className="space-y-4">
+                <AccountingEntries />
+              </TabsContent>
+
+              <TabsContent value="ledger" className="space-y-4">
+                <GeneralLedger />
               </TabsContent>
 
               <TabsContent value="operations" className="space-y-4">
@@ -669,60 +685,7 @@ export default function AccountantDashboard() {
               </TabsContent>
 
               <TabsContent value="reports" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>التقارير المالية السريعة</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 border rounded-lg space-y-2">
-                        <h3 className="font-semibold text-lg">قائمة الدخل المبسطة</h3>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between">
-                            <span>الإيرادات:</span>
-                            <span className="text-green-600 font-medium">{formatCurrency(stats.totalRevenue, 'IQD')}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>المصروفات:</span>
-                            <span className="text-red-600 font-medium">{formatCurrency(stats.totalExpenses, 'IQD')}</span>
-                          </div>
-                          <div className="flex justify-between pt-2 border-t font-bold">
-                            <span>صافي الربح:</span>
-                            <span className={stats.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}>
-                              {formatCurrency(stats.netProfit, 'IQD')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 border rounded-lg space-y-2">
-                        <h3 className="font-semibold text-lg">النسب المالية</h3>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between">
-                            <span>هامش الربح:</span>
-                            <span className="font-medium">{stats.profitMargin.toFixed(1)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>معدل التحصيل:</span>
-                            <span className="font-medium">
-                              {stats.pendingInvoices > 0 
-                                ? ((stats.paidInvoices / (stats.paidInvoices + stats.pendingInvoices)) * 100).toFixed(1)
-                                : 100}%
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>دوران المخزون:</span>
-                            <span className="font-medium">
-                              {stats.inventoryValue > 0 
-                                ? (stats.totalRevenue / stats.inventoryValue).toFixed(2)
-                                : 0}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <AdvancedReports />
               </TabsContent>
             </Tabs>
           </div>
