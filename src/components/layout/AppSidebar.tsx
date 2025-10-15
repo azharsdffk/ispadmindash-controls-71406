@@ -32,15 +32,7 @@ const menuItems: Array<{
 
 export const AppSidebar = () => {
   const { isAdmin, isAccountant, roles } = useUserRole();
-  const { hasPermission, permissions, loading } = usePermissions();
-
-  // تتبع الصلاحيات والأدوار
-  console.log('=== AppSidebar Debug ===');
-  console.log('Roles:', roles);
-  console.log('IsAdmin:', isAdmin);
-  console.log('IsAccountant:', isAccountant);
-  console.log('Permissions:', permissions);
-  console.log('Loading:', loading);
+  const { hasPermission, loading } = usePermissions();
 
   if (loading) {
     return (
@@ -59,28 +51,16 @@ export const AppSidebar = () => {
   return (
     <aside className="w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0">
       <nav className="p-4 space-y-2">
-        {/* عرض معلومات التصحيح */}
-        <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs">
-          <div className="font-bold text-blue-600 mb-1">معلومات الصلاحيات</div>
-          <div className="space-y-1 text-muted-foreground">
-            <div>الأدوار: {roles.join(', ') || 'لا يوجد'}</div>
-            <div>عدد الصلاحيات: {permissions.length}</div>
-          </div>
-        </div>
-
         {menuItems.map((item) => {
           // إخفاء العناصر التي لا تتوافق مع أدوار المستخدم
           const hasRequiredRole = item.roles && item.roles.some(role => roles.includes(role));
-          
-          console.log(`Item: ${item.label}, HasRequiredRole: ${hasRequiredRole}, RequiredRoles: ${item.roles.join(',')}, UserRoles: ${roles.join(',')}`);
           
           if (!hasRequiredRole) {
             return null;
           }
 
-          // إخفاء العناصر التي تتطلب صلاحيات غير متوفرة (فقط إذا كانت صلاحية مطلوبة)
+          // إخفاء العناصر التي تتطلب صلاحيات غير متوفرة
           if (item.permission && !hasPermission(item.permission)) {
-            console.log(`Hiding ${item.label} - Missing permission: ${item.permission}`);
             return null;
           }
 

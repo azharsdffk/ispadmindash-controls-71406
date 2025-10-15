@@ -1422,6 +1422,13 @@ export type Database = {
         }
         Returns: string
       }
+      refresh_user_permissions: {
+        Args: { p_user_id: string }
+        Returns: {
+          permission_description: string
+          permission_name: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "accountant" | "technician" | "user" | "client"
