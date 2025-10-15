@@ -14,6 +14,8 @@ import { GeneralLedger } from '@/components/accountant/GeneralLedger';
 import { FinancialCharts } from '@/components/accountant/FinancialCharts';
 import { AdvancedReports } from '@/components/accountant/AdvancedReports';
 import { BalanceSheet } from '@/components/accountant/BalanceSheet';
+import { IncomeStatement } from '@/components/accountant/IncomeStatement';
+import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
 import { AccountingNotifications } from '@/components/accountant/AccountingNotifications';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -197,6 +199,8 @@ export default function AccountantDashboard() {
     { value: 'entries', label: 'القيود المحاسبية', show: hasPermission('manage_accounting_entries') },
     { value: 'ledger', label: 'دفتر الأستاذ', show: hasPermission('view_general_ledger') },
     { value: 'balance', label: 'الميزانية', show: hasPermission('view_balance_sheet') },
+    { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_financial_reports') },
+    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_financial_reports') },
     { value: 'operations', label: 'العمليات', show: hasPermission('view_transactions') },
     { value: 'reports', label: 'التقارير', show: hasPermission('generate_reports') },
   ].filter(tab => tab.show);
@@ -520,6 +524,18 @@ export default function AccountantDashboard() {
               {hasPermission('view_balance_sheet') && (
                 <TabsContent value="balance" className="space-y-4">
                   <BalanceSheet />
+                </TabsContent>
+              )}
+
+              {hasPermission('view_financial_reports') && (
+                <TabsContent value="income" className="space-y-4">
+                  <IncomeStatement />
+                </TabsContent>
+              )}
+
+              {hasPermission('view_financial_reports') && (
+                <TabsContent value="cashflow" className="space-y-4">
+                  <CashFlowStatement />
                 </TabsContent>
               )}
 

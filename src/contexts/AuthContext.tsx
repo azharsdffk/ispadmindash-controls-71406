@@ -7,6 +7,9 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  permissions: string[];
+  roles: string[];
+  refreshUserData: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -18,7 +21,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [roles, setRoles] = useState<string[]>([]);
   const navigate = useNavigate();
+
+  const fetchUserPermissions = async (userId: string) => {
+    try {
+      // جلب الأدوار
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+      
+      const rolesList = userRoles?.map(r => r.role) || [];
+      setRoles(rolesList);
+
+      // جلب الصلاحيات
+      const { data: rolePermissions } = await supabase
+        .from('role_permissions')
+        .select('permission_id, permissions(name)')
+        .in('role', rolesList);
+
+      const permissionsList = rolePermissions
+        ?.map((rp: any) => rp.permissions?.name)
+        .filter(Boolean) || [];
+      
+      setPermissions([...new Set(permissionsList)]);
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+      setPermissions([]);
+      setRoles([]);
+    }
+  };
+
+  const refreshUserData = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await fetchUserPermissions(session.user.id);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -26,6 +67,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(() => {
+            fetchUserPermissions(session.user.id);
+          }, 0);
+        } else {
+          setPermissions([]);
+          setRoles([]);
+        }
+        
         setLoading(false);
       }
     );
@@ -34,6 +85,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserPermissions(session.user.id);
+      }
+      
       setLoading(false);
     });
 
@@ -75,7 +131,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      permissions, 
+      roles,
+      refreshUserData,
+      signIn, 
+      signUp, 
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );
