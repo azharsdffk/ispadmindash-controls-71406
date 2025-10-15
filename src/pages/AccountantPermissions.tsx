@@ -35,6 +35,7 @@ interface CategoryInfo {
 }
 
 const categoryInfo: Record<string, CategoryInfo> = {
+  accounting: { name: 'المحاسبة', icon: '🧮', description: 'القيود المحاسبية والتقارير المالية' },
   dashboard: { name: 'لوحة التحكم', icon: '📊', description: 'الوصول إلى لوحات التحكم والإحصائيات' },
   subscribers: { name: 'المشتركين', icon: '👥', description: 'إدارة بيانات المشتركين' },
   invoices: { name: 'الفواتير', icon: '📄', description: 'إدارة وإصدار الفواتير' },
@@ -45,6 +46,11 @@ const categoryInfo: Record<string, CategoryInfo> = {
   packages: { name: 'الباقات', icon: '📱', description: 'عرض وإدارة باقات الخدمة' },
   notifications: { name: 'الإشعارات', icon: '🔔', description: 'إدارة الإشعارات والتنبيهات' },
   maintenance: { name: 'الصيانة', icon: '🔧', description: 'متابعة طلبات الصيانة' },
+  employees: { name: 'الموظفين', icon: '👷', description: 'إدارة ومتابعة الموظفين' },
+  settings: { name: 'الإعدادات', icon: '⚙️', description: 'إعدادات النظام' },
+  roles: { name: 'الأدوار', icon: '🔑', description: 'إدارة الأدوار والصلاحيات' },
+  users: { name: 'المستخدمين', icon: '👤', description: 'إدارة حسابات المستخدمين' },
+  import: { name: 'الاستيراد', icon: '📥', description: 'استيراد البيانات' },
 };
 
 export default function AccountantPermissions() {
