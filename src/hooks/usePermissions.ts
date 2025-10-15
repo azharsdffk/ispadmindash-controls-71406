@@ -53,6 +53,27 @@ export const usePermissions = () => {
     };
 
     fetchPermissions();
+
+    // الاستماع للتحديثات الفورية على role_permissions
+    const channel = supabase
+      .channel('role_permissions_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'role_permissions'
+        },
+        () => {
+          // إعادة جلب الصلاحيات عند أي تغيير
+          fetchPermissions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const hasPermission = (permissionName: string) => permissions.includes(permissionName);
