@@ -195,14 +195,14 @@ export default function AccountantDashboard() {
 
   const availableTabs = [
     { value: 'overview', label: 'نظرة عامة', show: true },
-    { value: 'financial', label: 'التحليل المالي', show: hasPermission('view_financial_reports') },
-    { value: 'entries', label: 'القيود المحاسبية', show: hasPermission('manage_accounting_entries') },
-    { value: 'ledger', label: 'دفتر الأستاذ', show: hasPermission('view_general_ledger') },
-    { value: 'balance', label: 'الميزانية', show: hasPermission('view_balance_sheet') },
-    { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_financial_reports') },
-    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_financial_reports') },
-    { value: 'operations', label: 'العمليات', show: hasPermission('view_transactions') },
-    { value: 'reports', label: 'التقارير', show: hasPermission('generate_reports') },
+    { value: 'financial', label: 'التحليل المالي', show: hasPermission('view_reports') },
+    { value: 'entries', label: 'القيود المحاسبية', show: hasPermission('add_transaction') },
+    { value: 'ledger', label: 'دفتر الأستاذ', show: hasPermission('view_balance') },
+    { value: 'balance', label: 'الميزانية', show: hasPermission('view_balance') },
+    { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_reports') },
+    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_reports') },
+    { value: 'operations', label: 'العمليات', show: hasPermission('manage_accounts') },
+    { value: 'reports', label: 'التقارير', show: hasPermission('export_reports') },
   ].filter(tab => tab.show);
 
   return (
@@ -234,7 +234,7 @@ export default function AccountantDashboard() {
                   <AccountingNotifications />
                 </PermissionGuard>
 
-                <PermissionGuard permission="view_financial_reports" hideOnNoPermission>
+                <PermissionGuard permission="view_reports" hideOnNoPermission>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -367,7 +367,7 @@ export default function AccountantDashboard() {
                   </div>
                 </PermissionGuard>
 
-                <PermissionGuard permission="view_financial_reports" hideOnNoPermission>
+                <PermissionGuard permission="view_balance" hideOnNoPermission>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
