@@ -100,8 +100,12 @@ serve(async (req) => {
         .insert({ user_id: userId, role });
 
       if (error) {
-        if (error.code === '23505') { // Unique violation
-          throw new Error('هذا الدور مُعيَّن بالفعل للمستخدم');
+        if (error.code === '23505') { // Unique violation - role already exists
+          // Return success since the desired state is already achieved
+          return new Response(
+            JSON.stringify({ success: true, message: 'الدور موجود بالفعل' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
         throw error;
       }
