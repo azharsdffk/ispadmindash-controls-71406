@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Loader2, Shield, Users, Key } from 'lucide-react';
+import { Loader2, Shield, Users, Key, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -33,7 +34,9 @@ export default function PermissionsManagement() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [rolePermissions, setRolePermissions] = useState<Map<AppRole, Set<string>>>(new Map());
+  const [tempRolePermissions, setTempRolePermissions] = useState<Map<AppRole, Set<string>>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!permissionsLoading && !hasPermission('manage_roles')) {
@@ -103,6 +106,7 @@ export default function PermissionsManagement() {
 
       setPermissions(permissionsData || []);
       setRolePermissions(rolePermsMap);
+      setTempRolePermissions(new Map(rolePermsMap));
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('حدث خطأ أثناء جلب البيانات');
@@ -111,65 +115,81 @@ export default function PermissionsManagement() {
     }
   };
 
-  const togglePermission = async (role: AppRole, permissionId: string) => {
-    const currentPerms = rolePermissions.get(role) || new Set();
-    const hasPermission = currentPerms.has(permissionId);
+  const togglePermission = (role: AppRole, permissionId: string) => {
+    const currentPerms = tempRolePermissions.get(role) || new Set();
+    const newPerms = new Set(currentPerms);
+    
+    if (newPerms.has(permissionId)) {
+      newPerms.delete(permissionId);
+    } else {
+      newPerms.add(permissionId);
+    }
+    
+    const newTempRolePermissions = new Map(tempRolePermissions);
+    newTempRolePermissions.set(role, newPerms);
+    setTempRolePermissions(newTempRolePermissions);
+  };
 
+  const hasChanges = useMemo(() => {
+    for (const [role, perms] of tempRolePermissions) {
+      const originalPerms = rolePermissions.get(role) || new Set();
+      if (perms.size !== originalPerms.size) return true;
+      for (const perm of perms) {
+        if (!originalPerms.has(perm)) return true;
+      }
+    }
+    return false;
+  }, [tempRolePermissions, rolePermissions]);
+
+  const saveChanges = async () => {
+    setSaving(true);
     try {
-      if (hasPermission) {
-        // حذف الصلاحية
-        const { error } = await supabase
-          .from('role_permissions')
-          .delete()
-          .eq('role', role)
-          .eq('permission_id', permissionId);
-
-        if (error) throw error;
-
-        const newPerms = new Set(currentPerms);
-        newPerms.delete(permissionId);
+      // حذف جميع الصلاحيات القديمة وإضافة الجديدة لكل دور
+      for (const [role, newPerms] of tempRolePermissions) {
+        const oldPerms = rolePermissions.get(role) || new Set();
         
-        const newRolePermissions = new Map(rolePermissions);
-        newRolePermissions.set(role, newPerms);
-        setRolePermissions(newRolePermissions);
-        
-        toast.success('تم إزالة الصلاحية بنجاح');
-      } else {
-        // إضافة الصلاحية
-        const { error } = await supabase
-          .from('role_permissions')
-          .insert([{ role, permission_id: permissionId }]);
+        // الصلاحيات المحذوفة
+        const toDelete = [...oldPerms].filter(p => !newPerms.has(p));
+        // الصلاحيات المضافة
+        const toAdd = [...newPerms].filter(p => !oldPerms.has(p));
 
-        if (error) {
-          // تحقق من التكرار
-          if (error.code === '23505') {
-            toast.info('هذه الصلاحية موجودة مسبقاً');
-            // تحديث الحالة المحلية فقط
-            const newPerms = new Set(currentPerms);
-            newPerms.add(permissionId);
-            const newRolePermissions = new Map(rolePermissions);
-            newRolePermissions.set(role, newPerms);
-            setRolePermissions(newRolePermissions);
-            return;
-          }
-          throw error;
+        // حذف الصلاحيات
+        if (toDelete.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('role_permissions')
+            .delete()
+            .eq('role', role)
+            .in('permission_id', toDelete);
+
+          if (deleteError) throw deleteError;
         }
 
-        const newPerms = new Set(currentPerms);
-        newPerms.add(permissionId);
-        
-        const newRolePermissions = new Map(rolePermissions);
-        newRolePermissions.set(role, newPerms);
-        setRolePermissions(newRolePermissions);
-        
-        toast.success('تم إضافة الصلاحية بنجاح');
+        // إضافة الصلاحيات
+        if (toAdd.length > 0) {
+          const { error: insertError } = await supabase
+            .from('role_permissions')
+            .insert(toAdd.map(permId => ({ role, permission_id: permId })));
+
+          if (insertError && insertError.code !== '23505') {
+            throw insertError;
+          }
+        }
       }
+
+      setRolePermissions(new Map(tempRolePermissions));
+      toast.success('تم حفظ التغييرات بنجاح');
     } catch (error) {
-      console.error('Error toggling permission:', error);
-      toast.error('حدث خطأ أثناء تحديث الصلاحية');
-      // إعادة تحميل البيانات في حالة الخطأ
+      console.error('Error saving changes:', error);
+      toast.error('حدث خطأ أثناء حفظ التغييرات');
       fetchData();
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const cancelChanges = () => {
+    setTempRolePermissions(new Map(rolePermissions));
+    toast.info('تم إلغاء التغييرات');
   };
 
   if (permissionsLoading || loading) {
@@ -227,8 +247,13 @@ export default function PermissionsManagement() {
                         <Users className="h-5 w-5" />
                         صلاحيات {role.label}
                         <Badge variant="secondary" className="mr-auto">
-                          {rolePermissions.get(role.value)?.size || 0} صلاحية
+                          {tempRolePermissions.get(role.value)?.size || 0} صلاحية
                         </Badge>
+                        {hasChanges && (
+                          <Badge variant="destructive" className="animate-pulse">
+                            غير محفوظ
+                          </Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -247,7 +272,7 @@ export default function PermissionsManagement() {
                                 >
                                   <div className="flex items-center gap-3">
                                     <Checkbox
-                                      checked={rolePermissions.get(role.value)?.has(perm.id)}
+                                      checked={tempRolePermissions.get(role.value)?.has(perm.id)}
                                       onCheckedChange={() => togglePermission(role.value, perm.id)}
                                     />
                                     <div>
@@ -262,6 +287,34 @@ export default function PermissionsManagement() {
                         ))}
                       </div>
                     </CardContent>
+                    {hasChanges && (
+                      <CardFooter className="flex gap-3 justify-end border-t pt-4">
+                        <Button
+                          variant="outline"
+                          onClick={cancelChanges}
+                          disabled={saving}
+                        >
+                          <X className="h-4 w-4 ml-2" />
+                          إلغاء
+                        </Button>
+                        <Button
+                          onClick={saveChanges}
+                          disabled={saving}
+                        >
+                          {saving ? (
+                            <>
+                              <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                              جاري الحفظ...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 ml-2" />
+                              حفظ التغييرات
+                            </>
+                          )}
+                        </Button>
+                      </CardFooter>
+                    )}
                   </Card>
                 </TabsContent>
               ))}
