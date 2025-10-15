@@ -53,19 +53,47 @@ const App = () => (
               </PermissionProtectedRoute>
             } />
             {/* صفحات المحاسب والمدير */}
-            <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Dashboard /></ProtectedRoute>} />
-            <Route path="/invoices" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Invoices /></ProtectedRoute>} />
-            <Route path="/vouchers" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Vouchers /></ProtectedRoute>} />
-            <Route path="/inventory" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Inventory /></ProtectedRoute>} />
+            <Route path="/dashboard" element={
+              <PermissionProtectedRoute permission="view_dashboard">
+                <Dashboard />
+              </PermissionProtectedRoute>
+            } />
+            <Route path="/invoices" element={
+              <PermissionProtectedRoute permission="view_invoices">
+                <Invoices />
+              </PermissionProtectedRoute>
+            } />
+            <Route path="/vouchers" element={
+              <PermissionProtectedRoute permission="view_vouchers">
+                <Vouchers />
+              </PermissionProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <PermissionProtectedRoute permission="view_inventory">
+                <Inventory />
+              </PermissionProtectedRoute>
+            } />
             {/* صفحات المدير فقط */}
             <Route path="/portal" element={<ProtectedRoute allowedRoles={['admin']}><CustomerPortal /></ProtectedRoute>} />
             <Route path="/plans" element={<ProtectedRoute allowedRoles={['admin']}><Plans /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute allowedRoles={['admin']}><Notifications /></ProtectedRoute>} />
             <Route path="/tracking" element={<ProtectedRoute allowedRoles={['admin']}><EmployeeTracking /></ProtectedRoute>} />
             <Route path="/schedule" element={<ProtectedRoute allowedRoles={['admin']}><Schedule /></ProtectedRoute>} />
-            <Route path="/subscribers" element={<ProtectedRoute allowedRoles={['admin']}><Subscribers /></ProtectedRoute>} />
-            <Route path="/maintenance" element={<ProtectedRoute allowedRoles={['admin']}><Maintenance /></ProtectedRoute>} />
-            <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin']}><Reports /></ProtectedRoute>} />
+            <Route path="/subscribers" element={
+              <PermissionProtectedRoute permission="view_subscribers">
+                <Subscribers />
+              </PermissionProtectedRoute>
+            } />
+            <Route path="/maintenance" element={
+              <PermissionProtectedRoute permission="view_maintenance">
+                <Maintenance />
+              </PermissionProtectedRoute>
+            } />
+            <Route path="/reports" element={
+              <PermissionProtectedRoute permission="view_reports">
+                <Reports />
+              </PermissionProtectedRoute>
+            } />
             <Route path="/employees" element={<ProtectedRoute allowedRoles={['admin']}><Employees /></ProtectedRoute>} />
             <Route path="/import" element={<ProtectedRoute allowedRoles={['admin']}><DataImport /></ProtectedRoute>} />
             <Route path="/roles" element={<ProtectedRoute allowedRoles={['admin']}><RoleManagement /></ProtectedRoute>} />
