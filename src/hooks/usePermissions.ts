@@ -34,15 +34,29 @@ export const usePermissions = () => {
         const roles = userRoles.map(r => r.role);
         const { data: rolePermissions, error: permissionsError } = await supabase
           .from('role_permissions')
-          .select('permission_id, permissions(name)')
+          .select(`
+            permission_id,
+            permissions!inner (
+              id,
+              name,
+              description,
+              category
+            )
+          `)
           .in('role', roles);
 
-        if (permissionsError) throw permissionsError;
+        if (permissionsError) {
+          console.error('❌ خطأ في جلب الصلاحيات:', permissionsError);
+          throw permissionsError;
+        }
+
+        console.log('✅ تم جلب الصلاحيات بنجاح:', rolePermissions);
 
         const permissionNames = rolePermissions
           ?.map((rp: any) => rp.permissions?.name)
           .filter(Boolean) || [];
 
+        console.log('📋 أسماء الصلاحيات:', permissionNames);
         setPermissions([...new Set(permissionNames)]);
       } catch (error) {
         console.error('Error fetching permissions:', error);
