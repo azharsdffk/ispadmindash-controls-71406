@@ -41,12 +41,8 @@ const Index = () => {
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
 
-  // إعادة توجيه المحاسب تلقائياً إلى لوحته الخاصة
-  useEffect(() => {
-    if (!loading && isAccountant && !isAdmin) {
-      navigate('/accountant', { replace: true });
-    }
-  }, [isAccountant, isAdmin, loading, navigate]);
+  // السماح للمحاسب بالوصول للصفحة الرئيسية
+  // تم إزالة إعادة التوجيه التلقائي ليتمكن المحاسب من الوصول لجميع الصفحات المسموحة
 
   // Keyboard shortcuts
   useEffect(() => {
