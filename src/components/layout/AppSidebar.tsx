@@ -13,18 +13,18 @@ const menuItems: Array<{
 }> = [
   { icon: Home, label: "الرئيسية", path: "/", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
   { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard", permission: "view_dashboard", roles: ['admin'] },
-  { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: null, roles: ['accountant'] },
+  { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: "view_accountant_dashboard", roles: ['accountant'] },
   { icon: User, label: "بوابة العميل", path: "/portal", permission: null, roles: ['admin'] },
-  { icon: Package, label: "الباقات", path: "/plans", permission: "view_packages", roles: ['admin'] },
-  { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin'] },
+  { icon: Package, label: "الباقات", path: "/plans", permission: "view_packages", roles: ['admin', 'accountant'] },
+  { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin', 'accountant'] },
   { icon: MapPin, label: "التتبع", path: "/tracking", permission: "view_location_tracking", roles: ['admin'] },
   { icon: Calendar, label: "الجدولة", path: "/schedule", permission: "view_schedule", roles: ['admin'] },
   { icon: Box, label: "المخزون", path: "/inventory", permission: "view_inventory", roles: ['admin', 'accountant'] },
-  { icon: Users, label: "المشتركين", path: "/subscribers", permission: "view_subscribers", roles: ['admin'] },
+  { icon: Users, label: "المشتركين", path: "/subscribers", permission: "view_subscribers", roles: ['admin', 'accountant'] },
   { icon: FileText, label: "الفواتير", path: "/invoices", permission: "view_invoices", roles: ['admin', 'accountant'] },
   { icon: DollarSign, label: "السندات", path: "/vouchers", permission: "view_vouchers", roles: ['admin', 'accountant'] },
   { icon: Wrench, label: "الصيانة", path: "/maintenance", permission: "view_maintenance", roles: ['admin'] },
-  { icon: BarChart3, label: "التقارير", path: "/reports", permission: "view_reports", roles: ['admin'] },
+  { icon: BarChart3, label: "التقارير", path: "/reports", permission: "view_reports", roles: ['admin', 'accountant'] },
   { icon: UserCog, label: "الموظفين", path: "/employees", permission: "view_employees", roles: ['admin'] },
   { icon: Download, label: "استيراد", path: "/import", permission: "import_data", roles: ['admin'] },
   { icon: Settings, label: "الإعدادات", path: "/settings", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
@@ -53,11 +53,12 @@ export const AppSidebar = () => {
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => {
           // إخفاء العناصر التي لا تتوافق مع أدوار المستخدم
-          if (item.roles && !item.roles.some(role => roles.includes(role))) {
+          const hasRequiredRole = item.roles && item.roles.some(role => roles.includes(role));
+          if (!hasRequiredRole) {
             return null;
           }
 
-          // إخفاء العناصر التي تتطلب صلاحيات غير متوفرة
+          // إخفاء العناصر التي تتطلب صلاحيات غير متوفرة (فقط إذا كانت صلاحية مطلوبة)
           if (item.permission && !hasPermission(item.permission)) {
             return null;
           }
