@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PermissionProtectedRoute } from "@/components/PermissionProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import AccountantDashboard from "./pages/AccountantDashboard";
@@ -41,8 +42,16 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/accountant" element={<ProtectedRoute allowedRoles={['accountant', 'admin']}><AccountantDashboard /></ProtectedRoute>} />
-            <Route path="/accountant/permissions" element={<ProtectedRoute allowedRoles={['accountant']}><AccountantPermissions /></ProtectedRoute>} />
+            <Route path="/accountant" element={
+              <PermissionProtectedRoute permission={['view_reports', 'manage_accounts']}>
+                <AccountantDashboard />
+              </PermissionProtectedRoute>
+            } />
+            <Route path="/accountant/permissions" element={
+              <PermissionProtectedRoute permission="view_reports">
+                <AccountantPermissions />
+              </PermissionProtectedRoute>
+            } />
             {/* صفحات المحاسب والمدير */}
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Dashboard /></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute allowedRoles={['admin', 'accountant']}><Invoices /></ProtectedRoute>} />
