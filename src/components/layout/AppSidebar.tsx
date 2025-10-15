@@ -13,7 +13,7 @@ const menuItems: Array<{
 }> = [
   { icon: Home, label: "الرئيسية", path: "/", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
   { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard", permission: "view_dashboard", roles: ['admin'] },
-  { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: "view_accountant_dashboard", roles: ['accountant'] },
+  { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: null, roles: ['accountant'] },
   { icon: User, label: "بوابة العميل", path: "/portal", permission: null, roles: ['admin'] },
   { icon: Package, label: "الباقات", path: "/plans", permission: "view_packages", roles: ['admin', 'accountant'] },
   { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin', 'accountant'] },
