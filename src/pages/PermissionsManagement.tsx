@@ -46,6 +46,26 @@ export default function PermissionsManagement() {
   useEffect(() => {
     if (!permissionsLoading && hasPermission('manage_roles')) {
       fetchData();
+
+      // الاستماع للتحديثات الفورية
+      const channel = supabase
+        .channel('permissions_realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'role_permissions'
+          },
+          () => {
+            fetchData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [permissionsLoading]);
 
