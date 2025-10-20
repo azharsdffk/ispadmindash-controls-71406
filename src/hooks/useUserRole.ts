@@ -35,6 +35,27 @@ export const useUserRole = () => {
     };
 
     fetchRoles();
+
+    // الاشتراك في التحديثات الفورية للأدوار
+    const channel = supabase
+      .channel('user_roles_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roles',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchRoles();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const hasRole = (role: AppRole) => roles.includes(role);
