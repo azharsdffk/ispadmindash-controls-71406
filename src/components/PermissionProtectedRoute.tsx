@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -18,8 +19,9 @@ export const PermissionProtectedRoute = ({
 }: PermissionProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
   const { hasPermission, hasAnyPermission, hasAllPermissions, loading: permissionsLoading } = usePermissions();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
-  if (authLoading || permissionsLoading) {
+  if (authLoading || permissionsLoading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -29,6 +31,11 @@ export const PermissionProtectedRoute = ({
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // المدراء لديهم وصول كامل لجميع الصفحات
+  if (isAdmin) {
+    return <>{children}</>;
   }
 
   const permissions = Array.isArray(permission) ? permission : [permission];
