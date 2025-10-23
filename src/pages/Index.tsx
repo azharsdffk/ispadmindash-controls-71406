@@ -32,7 +32,7 @@ import {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isAccountant, isAdmin, loading } = useUserRole();
+  const { isAccountant, isAdmin, isTechnician, loading } = useUserRole();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
   const [issueInvoiceOpen, setIssueInvoiceOpen] = useState(false);
@@ -41,8 +41,12 @@ const Index = () => {
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
 
-  // السماح للمحاسب بالوصول للصفحة الرئيسية
-  // تم إزالة إعادة التوجيه التلقائي ليتمكن المحاسب من الوصول لجميع الصفحات المسموحة
+  // توجيه الفني تلقائياً إلى صفحته الخاصة
+  useEffect(() => {
+    if (!loading && isTechnician) {
+      navigate('/technician');
+    }
+  }, [isTechnician, loading, navigate]);
 
   // Keyboard shortcuts
   useEffect(() => {
