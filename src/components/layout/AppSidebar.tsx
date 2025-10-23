@@ -24,6 +24,7 @@ const menuItems: Array<{
   { icon: FileText, label: "الفواتير", path: "/invoices", permission: "view_invoices", roles: ['admin', 'accountant'] },
   { icon: DollarSign, label: "السندات", path: "/vouchers", permission: "view_vouchers", roles: ['admin', 'accountant'] },
   { icon: Wrench, label: "الصيانة", path: "/maintenance", permission: "view_maintenance", roles: ['admin', 'technician'] },
+  { icon: Wrench, label: "لوحة الفني", path: "/technician", permission: null, roles: ['technician'] },
   { icon: BarChart3, label: "التقارير", path: "/reports", permission: "view_reports", roles: ['admin', 'accountant'] },
   { icon: UserCog, label: "الموظفين", path: "/employees", permission: "manage_employees", roles: ['admin'] },
   { icon: Download, label: "استيراد", path: "/import", permission: "import_data", roles: ['admin'] },

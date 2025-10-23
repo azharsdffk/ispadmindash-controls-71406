@@ -27,6 +27,7 @@ import RoleManagement from "./pages/RoleManagement";
 import PermissionsManagement from "./pages/PermissionsManagement";
 import AccountantPermissions from "./pages/AccountantPermissions";
 import UserAccountsManagement from "./pages/UserAccountsManagement";
+import TechnicianDashboard from "./pages/TechnicianDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -88,6 +89,11 @@ const App = () => (
               <PermissionProtectedRoute permission="view_maintenance">
                 <Maintenance />
               </PermissionProtectedRoute>
+            } />
+            <Route path="/technician" element={
+              <ProtectedRoute allowedRoles={['technician']}>
+                <TechnicianDashboard />
+              </ProtectedRoute>
             } />
             <Route path="/reports" element={
               <PermissionProtectedRoute permission="view_reports">
