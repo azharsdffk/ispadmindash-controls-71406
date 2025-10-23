@@ -111,7 +111,7 @@ export type Database = {
           connection_quality: string | null
           download_speed: number | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           notes: string | null
           recorded_at: string | null
           recorded_by: string | null
@@ -123,7 +123,7 @@ export type Database = {
           connection_quality?: string | null
           download_speed?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           notes?: string | null
           recorded_at?: string | null
           recorded_by?: string | null
@@ -135,7 +135,7 @@ export type Database = {
           connection_quality?: string | null
           download_speed?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           notes?: string | null
           recorded_at?: string | null
           recorded_by?: string | null
@@ -160,7 +160,7 @@ export type Database = {
           created_at: string | null
           employee_id: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
         }
         Insert: {
@@ -169,7 +169,7 @@ export type Database = {
           created_at?: string | null
           employee_id: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
         }
         Update: {
@@ -178,7 +178,7 @@ export type Database = {
           created_at?: string | null
           employee_id?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
         }
         Relationships: [
@@ -627,7 +627,7 @@ export type Database = {
           email: string
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           success: boolean
           user_agent: string | null
           user_id: string | null
@@ -637,7 +637,7 @@ export type Database = {
           email: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           success?: boolean
           user_agent?: string | null
           user_id?: string | null
@@ -647,7 +647,7 @@ export type Database = {
           email?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           success?: boolean
           user_agent?: string | null
           user_id?: string | null
@@ -913,7 +913,7 @@ export type Database = {
           accessed_fields: string[]
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           subscriber_id: string
           user_agent: string | null
           user_id: string
@@ -923,7 +923,7 @@ export type Database = {
           accessed_fields: string[]
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           subscriber_id: string
           user_agent?: string | null
           user_id: string
@@ -933,7 +933,7 @@ export type Database = {
           accessed_fields?: string[]
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           subscriber_id?: string
           user_agent?: string | null
           user_id?: string
@@ -1100,7 +1100,7 @@ export type Database = {
           changed_by: string | null
           field_name: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_value: string | null
           notes: string | null
           old_value: string | null
@@ -1113,7 +1113,7 @@ export type Database = {
           changed_by?: string | null
           field_name?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_value?: string | null
           notes?: string | null
           old_value?: string | null
@@ -1126,7 +1126,7 @@ export type Database = {
           changed_by?: string | null
           field_name?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_value?: string | null
           notes?: string | null
           old_value?: string | null
@@ -1372,22 +1372,10 @@ export type Database = {
         Args: { p_identifier: string }
         Returns: boolean
       }
-      generate_complaint_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_ticket_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_voucher_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_complaint_number: { Args: never; Returns: string }
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_ticket_number: { Args: never; Returns: string }
+      generate_voucher_number: { Args: never; Returns: string }
       has_permission: {
         Args: { _permission_name: string; _user_id: string }
         Returns: boolean
