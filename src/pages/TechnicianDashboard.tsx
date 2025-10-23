@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppSidebar } from '@/components/layout/AppSidebar';
@@ -23,10 +23,21 @@ import {
   Bell,
   MapPin,
   Phone,
-  User
+  User,
+  Filter,
+  Calendar,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Ticket {
   id: string;
@@ -54,6 +65,19 @@ interface TechnicianProfile {
   username: string | null;
 }
 
+// حساب المسافة بين نقطتين GPS بالكيلومترات (Haversine formula)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // نصف قطر الأرض بالكيلومتر
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
 const TechnicianDashboard = () => {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -65,25 +89,70 @@ const TechnicianDashboard = () => {
   const [reportText, setReportText] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [locationTracking, setLocationTracking] = useState<number | null>(null);
 
-  // جلب الموقع الحالي للفني
+  // جلب الموقع الحالي للفني وتتبعه تلقائياً
   useEffect(() => {
     if (navigator.geolocation) {
+      // موقع أولي
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCurrentLocation({
+          const newLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
-          toast.success('تم تحديد موقعك بنجاح');
+          };
+          setCurrentLocation(newLocation);
+          toast.success('✅ تم تحديد موقعك بنجاح');
+          
+          // حفظ الموقع في قاعدة البيانات
+          if (user) {
+            supabase.from('employee_locations').insert({
+              user_id: user.id,
+              latitude: newLocation.lat,
+              longitude: newLocation.lng,
+              accuracy: position.coords.accuracy
+            });
+          }
         },
         (error) => {
           console.error('خطأ في تحديد الموقع:', error);
-          toast.error('تعذر تحديد موقعك الحالي');
-        }
+          toast.error('⚠️ تعذر تحديد موقعك الحالي');
+        },
+        { enableHighAccuracy: true }
       );
+
+      // تتبع الموقع كل 5 دقائق
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const newLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setCurrentLocation(newLocation);
+          
+          // تحديث الموقع في قاعدة البيانات
+          if (user) {
+            supabase.from('employee_locations').insert({
+              user_id: user.id,
+              latitude: newLocation.lat,
+              longitude: newLocation.lng,
+              accuracy: position.coords.accuracy
+            });
+          }
+        },
+        (error) => console.error('خطأ في تتبع الموقع:', error),
+        { enableHighAccuracy: true, maximumAge: 300000, timeout: 10000 }
+      );
+
+      setLocationTracking(watchId);
+
+      return () => {
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+      };
     }
-  }, []);
+  }, [user]);
 
   // جلب بيانات الفني
   useEffect(() => {
@@ -241,15 +310,54 @@ const TechnicianDashboard = () => {
     window.open(`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`, '_blank');
   };
 
-  // تصفية التذاكر حسب البحث
-  const filteredTickets = tickets.filter(ticket => 
-    ticket.ticket_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.subscribers?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.subscribers?.phone?.includes(searchQuery)
-  );
+  // تصفية وترتيب التذاكر حسب البحث والفلاتر والمسافة
+  const filteredAndSortedTickets = useMemo(() => {
+    let filtered = tickets.filter(ticket => {
+      // البحث
+      const matchesSearch = 
+        ticket.ticket_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ticket.subscribers?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ticket.subscribers?.phone?.includes(searchQuery);
+      
+      // فلتر الحالة
+      const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+      
+      // فلتر الأولوية
+      const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
 
-  const openTickets = filteredTickets.filter(t => t.status === 'open' || t.status === 'in_progress');
-  const completedTickets = filteredTickets.filter(t => t.status === 'resolved' || t.status === 'closed');
+    // حساب المسافة وإضافتها لكل تذكرة
+    if (currentLocation) {
+      filtered = filtered.map(ticket => ({
+        ...ticket,
+        distance: ticket.subscribers?.latitude && ticket.subscribers?.longitude
+          ? calculateDistance(
+              currentLocation.lat,
+              currentLocation.lng,
+              ticket.subscribers.latitude,
+              ticket.subscribers.longitude
+            )
+          : 999999
+      }));
+
+      // ترتيب حسب الأولوية أولاً ثم المسافة
+      filtered.sort((a, b) => {
+        const priorityOrder: Record<string, number> = { urgent: 1, high: 2, medium: 3, low: 4 };
+        const priorityDiff = (priorityOrder[a.priority] || 3) - (priorityOrder[b.priority] || 3);
+        
+        if (priorityDiff !== 0) return priorityDiff;
+        return ((a as any).distance || 0) - ((b as any).distance || 0);
+      });
+    }
+
+    return filtered;
+  }, [tickets, searchQuery, statusFilter, priorityFilter, currentLocation]);
+
+  const openTickets = filteredAndSortedTickets.filter(t => t.status === 'open' || t.status === 'in_progress');
+  const completedTickets = filteredAndSortedTickets.filter(t => t.status === 'resolved' || t.status === 'closed');
+  const scheduledTickets = filteredAndSortedTickets.filter(t => t.scheduled_date);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; className: string }> = {
@@ -273,85 +381,126 @@ const TechnicianDashboard = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const renderTicket = (ticket: Ticket) => (
-    <Card key={ticket.id} className="mb-4 hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
-      <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-14 w-14 border-2 border-primary shadow-lg">
-              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-lg font-bold">
-                {ticket.subscribers?.name?.charAt(0) || <User className="h-7 w-7" />}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-xl font-bold text-foreground">
-                {ticket.subscribers?.name || 'غير محدد'}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground font-medium">{ticket.ticket_number}</p>
+  const renderTicket = (ticket: Ticket & { distance?: number }) => {
+    const ticketDistance = ticket.distance !== undefined && ticket.distance < 999999 
+      ? ticket.distance.toFixed(2) 
+      : null;
+
+    return (
+      <Card key={ticket.id} className="mb-4 hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
+        <CardHeader className="pb-3 bg-gradient-to-r from-sky-500/5 via-primary/5 to-transparent">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-14 w-14 border-2 border-sky-500 shadow-lg">
+                <AvatarFallback className="bg-gradient-to-br from-sky-500 to-sky-600 text-white text-lg font-bold">
+                  {ticket.subscribers?.name?.charAt(0) || <User className="h-7 w-7" />}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-xl font-bold text-foreground">
+                  {ticket.subscribers?.name || 'غير محدد'}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground font-medium">{ticket.ticket_number}</p>
+                {ticketDistance && (
+                  <p className="text-xs text-sky-600 font-bold mt-1 flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3" />
+                    المسافة: {ticketDistance} كم
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap justify-end">
+              {getStatusBadge(ticket.status)}
+              {getPriorityBadge(ticket.priority)}
             </div>
           </div>
-          <div className="flex gap-2 flex-wrap justify-end">
-            {getStatusBadge(ticket.status)}
-            {getPriorityBadge(ticket.priority)}
-          </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
       
-      <CardContent className="space-y-4 pt-4">
-        <div className="bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-xl space-y-3 border border-border/50">
-          <div className="flex items-start gap-3">
-            <FileText className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground mb-1">وصف المشكلة:</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{ticket.issue_description}</p>
+        <CardContent className="space-y-4 pt-4">
+          <div className="bg-gradient-to-br from-sky-50/50 to-blue-50/30 dark:from-sky-950/30 dark:to-blue-950/20 p-4 rounded-xl space-y-3 border border-sky-200/50 dark:border-sky-800/50">
+            <div className="flex items-start gap-3">
+              <FileText className="h-5 w-5 mt-1 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground mb-1">وصف المشكلة:</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{ticket.issue_description}</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
-            <p className="text-sm text-foreground">{ticket.subscribers?.address || 'العنوان غير متوفر'}</p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-            <a 
-              href={`tel:${ticket.subscribers?.phone}`} 
-              className="text-sm text-primary hover:underline font-medium transition-colors"
-            >
-              {ticket.subscribers?.phone || 'غير متوفر'}
-            </a>
-          </div>
-          
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Clock className="h-5 w-5 text-primary flex-shrink-0" />
-            <span className="font-medium">
-              تاريخ الفتح: {new Date(ticket.created_at).toLocaleDateString('ar-IQ', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </span>
+            
+            <div className="flex items-center gap-3">
+              <MapPin className="h-5 w-5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+              <p className="text-sm text-foreground">{ticket.subscribers?.address || 'العنوان غير متوفر'}</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+              <a 
+                href={`tel:${ticket.subscribers?.phone}`} 
+                className="text-sm text-sky-600 dark:text-sky-400 hover:underline font-medium transition-colors"
+              >
+                {ticket.subscribers?.phone || 'غير متوفر'}
+              </a>
+            </div>
+            
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Clock className="h-5 w-5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+              <span className="font-medium">
+                تاريخ الفتح: {new Date(ticket.created_at).toLocaleDateString('ar-IQ', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </span>
+            </div>
+
+            {ticket.scheduled_date && (
+              <div className="flex items-center gap-3 text-sm">
+                <Calendar className="h-5 w-5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+                <span className="font-medium text-sky-700 dark:text-sky-300">
+                  موعد الصيانة: {new Date(ticket.scheduled_date).toLocaleDateString('ar-IQ', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+            )}
+
+            {ticket.notes && (
+              <div className="mt-2 p-3 bg-background/50 rounded-lg border border-border">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">ملاحظات:</p>
+                <p className="text-sm text-foreground">{ticket.notes}</p>
+              </div>
+            )}
+
+            {/* خريطة صغيرة تعرض موقع العميل */}
+            {ticket.subscribers?.latitude && ticket.subscribers?.longitude && (
+              <div className="mt-3 rounded-lg overflow-hidden border-2 border-sky-200 dark:border-sky-800">
+                <iframe
+                  width="100%"
+                  height="200"
+                  frameBorder="0"
+                  style={{ border: 0 }}
+                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${ticket.subscribers.latitude},${ticket.subscribers.longitude}&zoom=15`}
+                  allowFullScreen
+                  title={`موقع ${ticket.subscribers.name}`}
+                />
+              </div>
+            )}
           </div>
 
-          {ticket.notes && (
-            <div className="mt-2 p-3 bg-background/50 rounded-lg border border-border">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">ملاحظات:</p>
-              <p className="text-sm text-foreground">{ticket.notes}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2 flex-wrap pt-2">
-          {(ticket.status === 'open' || ticket.status === 'in_progress') && (
-            <Button 
-              onClick={() => handleCompleteTicket(ticket.id)}
-              size="sm"
-              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
-            >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              ✅ تم الإنجاز
-            </Button>
-          )}
+          <div className="flex gap-2 flex-wrap pt-2">
+            {(ticket.status === 'open' || ticket.status === 'in_progress') && (
+              <Button 
+                onClick={() => handleCompleteTicket(ticket.id)}
+                size="sm"
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                ✅ تم الإنجاز
+              </Button>
+            )}
           
           <Dialog open={reportDialogOpen && selectedTicket?.id === ticket.id} onOpenChange={setReportDialogOpen}>
             <DialogTrigger asChild>
@@ -413,19 +562,20 @@ const TechnicianDashboard = () => {
             📸 رفع صورة
           </Button>
 
-          <Button 
-            size="sm" 
-            variant="outline"
-            className="border-primary/50 hover:bg-primary/10"
-            onClick={() => openInWaze(ticket.subscribers?.latitude, ticket.subscribers?.longitude)}
-          >
-            <Navigation className="h-4 w-4 mr-2" />
-            🗺️ فتح في Waze
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="border-sky-500/50 hover:bg-sky-500/10"
+              onClick={() => openInWaze(ticket.subscribers?.latitude, ticket.subscribers?.longitude)}
+            >
+              <Navigation className="h-4 w-4 mr-2" />
+              🗺️ فتح في Waze
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
@@ -452,54 +602,92 @@ const TechnicianDashboard = () => {
           
           <main className="container mx-auto p-6 space-y-6">
             {/* رأس الصفحة - معلومات الفني */}
-            <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 shadow-xl">
+            <Card className="bg-gradient-to-r from-sky-500/10 via-blue-500/5 to-transparent border-sky-300/30 dark:border-sky-700/30 shadow-xl">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-20 w-20 border-4 border-primary shadow-2xl">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-2xl font-bold">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <Avatar className="h-20 w-20 border-4 border-sky-500 shadow-2xl">
+                    <AvatarFallback className="bg-gradient-to-br from-sky-500 to-sky-600 text-white text-2xl font-bold">
                       {technicianProfile?.full_name?.charAt(0) || 'ف'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                  <div className="flex-1 min-w-[200px]">
+                    <h2 className="text-3xl font-bold text-foreground">
                       {technicianProfile?.full_name || 'الفني'}
                     </h2>
-                    <p className="text-sm text-muted-foreground font-medium mt-1">
-                      📞 {technicianProfile?.phone || 'لا يوجد رقم هاتف'}
+                    <p className="text-sm text-muted-foreground font-medium mt-1 flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      {technicianProfile?.phone || 'لا يوجد رقم هاتف'}
                     </p>
                     {currentLocation && (
-                      <p className="text-xs text-muted-foreground mt-1 font-medium">
-                        📍 موقعك الحالي: {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Activity className="h-4 w-4 text-green-500 animate-pulse" />
+                        <p className="text-xs text-green-600 dark:text-green-400 font-bold">
+                          🟢 تتبع نشط • {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)}
+                        </p>
+                      </div>
                     )}
                   </div>
                   <div className="flex gap-6">
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-yellow-600">{openTickets.length}</p>
-                      <p className="text-sm text-muted-foreground font-medium">مفتوحة</p>
+                    <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
+                      <p className="text-4xl font-bold text-yellow-600 dark:text-yellow-400">{openTickets.length}</p>
+                      <p className="text-sm text-muted-foreground font-medium">جارية</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-green-600">{completedTickets.length}</p>
+                    <div className="text-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                      <p className="text-4xl font-bold text-green-600 dark:text-green-400">{completedTickets.length}</p>
                       <p className="text-sm text-muted-foreground font-medium">مكتملة</p>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                      <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{scheduledTickets.length}</p>
+                      <p className="text-sm text-muted-foreground font-medium">مجدولة</p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* شريط البحث */}
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="🔍 ابحث عن تذكرة برقمها أو اسم العميل أو رقم الهاتف..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-12 h-12 text-base shadow-md border-primary/20 focus:border-primary"
-              />
+            {/* شريط البحث والفلاتر */}
+            <div className="flex gap-3 flex-wrap">
+              <div className="flex-1 min-w-[300px] relative">
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder="🔍 ابحث عن تذكرة برقمها أو اسم العميل أو رقم الهاتف..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pr-12 h-12 text-base shadow-md border-sky-300/30 dark:border-sky-700/30 focus:border-sky-500"
+                />
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px] h-12 border-sky-300/30 dark:border-sky-700/30">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="حسب الحالة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
+                  <SelectItem value="open">مفتوحة</SelectItem>
+                  <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
+                  <SelectItem value="resolved">منجزة</SelectItem>
+                  <SelectItem value="closed">مغلقة</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-[180px] h-12 border-sky-300/30 dark:border-sky-700/30">
+                  <Bell className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="حسب الأولوية" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع الأولويات</SelectItem>
+                  <SelectItem value="urgent">عاجلة</SelectItem>
+                  <SelectItem value="high">عالية</SelectItem>
+                  <SelectItem value="medium">متوسطة</SelectItem>
+                  <SelectItem value="low">منخفضة</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* الإحصائيات */}
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-5">
               <StatCard
                 title="إجمالي التذاكر"
                 value={tickets.length}
@@ -508,7 +696,7 @@ const TechnicianDashboard = () => {
                 borderColor="border-l-sky-500"
               />
               <StatCard
-                title="التذاكر المفتوحة"
+                title="التذاكر الجارية"
                 value={openTickets.length}
                 icon={Clock}
                 gradient="bg-gradient-to-br from-yellow-500 to-yellow-600"
@@ -522,6 +710,13 @@ const TechnicianDashboard = () => {
                 borderColor="border-l-green-500"
               />
               <StatCard
+                title="التذاكر المجدولة"
+                value={scheduledTickets.length}
+                icon={Calendar}
+                gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                borderColor="border-l-blue-500"
+              />
+              <StatCard
                 title="الإشعارات"
                 value={0}
                 icon={Bell}
@@ -532,11 +727,25 @@ const TechnicianDashboard = () => {
 
             {/* التبويبات */}
             <Tabs defaultValue="open" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50">
-                <TabsTrigger value="open" className="text-sm font-semibold">📋 التذاكر الجارية</TabsTrigger>
-                <TabsTrigger value="completed" className="text-sm font-semibold">✅ التذاكر المكتملة</TabsTrigger>
-                <TabsTrigger value="reports" className="text-sm font-semibold">📊 التقارير الفنية</TabsTrigger>
-                <TabsTrigger value="notifications" className="text-sm font-semibold">🔔 الإشعارات</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-6 h-12 bg-gradient-to-r from-sky-100/50 to-blue-100/50 dark:from-sky-950/50 dark:to-blue-950/50">
+                <TabsTrigger value="open" className="text-sm font-semibold data-[state=active]:bg-sky-500 data-[state=active]:text-white">
+                  📋 الجارية ({openTickets.length})
+                </TabsTrigger>
+                <TabsTrigger value="completed" className="text-sm font-semibold data-[state=active]:bg-green-500 data-[state=active]:text-white">
+                  ✅ المكتملة ({completedTickets.length})
+                </TabsTrigger>
+                <TabsTrigger value="scheduled" className="text-sm font-semibold data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  📅 المجدولة ({scheduledTickets.length})
+                </TabsTrigger>
+                <TabsTrigger value="reports" className="text-sm font-semibold data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+                  📊 التقارير
+                </TabsTrigger>
+                <TabsTrigger value="notifications" className="text-sm font-semibold data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                  🔔 الإشعارات
+                </TabsTrigger>
+                <TabsTrigger value="tracking" className="text-sm font-semibold data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+                  🗺️ التتبع المباشر
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="open" className="space-y-4 animate-fade-in">
@@ -555,9 +764,9 @@ const TechnicianDashboard = () => {
 
               <TabsContent value="completed" className="space-y-4 animate-fade-in">
                 {completedTickets.length === 0 ? (
-                  <Card className="border-dashed">
+                  <Card className="border-dashed border-green-300 dark:border-green-800">
                     <CardContent className="pt-6 text-center py-16">
-                      <CheckCircle2 className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                      <CheckCircle2 className="h-16 w-16 mx-auto text-green-500 mb-4 opacity-50" />
                       <p className="text-muted-foreground text-lg font-medium">لا توجد تذاكر مكتملة</p>
                       <p className="text-sm text-muted-foreground mt-2">ستظهر التذاكر المنجزة هنا</p>
                     </CardContent>
@@ -567,22 +776,97 @@ const TechnicianDashboard = () => {
                 )}
               </TabsContent>
 
+              <TabsContent value="scheduled" className="space-y-4 animate-fade-in">
+                {scheduledTickets.length === 0 ? (
+                  <Card className="border-dashed border-blue-300 dark:border-blue-800">
+                    <CardContent className="pt-6 text-center py-16">
+                      <Calendar className="h-16 w-16 mx-auto text-blue-500 mb-4 opacity-50" />
+                      <p className="text-muted-foreground text-lg font-medium">لا توجد تذاكر مجدولة</p>
+                      <p className="text-sm text-muted-foreground mt-2">ستظهر التذاكر ذات المواعيد المحددة هنا</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  scheduledTickets.map(renderTicket)
+                )}
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-4 animate-fade-in">
-                <Card className="border-dashed">
+                <Card className="border-dashed border-purple-300 dark:border-purple-800">
                   <CardContent className="pt-6 text-center py-16">
-                    <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                    <FileText className="h-16 w-16 mx-auto text-purple-500 mb-4 opacity-50" />
                     <p className="text-muted-foreground text-lg font-medium">التقارير الفنية</p>
-                    <p className="text-sm text-muted-foreground mt-2">سيتم عرض جميع تقاريرك الفنية هنا</p>
+                    <p className="text-sm text-muted-foreground mt-2">سيتم عرض جميع تقاريرك الفنية المحفوظة هنا</p>
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="notifications" className="space-y-4 animate-fade-in">
-                <Card className="border-dashed">
+                <Card className="border-dashed border-orange-300 dark:border-orange-800">
                   <CardContent className="pt-6 text-center py-16">
-                    <Bell className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                    <Bell className="h-16 w-16 mx-auto text-orange-500 mb-4 opacity-50" />
                     <p className="text-muted-foreground text-lg font-medium">لا توجد إشعارات جديدة</p>
                     <p className="text-sm text-muted-foreground mt-2">ستصلك الإشعارات الهامة هنا</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="tracking" className="space-y-4 animate-fade-in">
+                <Card className="border-indigo-300 dark:border-indigo-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+                      <MapPin className="h-6 w-6" />
+                      التتبع المباشر لموقعك
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {currentLocation ? (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Activity className="h-5 w-5 text-green-600 dark:text-green-400 animate-pulse" />
+                            <p className="font-bold text-green-700 dark:text-green-300">🟢 التتبع نشط</p>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            خطوط الطول والعرض: <span className="font-mono font-bold text-foreground">{currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}</span>
+                          </p>
+                        </div>
+                        
+                        <div className="rounded-xl overflow-hidden border-4 border-indigo-200 dark:border-indigo-800 shadow-2xl">
+                          <iframe
+                            width="100%"
+                            height="450"
+                            frameBorder="0"
+                            style={{ border: 0 }}
+                            src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${currentLocation.lat},${currentLocation.lng}&zoom=16`}
+                            allowFullScreen
+                            title="موقعك الحالي"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button 
+                            variant="outline"
+                            className="border-indigo-500/50 hover:bg-indigo-500/10"
+                            onClick={() => window.open(`https://www.google.com/maps?q=${currentLocation.lat},${currentLocation.lng}`, '_blank')}
+                          >
+                            🗺️ فتح في Google Maps
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="border-indigo-500/50 hover:bg-indigo-500/10"
+                            onClick={() => openInWaze(currentLocation.lat, currentLocation.lng)}
+                          >
+                            🧭 فتح في Waze
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-16">
+                        <MapPin className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                        <p className="text-muted-foreground text-lg font-medium">يتم تحديد موقعك...</p>
+                        <p className="text-sm text-muted-foreground mt-2">الرجاء السماح بالوصول للموقع</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
