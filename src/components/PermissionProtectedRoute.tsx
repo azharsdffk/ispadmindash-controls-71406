@@ -18,8 +18,8 @@ export const PermissionProtectedRoute = ({
   requireAll = false 
 }: PermissionProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { hasPermission, hasAnyPermission, hasAllPermissions, loading: permissionsLoading } = usePermissions();
   const { isAdmin, loading: roleLoading } = useUserRole();
+  const { hasPermission, hasAnyPermission, hasAllPermissions, loading: permissionsLoading } = usePermissions();
 
   if (authLoading || permissionsLoading || roleLoading) {
     return (
