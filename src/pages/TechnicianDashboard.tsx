@@ -5,10 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { useAuth } from '@/contexts/AuthContext';
 import { Wrench, CheckCircle, Clock, MapPin, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -38,39 +42,50 @@ const TechnicianDashboard = () => {
     
     setLoading(true);
     
-    const { data, error } = await supabase
-      .from('maintenance_tickets')
-      .select('*')
-      .eq('assigned_to', user.id)
-      .order('created_at', { ascending: false });
+    try {
+      // Fetch tickets
+      const ticketsResponse = await supabase
+        .from('maintenance_tickets')
+        .select('id, ticket_number, issue_description, status, priority, created_at, subscriber_id')
+        .eq('assigned_to', user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching tickets:', error);
+      if (ticketsResponse.error) {
+        console.error('Error fetching tickets:', ticketsResponse.error);
+        toast.error('حدث خطأ أثناء جلب الطلبات');
+        setLoading(false);
+        return;
+      }
+
+      const ticketsData = ticketsResponse.data || [];
+      const processedTickets: Ticket[] = [];
+
+      // Fetch subscriber data for each ticket
+      for (const ticket of ticketsData) {
+        const subscriberResponse = await supabase
+          .from('subscribers')
+          .select('name, phone, address')
+          .eq('id', ticket.subscriber_id)
+          .single();
+
+        processedTickets.push({
+          id: ticket.id,
+          ticket_number: ticket.ticket_number,
+          issue_description: ticket.issue_description,
+          status: ticket.status as TicketStatus,
+          priority: ticket.priority as TicketPriority,
+          created_at: ticket.created_at,
+          subscribers: subscriberResponse.data || { name: '', phone: '', address: '' }
+        });
+      }
+
+      setTickets(processedTickets);
+    } catch (error) {
+      console.error('Error:', error);
       toast.error('حدث خطأ أثناء جلب الطلبات');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const ticketsData: Ticket[] = await Promise.all((data || []).map(async (ticket: any) => {
-      const { data: subscriber } = await supabase
-        .from('subscribers')
-        .select('name, phone, address')
-        .eq('id', ticket.subscriber_id)
-        .single();
-
-      return {
-        id: ticket.id,
-        ticket_number: ticket.ticket_number,
-        issue_description: ticket.issue_description,
-        status: ticket.status,
-        priority: ticket.priority,
-        created_at: ticket.created_at,
-        subscribers: subscriber || { name: '', phone: '', address: '' }
-      };
-    }));
-
-    setTickets(ticketsData);
-    setLoading(false);
   };
 
   useEffect(() => {
