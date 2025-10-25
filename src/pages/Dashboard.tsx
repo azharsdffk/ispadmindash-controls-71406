@@ -6,8 +6,13 @@ import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import { Users, TrendingUp, DollarSign, Wrench, AlertCircle, Activity, CheckCircle2, Clock, Calculator, ArrowLeft } from "lucide-react";
+import { Users, TrendingUp, DollarSign, Wrench, AlertCircle, Activity, CheckCircle2, Clock, Calculator, ArrowLeft, Ticket } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { TicketDetailsModal } from "@/components/modals/TicketDetailsModal";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { toast } from "sonner";
 
@@ -28,6 +33,11 @@ const Dashboard = () => {
   const [subscribersByPlan, setSubscribersByPlan] = useState<any[]>([]);
   const [ticketsByStatus, setTicketsByStatus] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [allTickets, setAllTickets] = useState<any[]>([]);
+  const [allTicketsSheetOpen, setAllTicketsSheetOpen] = useState(false);
+  const [ticketSearchQuery, setTicketSearchQuery] = useState("");
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -72,7 +82,13 @@ const Dashboard = () => {
       // Get maintenance tickets stats
       const { data: tickets } = await supabase
         .from('maintenance_tickets')
-        .select('status, priority');
+        .select(`
+          *,
+          customer:subscribers!customer_id(full_name, phone, address)
+        `)
+        .order('created_at', { ascending: false });
+      
+      setAllTickets(tickets || []);
       
       const openTickets = tickets?.filter(t => t.status === 'open' || t.status === 'in_progress').length || 0;
       const urgentTickets = tickets?.filter(t => t.priority === 'high' || t.priority === 'urgent').length || 0;
@@ -164,6 +180,61 @@ const Dashboard = () => {
       subscribers: 'مشترك', maintenance_tickets: 'تذكرة', payments: 'دفعة', invoices: 'فاتورة',
     };
     return `${actions[action] || action} ${tables[tableName] || tableName}`;
+  };
+
+  const handleOpenTicketDetails = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setDetailsModalOpen(true);
+  };
+
+  const filteredTickets = allTickets.filter(ticket => {
+    if (!ticketSearchQuery) return true;
+    const query = ticketSearchQuery.toLowerCase();
+    return (
+      ticket.description?.toLowerCase().includes(query) ||
+      ticket.customer?.full_name?.toLowerCase().includes(query) ||
+      ticket.status?.toLowerCase().includes(query)
+    );
+  });
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'open': return 'default';
+      case 'in_progress': return 'secondary';
+      case 'resolved': return 'outline';
+      case 'closed': return 'outline';
+      default: return 'default';
+    }
+  };
+
+  const getPriorityBadgeVariant = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'destructive';
+      case 'high': return 'destructive';
+      case 'medium': return 'secondary';
+      case 'low': return 'outline';
+      default: return 'default';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      open: 'مفتوحة',
+      in_progress: 'قيد المعالجة',
+      resolved: 'محلولة',
+      closed: 'مغلقة'
+    };
+    return labels[status] || status;
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    const labels: Record<string, string> = {
+      urgent: 'عاجل',
+      high: 'مرتفع',
+      medium: 'متوسط',
+      low: 'منخفض'
+    };
+    return labels[priority] || priority;
   };
 
   if (loading) {
@@ -396,6 +467,99 @@ const Dashboard = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      {/* Floating Tickets Button */}
+      <Button
+        onClick={() => setAllTicketsSheetOpen(true)}
+        className="fixed left-6 bottom-6 h-16 w-16 rounded-full shadow-2xl hover:scale-110 transition-transform z-50"
+        size="icon"
+      >
+        <div className="relative">
+          <Ticket className="h-6 w-6" />
+          {allTickets.length > 0 && (
+            <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+              {allTickets.length}
+            </Badge>
+          )}
+        </div>
+      </Button>
+
+      {/* All Tickets Sheet */}
+      <Sheet open={allTicketsSheetOpen} onOpenChange={setAllTicketsSheetOpen}>
+        <SheetContent side="left" className="w-full sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-xl">
+              <Ticket className="h-6 w-6" />
+              جميع التذاكر ({allTickets.length})
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="mt-6 space-y-4">
+            <Input
+              placeholder="بحث في التذاكر..."
+              value={ticketSearchQuery}
+              onChange={(e) => setTicketSearchQuery(e.target.value)}
+              className="w-full"
+            />
+
+            <div className="space-y-3">
+              {filteredTickets.length > 0 ? (
+                filteredTickets.map((ticket) => (
+                  <Card
+                    key={ticket.id}
+                    className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-primary/50"
+                    onClick={() => {
+                      handleOpenTicketDetails(ticket.id);
+                      setAllTicketsSheetOpen(false);
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {ticket.customer?.full_name || 'عميل غير معروف'}
+                            </p>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {ticket.description}
+                            </p>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant={getStatusBadgeVariant(ticket.status)} className="text-xs">
+                              {getStatusLabel(ticket.status)}
+                            </Badge>
+                            <Badge variant={getPriorityBadgeVariant(ticket.priority)} className="text-xs">
+                              {getPriorityLabel(ticket.priority)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{ticket.customer?.phone}</span>
+                          <span>{new Date(ticket.created_at).toLocaleDateString('ar-IQ')}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Ticket className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                  <p>لا توجد تذاكر</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Ticket Details Modal */}
+      {selectedTicketId && (
+        <TicketDetailsModal
+          ticketId={selectedTicketId}
+          open={detailsModalOpen}
+          onOpenChange={setDetailsModalOpen}
+        />
+      )}
     </div>
   );
 };
