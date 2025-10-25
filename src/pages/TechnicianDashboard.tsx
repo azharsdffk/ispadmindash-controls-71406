@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { TicketDetailsModal } from '@/components/modals/TicketDetailsModal';
 import { 
   CheckCircle2, 
   Clock, 
@@ -85,10 +85,8 @@ const TechnicianDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [technicianProfile, setTechnicianProfile] = useState<TechnicianProfile | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{lat: number; lng: number} | null>(null);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [reportText, setReportText] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [locationTracking, setLocationTracking] = useState<number | null>(null);
@@ -260,45 +258,10 @@ const TechnicianDashboard = () => {
     }
   };
 
-  // إضافة تقرير صيانة
-  const handleAddReport = async () => {
-    if (!selectedTicket || !reportText.trim()) {
-      toast.error('يرجى كتابة التقرير');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('maintenance_tickets')
-        .update({ 
-          notes: reportText
-        })
-        .eq('id', selectedTicket.id);
-
-      if (error) throw error;
-      toast.success('✅ تم إضافة التقرير بنجاح');
-      setReportText('');
-      setSelectedTicket(null);
-      setReportDialogOpen(false);
-      fetchTickets();
-    } catch (error) {
-      console.error('خطأ في إضافة التقرير:', error);
-      toast.error('فشل إضافة التقرير');
-    }
-  };
-
-  // رفع صورة
-  const handleUploadImage = async (ticketId: string, file: File) => {
-    setUploadingImage(true);
-    try {
-      // TODO: سيتم إضافة وظيفة رفع الصور عند إنشاء Storage bucket
-      toast.success('✅ تم رفع الصورة بنجاح');
-    } catch (error) {
-      console.error('خطأ في رفع الصورة:', error);
-      toast.error('فشل رفع الصورة');
-    } finally {
-      setUploadingImage(false);
-    }
+  // فتح نافذة تفاصيل التذكرة
+  const handleOpenTicketDetails = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setDetailsModalOpen(true);
   };
 
   // فتح الموقع في Waze
@@ -387,7 +350,11 @@ const TechnicianDashboard = () => {
       : null;
 
     return (
-      <Card key={ticket.id} className="mb-4 hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
+      <Card 
+        key={ticket.id} 
+        className="mb-4 hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary cursor-pointer"
+        onClick={() => handleOpenTicketDetails(ticket.id)}
+      >
         <CardHeader className="pb-3 bg-gradient-to-r from-sky-500/5 via-primary/5 to-transparent">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
@@ -490,88 +457,6 @@ const TechnicianDashboard = () => {
             )}
           </div>
 
-          <div className="flex gap-2 flex-wrap pt-2">
-            {(ticket.status === 'open' || ticket.status === 'in_progress') && (
-              <Button 
-                onClick={() => handleCompleteTicket(ticket.id)}
-                size="sm"
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                ✅ تم الإنجاز
-              </Button>
-            )}
-          
-          <Dialog open={reportDialogOpen && selectedTicket?.id === ticket.id} onOpenChange={setReportDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={() => {
-                  setSelectedTicket(ticket);
-                  setReportText(ticket.notes || '');
-                }}
-                size="sm" 
-                variant="outline"
-                className="border-primary/50 hover:bg-primary/10"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                📝 إضافة تقرير
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold">إضافة تقرير صيانة</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label className="text-sm font-semibold">التقرير الفني</Label>
-                  <Textarea
-                    value={reportText}
-                    onChange={(e) => setReportText(e.target.value)}
-                    placeholder="اكتب تقرير الصيانة بالتفصيل هنا..."
-                    rows={8}
-                    className="mt-2 resize-none"
-                  />
-                </div>
-                <Button 
-                  onClick={handleAddReport} 
-                  className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
-                >
-                  💾 حفظ التقرير
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Button 
-            size="sm" 
-            variant="outline"
-            className="border-primary/50 hover:bg-primary/10"
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*';
-              input.onchange = (e: any) => {
-                const file = e.target.files[0];
-                if (file) handleUploadImage(ticket.id, file);
-              };
-              input.click();
-            }}
-            disabled={uploadingImage}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            📸 رفع صورة
-          </Button>
-
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="border-sky-500/50 hover:bg-sky-500/10"
-              onClick={() => openInWaze(ticket.subscribers?.latitude, ticket.subscribers?.longitude)}
-            >
-              <Navigation className="h-4 w-4 mr-2" />
-              🗺️ فتح في Waze
-            </Button>
-          </div>
         </CardContent>
       </Card>
     );
@@ -873,6 +758,14 @@ const TechnicianDashboard = () => {
             </Tabs>
           </main>
         </div>
+
+        {/* نافذة تفاصيل التذكرة */}
+        <TicketDetailsModal
+          ticketId={selectedTicketId}
+          open={detailsModalOpen}
+          onOpenChange={setDetailsModalOpen}
+          onTicketUpdated={fetchTickets}
+        />
       </div>
     </SidebarProvider>
   );
