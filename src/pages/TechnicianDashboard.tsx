@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { TicketDetailsModal } from '@/components/modals/TicketDetailsModal';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { 
   CheckCircle2, 
   Clock, 
@@ -27,7 +28,8 @@ import {
   Filter,
   Calendar,
   TrendingUp,
-  Activity
+  Activity,
+  Ticket
 } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { toast } from 'sonner';
@@ -90,6 +92,7 @@ const TechnicianDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [locationTracking, setLocationTracking] = useState<number | null>(null);
+  const [allTicketsSheetOpen, setAllTicketsSheetOpen] = useState(false);
 
   // جلب الموقع الحالي للفني وتتبعه تلقائياً
   useEffect(() => {
@@ -766,6 +769,91 @@ const TechnicianDashboard = () => {
           onOpenChange={setDetailsModalOpen}
           onTicketUpdated={fetchTickets}
         />
+
+        {/* زر عائم لعرض جميع التذاكر */}
+        <Button
+          onClick={() => setAllTicketsSheetOpen(true)}
+          className="fixed left-6 bottom-6 h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 z-50 group"
+          size="icon"
+        >
+          <div className="relative">
+            <Ticket className="h-7 w-7 text-white group-hover:scale-110 transition-transform" />
+            <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full">
+              {tickets.length}
+            </Badge>
+          </div>
+        </Button>
+
+        {/* Sheet لعرض جميع التذاكر */}
+        <Sheet open={allTicketsSheetOpen} onOpenChange={setAllTicketsSheetOpen}>
+          <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="text-2xl font-bold flex items-center gap-2">
+                <Ticket className="h-6 w-6 text-sky-500" />
+                جميع التذاكر ({tickets.length})
+              </SheetTitle>
+              <SheetDescription>
+                قائمة كاملة بجميع تذاكر الصيانة المسندة إليك
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="mt-6 space-y-4">
+              {/* شريط البحث داخل الـ Sheet */}
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="ابحث عن تذكرة..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
+
+              {/* قائمة التذاكر */}
+              <div className="space-y-3">
+                {filteredAndSortedTickets.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+                    <p className="text-muted-foreground">لا توجد تذاكر</p>
+                  </div>
+                ) : (
+                  filteredAndSortedTickets.map((ticket) => (
+                    <Card
+                      key={ticket.id}
+                      className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-sky-500"
+                      onClick={() => {
+                        handleOpenTicketDetails(ticket.id);
+                        setAllTicketsSheetOpen(false);
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-bold text-foreground">{ticket.subscribers?.name || 'غير محدد'}</p>
+                            <p className="text-xs text-muted-foreground">{ticket.ticket_number}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            {getStatusBadge(ticket.status)}
+                            {getPriorityBadge(ticket.priority)}
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                          {ticket.issue_description}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {new Date(ticket.created_at).toLocaleDateString('ar-IQ')}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </SidebarProvider>
   );
