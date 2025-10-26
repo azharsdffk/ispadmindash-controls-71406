@@ -660,6 +660,7 @@ export type Database = {
           created_by: string | null
           id: string
           issue_description: string
+          issue_type: string | null
           notes: string | null
           priority: Database["public"]["Enums"]["ticket_priority"] | null
           resolved_at: string | null
@@ -675,6 +676,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           issue_description: string
+          issue_type?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"] | null
           resolved_at?: string | null
@@ -690,6 +692,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           issue_description?: string
+          issue_type?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"] | null
           resolved_at?: string | null

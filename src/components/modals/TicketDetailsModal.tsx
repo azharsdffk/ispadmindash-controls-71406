@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   MapPin,
   Phone,
@@ -43,6 +44,7 @@ interface TicketDetails {
   created_at: string;
   resolved_at: string | null;
   notes: string | null;
+  issue_type: string | null;
   subscriber_id: string;
   subscribers: {
     id: string;
@@ -67,7 +69,24 @@ export const TicketDetailsModal = ({
   const [ticket, setTicket] = useState<TicketDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState('');
+  const [issueType, setIssueType] = useState('');
+  const [customIssue, setCustomIssue] = useState('');
   const [updating, setUpdating] = useState(false);
+
+  const issueTypeOptions = [
+    'ضعف في الخدمة',
+    'انقطاع الخدمة',
+    'فصالات في الخدمة',
+    'ديبي عالي',
+    'كيبل مقطوع',
+    'أونيو عاطل',
+    'برمجة راوتر',
+    'برمجة أونيو',
+    'تغيير مكان المنظومة',
+    'فيشة مكسورة',
+    'ترتيب الكابينة',
+    'مشكلة أخرى'
+  ];
 
   useEffect(() => {
     if (open && ticketId) {
@@ -92,6 +111,7 @@ export const TicketDetailsModal = ({
           created_at,
           resolved_at,
           notes,
+          issue_type,
           subscriber_id,
           subscribers (
             id,
@@ -112,6 +132,17 @@ export const TicketDetailsModal = ({
       if (error) throw error;
       setTicket(data);
       setReportText(data.notes || '');
+      
+      // Set issue type
+      if (data.issue_type) {
+        if (issueTypeOptions.includes(data.issue_type)) {
+          setIssueType(data.issue_type);
+          setCustomIssue('');
+        } else {
+          setIssueType('مشكلة أخرى');
+          setCustomIssue(data.issue_type);
+        }
+      }
     } catch (error) {
       console.error('خطأ في جلب تفاصيل التذكرة:', error);
       toast.error('فشل تحميل التفاصيل');
@@ -150,15 +181,20 @@ export const TicketDetailsModal = ({
   const handleSaveReport = async () => {
     if (!ticket) return;
 
+    const finalIssueType = issueType === 'مشكلة أخرى' ? customIssue : issueType;
+
     setUpdating(true);
     try {
       const { error } = await supabase
         .from('maintenance_tickets')
-        .update({ notes: reportText })
+        .update({ 
+          notes: reportText,
+          issue_type: finalIssueType || null
+        })
         .eq('id', ticket.id);
 
       if (error) throw error;
-      toast.success('✅ تم حفظ التقرير');
+      toast.success('✅ تم حفظ التقرير ونوع المشكلة');
       fetchTicketDetails();
       onTicketUpdated?.();
     } catch (error) {
@@ -402,6 +438,38 @@ export const TicketDetailsModal = ({
 
             <Separator />
 
+            {/* نوع المشكلة */}
+            <div className="space-y-3">
+              <Label className="text-base font-bold flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-primary" />
+                نوع المشكلة / سبب الصيانة
+              </Label>
+              <Select value={issueType} onValueChange={setIssueType}>
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="اختر نوع المشكلة" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {issueTypeOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {issueType === 'مشكلة أخرى' && (
+                <Textarea
+                  value={customIssue}
+                  onChange={(e) => setCustomIssue(e.target.value)}
+                  placeholder="أدخل وصف المشكلة"
+                  className="min-h-[80px] resize-none bg-background"
+                  dir="rtl"
+                />
+              )}
+            </div>
+
+            <Separator />
+
             {/* تقرير الصيانة */}
             <div className="space-y-3">
               <Label htmlFor="report" className="text-base font-bold flex items-center gap-2">
@@ -413,14 +481,15 @@ export const TicketDetailsModal = ({
                 value={reportText}
                 onChange={(e) => setReportText(e.target.value)}
                 placeholder="اكتب تقرير الصيانة هنا..."
-                className="min-h-[120px] resize-none"
+                className="min-h-[120px] resize-none bg-background"
+                dir="rtl"
               />
               <Button
                 onClick={handleSaveReport}
-                disabled={updating || !reportText.trim()}
+                disabled={updating}
                 className="w-full"
               >
-                {updating ? 'جاري الحفظ...' : 'حفظ التقرير'}
+                {updating ? 'جاري الحفظ...' : 'حفظ التقرير ونوع المشكلة'}
               </Button>
             </div>
 
