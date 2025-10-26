@@ -263,8 +263,10 @@ const TechnicianDashboard = () => {
 
   // فتح نافذة تفاصيل التذكرة
   const handleOpenTicketDetails = (ticketId: string) => {
+    console.log('🎯 فتح تفاصيل التذكرة:', ticketId);
     setSelectedTicketId(ticketId);
     setDetailsModalOpen(true);
+    console.log('📋 detailsModalOpen:', true);
   };
 
   // فتح الموقع في Waze
