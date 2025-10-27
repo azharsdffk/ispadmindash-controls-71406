@@ -1,18 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import { ProfessionalHeader } from '@/components/admin/ProfessionalHeader';
 import { AdminStatsCards } from '@/components/admin/AdminStatsCards';
 import { AdminCharts } from '@/components/admin/AdminCharts';
+import { MapView } from '@/components/admin/MapView';
 import { TicketsTable } from '@/components/admin/TicketsTable';
 import { TechniciansTable } from '@/components/admin/TechniciansTable';
 import { SubscribersTable } from '@/components/admin/SubscribersTable';
 import { FinancialManagement } from '@/components/admin/FinancialManagement';
 import { ReportsAnalytics } from '@/components/admin/ReportsAnalytics';
 import { ActivityLog } from '@/components/admin/ActivityLog';
-import { LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Settings } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Zap, TrendingUp } from 'lucide-react';
+import { SettingsModal } from '@/components/modals/SettingsModal';
+import { Badge } from '@/components/ui/badge';
 
 const AdminDashboard = () => {
   const { isAdmin, loading } = useUserRole();
@@ -35,24 +38,40 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <AppSidebar />
       <div className="lg:mr-64">
-        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
         
-        {/* Header Section */}
-        <div className="border-b bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
-          <div className="container mx-auto px-4 py-8">
+        {/* Hero Header Section */}
+        <div className="relative overflow-hidden border-b">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent"></div>
+          <div className="container mx-auto px-6 py-12 relative">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-l from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent mb-2">
-                  لوحة المدير العام
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                  إدارة شاملة لجميع عمليات النظام
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <div className="px-4 py-2 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm text-muted-foreground">الوقت الفعلي</p>
-                  <p className="text-lg font-semibold">{new Date().toLocaleTimeString('ar-EG')}</p>
+              <div className="space-y-4 animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-14 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
+                    <LayoutDashboard className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-5xl font-bold text-gradient-primary">
+                      لوحة المدير العام
+                    </h1>
+                    <p className="text-muted-foreground text-lg mt-1">
+                      إدارة شاملة واحترافية لجميع عمليات النظام
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 animate-slide-up">
+                  <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20">
+                    <Zap className="h-3 w-3 ml-1" />
+                    نظام نشط
+                  </Badge>
+                  <Badge className="bg-info/10 text-info border-info/20 hover:bg-info/20">
+                    <TrendingUp className="h-3 w-3 ml-1" />
+                    تحديث مباشر
+                  </Badge>
+                  <Badge className="bg-warning/10 text-warning border-warning/20 hover:bg-warning/20">
+                    <Activity className="h-3 w-3 ml-1" />
+                    {new Date().toLocaleDateString('ar-EG')}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -93,9 +112,12 @@ const AdminDashboard = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
+            <TabsContent value="overview" className="space-y-6 animate-fade-in">
               <AdminStatsCards />
-              <AdminCharts />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <AdminCharts />
+                <MapView />
+              </div>
             </TabsContent>
 
             <TabsContent value="tickets">
@@ -124,6 +146,8 @@ const AdminDashboard = () => {
           </Tabs>
         </div>
       </div>
+      
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 };
