@@ -53,15 +53,19 @@ export const AppSidebar = () => {
     <aside className="w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0">
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => {
-          // إخفاء العناصر التي لا تتوافق مع أدوار المستخدم
-          const hasRequiredRole = item.roles && item.roles.some(role => roles.includes(role));
+          // السماح بعرض الأيقونات الأساسية حتى بدون أدوار
+          const basicPaths = ['/', '/settings', '/notifications'];
+          const isBasicPath = basicPaths.includes(item.path);
+          
+          // إخفاء العناصر التي لا تتوافق مع أدوار المستخدم (إلا الأساسية)
+          const hasRequiredRole = item.roles && (isBasicPath || item.roles.some(role => roles.includes(role)));
           
           if (!hasRequiredRole) {
             return null;
           }
 
-          // إخفاء العناصر التي تتطلب صلاحيات غير متوفرة
-          if (item.permission && !hasPermission(item.permission)) {
+          // إخفاء العناصر التي تتطلب صلاحيات غير متوفرة (إلا الأساسية)
+          if (!isBasicPath && item.permission && !hasPermission(item.permission)) {
             return null;
           }
 
