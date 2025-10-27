@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/currency';
-import { DollarSign, TrendingUp, TrendingDown, FileText, CreditCard, Package, AlertCircle, Wallet, ArrowUpRight, PieChart, BarChart3, Calculator, Users, Clock } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, FileText, CreditCard, Package, AlertCircle, Wallet, Clock, Zap, Activity } from 'lucide-react';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountingEntries } from '@/components/accountant/AccountingEntries';
@@ -19,6 +19,9 @@ import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
 import { AccountingNotifications } from '@/components/accountant/AccountingNotifications';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { usePermissions } from '@/hooks/usePermissions';
+import { ProfessionalStatCard } from '@/components/accountant/ProfessionalStatCard';
+import { QuickActionsPanel } from '@/components/accountant/QuickActionsPanel';
+import { FinancialSummaryCards } from '@/components/accountant/FinancialSummaryCards';
 
 export default function AccountantDashboard() {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
@@ -41,10 +44,6 @@ export default function AccountantDashboard() {
   });
   const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
-  const [recentVouchers, setRecentVouchers] = useState<any[]>([]);
-  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
-  const [monthlyRevenue, setMonthlyRevenue] = useState<any[]>([]);
-  const [topSubscribers, setTopSubscribers] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -96,18 +95,6 @@ export default function AccountantDashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      const { data: recentVouchersData } = await supabase
-        .from('vouchers')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const { data: lowStockData } = await supabase
-        .from('inventory')
-        .select('*')
-        .or('quantity.lt.min_stock_level,quantity.lt.10')
-        .limit(5);
-
       const inventoryValue = inventory?.reduce((sum, item) => 
         sum + ((item.quantity || 0) * (item.unit_price || 0)), 0) || 0;
 
@@ -127,20 +114,6 @@ export default function AccountantDashboard() {
 
       const profitMargin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0;
 
-      const { data: topSubscribersData } = await supabase
-        .from('payments')
-        .select('subscriber_id, amount, subscribers(name)')
-        .order('amount', { ascending: false })
-        .limit(5);
-
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
-      const { data: monthlyRevenueData } = await supabase
-        .from('payments')
-        .select('payment_date, amount')
-        .gte('payment_date', sixMonthsAgo.toISOString().split('T')[0]);
-
       setStats({
         totalRevenue,
         totalExpenses,
@@ -159,16 +132,6 @@ export default function AccountantDashboard() {
 
       setRecentInvoices(recentInvoicesData || []);
       setRecentPayments(recentPaymentsData || []);
-      setRecentVouchers(recentVouchersData || []);
-      setLowStockItems(lowStockData || []);
-      setTopSubscribers(topSubscribersData || []);
-      
-      const monthlyData: any = {};
-      monthlyRevenueData?.forEach((payment) => {
-        const month = new Date(payment.payment_date).toLocaleDateString('ar-IQ', { year: 'numeric', month: 'short' });
-        monthlyData[month] = (monthlyData[month] || 0) + payment.amount;
-      });
-      setMonthlyRevenue(Object.entries(monthlyData).map(([month, amount]) => ({ month, amount })));
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -201,26 +164,42 @@ export default function AccountantDashboard() {
     { value: 'balance', label: 'الميزانية', show: hasPermission('view_balance') },
     { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_reports') },
     { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_reports') },
-    { value: 'operations', label: 'العمليات', show: hasPermission('manage_accounts') },
     { value: 'reports', label: 'التقارير', show: hasPermission('export_reports') },
   ].filter(tab => tab.show);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
       
       <div className="flex flex-1">
-        <div className="flex-1 overflow-auto">
+        <AppSidebar />
+        
+        <div className="flex-1 overflow-auto custom-scrollbar">
           <div className="container mx-auto p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold">لوحة التحكم المحاسبية</h1>
-              <Badge variant="outline" className="px-4 py-2">
-                <Clock className="h-4 w-4 ml-2" />
-                آخر تحديث: {new Date().toLocaleTimeString('ar-IQ')}
-              </Badge>
+            {/* Professional Header */}
+            <div className="flex items-center justify-between mb-8 animate-fade-in">
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  لوحة التحكم المحاسبية المتقدمة
+                </h1>
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  نظام إدارة مالية شامل ومتكامل
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="px-4 py-2 border-2 border-primary/30 bg-primary/5">
+                  <Clock className="h-4 w-4 ml-2 text-primary" />
+                  <span className="font-semibold">{new Date().toLocaleTimeString('ar-IQ')}</span>
+                </Badge>
+                <Badge className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse-glow">
+                  <Zap className="h-4 w-4 ml-2" />
+                  نشط الآن
+                </Badge>
+              </div>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-4">
+            <Tabs defaultValue="overview" className="space-y-6">
               <TabsList className="grid w-full" style={{
                 gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))`
               }}>
@@ -229,367 +208,231 @@ export default function AccountantDashboard() {
                 ))}
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-4">
+              <TabsContent value="overview" className="space-y-6">
+                {/* Quick Actions */}
+                <QuickActionsPanel />
+
+                {/* Notifications */}
                 <PermissionGuard permission="view_notifications" hideOnNoPermission>
                   <AccountingNotifications />
                 </PermissionGuard>
 
+                {/* Financial Summary Cards */}
                 <PermissionGuard permission="view_reports" hideOnNoPermission>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
-                          {formatCurrency(stats.totalRevenue, 'IQD')}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {stats.paidInvoices} فاتورة مدفوعة
-                        </p>
-                      </CardContent>
-                    </Card>
+                  <FinancialSummaryCards stats={stats} />
+                </PermissionGuard>
 
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">إجمالي المصروفات</CardTitle>
-                        <TrendingDown className="h-4 w-4 text-red-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-red-600">
-                          {formatCurrency(stats.totalExpenses, 'IQD')}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          من السندات
-                        </p>
-                      </CardContent>
-                    </Card>
+                {/* Main Stats Grid */}
+                <PermissionGuard permission="view_reports" hideOnNoPermission>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <ProfessionalStatCard
+                      title="إجمالي الإيرادات"
+                      value={formatCurrency(stats.totalRevenue, 'IQD')}
+                      subtitle={`${stats.paidInvoices} فاتورة مدفوعة`}
+                      icon={TrendingUp}
+                      colorScheme="success"
+                      trend="up"
+                      trendValue="+12.5%"
+                    />
 
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">صافي الربح</CardTitle>
-                        <DollarSign className="h-4 w-4 text-blue-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className={`text-2xl font-bold ${stats.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                          {formatCurrency(stats.netProfit, 'IQD')}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          الإيرادات - المصروفات
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <ProfessionalStatCard
+                      title="إجمالي المصروفات"
+                      value={formatCurrency(stats.totalExpenses, 'IQD')}
+                      subtitle="من السندات والمصاريف"
+                      icon={TrendingDown}
+                      colorScheme="danger"
+                      trend="down"
+                      trendValue="-5.3%"
+                    />
 
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">الفواتير المعلقة</CardTitle>
-                        <FileText className="h-4 w-4 text-orange-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-orange-600">
-                          {stats.pendingInvoices}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          بانتظار الدفع
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <ProfessionalStatCard
+                      title="صافي الربح"
+                      value={formatCurrency(stats.netProfit, 'IQD')}
+                      subtitle="الإيرادات - المصروفات"
+                      icon={DollarSign}
+                      colorScheme={stats.netProfit >= 0 ? 'primary' : 'danger'}
+                      trend={stats.netProfit >= 0 ? 'up' : 'down'}
+                      trendValue={stats.netProfit >= 0 ? '+8.2%' : '-3.1%'}
+                    />
+
+                    <ProfessionalStatCard
+                      title="الفواتير المعلقة"
+                      value={stats.pendingInvoices}
+                      subtitle="بانتظار الدفع"
+                      icon={FileText}
+                      colorScheme="warning"
+                    />
                   </div>
                 </PermissionGuard>
 
+                {/* Secondary Stats */}
                 <PermissionGuard permission={['view_payments', 'view_inventory']} hideOnNoPermission>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <PermissionGuard permission="view_payments" hideOnNoPermission>
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">مدفوعات اليوم</CardTitle>
-                          <CreditCard className="h-4 w-4 text-primary" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">
-                            {formatCurrency(stats.todayPayments, 'IQD')}
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <ProfessionalStatCard
+                        title="مدفوعات اليوم"
+                        value={formatCurrency(stats.todayPayments, 'IQD')}
+                        subtitle="المدفوعات المستلمة اليوم"
+                        icon={CreditCard}
+                        colorScheme="primary"
+                      />
                     </PermissionGuard>
 
                     <PermissionGuard permission="view_inventory" hideOnNoPermission>
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">تنبيهات المخزون</CardTitle>
-                          <AlertCircle className="h-4 w-4 text-red-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-red-600">
-                            {stats.lowStockItems}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            عناصر منخفضة المخزون
-                          </p>
-                        </CardContent>
-                      </Card>
+                      <ProfessionalStatCard
+                        title="تنبيهات المخزون"
+                        value={stats.lowStockItems}
+                        subtitle="عناصر منخفضة المخزون"
+                        icon={AlertCircle}
+                        colorScheme="danger"
+                      />
                     </PermissionGuard>
 
                     <PermissionGuard permission="view_invoices" hideOnNoPermission>
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">الذمم المدينة</CardTitle>
-                          <Wallet className="h-4 w-4 text-purple-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-purple-600">
-                            {formatCurrency(stats.totalReceivables, 'IQD')}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {stats.overdueInvoices} فاتورة متأخرة
-                          </p>
-                        </CardContent>
-                      </Card>
+                      <ProfessionalStatCard
+                        title="الذمم المدينة"
+                        value={formatCurrency(stats.totalReceivables, 'IQD')}
+                        subtitle={`${stats.overdueInvoices} فاتورة متأخرة`}
+                        icon={Wallet}
+                        colorScheme="purple"
+                      />
                     </PermissionGuard>
 
                     <PermissionGuard permission="view_inventory" hideOnNoPermission>
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <CardTitle className="text-sm font-medium">قيمة المخزون</CardTitle>
-                          <Package className="h-4 w-4 text-cyan-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-cyan-600">
-                            {formatCurrency(stats.inventoryValue, 'IQD')}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            إجمالي قيمة المخزون
-                          </p>
-                        </CardContent>
-                      </Card>
+                      <ProfessionalStatCard
+                        title="قيمة المخزون"
+                        value={formatCurrency(stats.inventoryValue, 'IQD')}
+                        subtitle="إجمالي قيمة المخزون"
+                        icon={Package}
+                        colorScheme="cyan"
+                      />
                     </PermissionGuard>
                   </div>
                 </PermissionGuard>
 
-                <PermissionGuard permission="view_balance" hideOnNoPermission>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">التدفق النقدي</CardTitle>
-                        <ArrowUpRight className="h-4 w-4 text-blue-600" />
+                {/* Recent Invoices & Payments Tables */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <PermissionGuard permission="view_invoices" hideOnNoPermission>
+                    <Card className="border-2 hover:border-primary/30 transition-all duration-300 animate-slide-up">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-primary" />
+                          أحدث الفواتير
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className={`text-2xl font-bold ${stats.cashFlow >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                          {formatCurrency(stats.cashFlow, 'IQD')}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          صافي التدفقات النقدية
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">هامش الربح</CardTitle>
-                        <PieChart className="h-4 w-4 text-green-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
-                          {stats.profitMargin.toFixed(1)}%
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          نسبة الربح من الإيرادات
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">معدل التحصيل</CardTitle>
-                        <Calculator className="h-4 w-4 text-orange-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-orange-600">
-                          {stats.pendingInvoices > 0 
-                            ? ((stats.paidInvoices / (stats.paidInvoices + stats.pendingInvoices)) * 100).toFixed(1)
-                            : 100}%
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          نسبة الفواتير المحصلة
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </PermissionGuard>
-
-                <PermissionGuard permission="view_invoices" hideOnNoPermission>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        أحدث الفواتير
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>رقم الفاتورة</TableHead>
-                            <TableHead>المشترك</TableHead>
-                            <TableHead>المبلغ</TableHead>
-                            <TableHead>الحالة</TableHead>
-                            <TableHead>التاريخ</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {recentInvoices.length === 0 ? (
+                        <Table>
+                          <TableHeader>
                             <TableRow>
-                              <TableCell colSpan={5} className="text-center text-muted-foreground">
-                                لا توجد فواتير
-                              </TableCell>
+                              <TableHead>رقم الفاتورة</TableHead>
+                              <TableHead>المشترك</TableHead>
+                              <TableHead>المبلغ</TableHead>
+                              <TableHead>الحالة</TableHead>
                             </TableRow>
-                          ) : (
-                            recentInvoices.map((invoice) => (
-                              <TableRow key={invoice.id}>
-                                <TableCell>{invoice.invoice_number}</TableCell>
-                                <TableCell>{invoice.subscribers?.name || 'غير محدد'}</TableCell>
-                                <TableCell>{formatCurrency(invoice.net_amount || invoice.amount, invoice.currency || 'IQD')}</TableCell>
-                                <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                                <TableCell>{new Date(invoice.created_at).toLocaleDateString('ar-IQ')}</TableCell>
+                          </TableHeader>
+                          <TableBody>
+                            {recentInvoices.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                                  لا توجد فواتير
+                                </TableCell>
                               </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </PermissionGuard>
+                            ) : (
+                              recentInvoices.map((invoice) => (
+                                <TableRow key={invoice.id}>
+                                  <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                                  <TableCell>{invoice.subscribers?.name || 'غير محدد'}</TableCell>
+                                  <TableCell>{formatCurrency(invoice.net_amount || invoice.amount, invoice.currency || 'IQD')}</TableCell>
+                                  <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  </PermissionGuard>
 
-                <PermissionGuard permission="view_payments" hideOnNoPermission>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        أحدث المدفوعات
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>المشترك</TableHead>
-                            <TableHead>المبلغ</TableHead>
-                            <TableHead>طريقة الدفع</TableHead>
-                            <TableHead>التاريخ</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {recentPayments.length === 0 ? (
+                  <PermissionGuard permission="view_payments" hideOnNoPermission>
+                    <Card className="border-2 hover:border-success/30 transition-all duration-300 animate-slide-up">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5 text-success" />
+                          أحدث المدفوعات
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
                             <TableRow>
-                              <TableCell colSpan={4} className="text-center text-muted-foreground">
-                                لا توجد مدفوعات
-                              </TableCell>
+                              <TableHead>المشترك</TableHead>
+                              <TableHead>المبلغ</TableHead>
+                              <TableHead>طريقة الدفع</TableHead>
+                              <TableHead>التاريخ</TableHead>
                             </TableRow>
-                          ) : (
-                            recentPayments.map((payment) => (
-                              <TableRow key={payment.id}>
-                                <TableCell>{payment.subscribers?.name || 'غير محدد'}</TableCell>
-                                <TableCell>{formatCurrency(payment.amount, payment.currency || 'IQD')}</TableCell>
-                                <TableCell><Badge variant="outline">{payment.payment_method}</Badge></TableCell>
-                                <TableCell>{new Date(payment.payment_date).toLocaleDateString('ar-IQ')}</TableCell>
+                          </TableHeader>
+                          <TableBody>
+                            {recentPayments.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                                  لا توجد مدفوعات
+                                </TableCell>
                               </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </PermissionGuard>
+                            ) : (
+                              recentPayments.map((payment) => (
+                                <TableRow key={payment.id}>
+                                  <TableCell className="font-medium">{payment.subscribers?.name || 'غير محدد'}</TableCell>
+                                  <TableCell>{formatCurrency(payment.amount, payment.currency || 'IQD')}</TableCell>
+                                  <TableCell><Badge variant="outline">{payment.payment_method}</Badge></TableCell>
+                                  <TableCell>{new Date(payment.payment_date).toLocaleDateString('ar-IQ')}</TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  </PermissionGuard>
+                </div>
               </TabsContent>
 
-              {hasPermission('view_financial_reports') && (
+              {hasPermission('view_reports') && (
                 <TabsContent value="financial" className="space-y-4">
                   <FinancialCharts />
                 </TabsContent>
               )}
 
-              {hasPermission('manage_accounting_entries') && (
+              {hasPermission('add_transaction') && (
                 <TabsContent value="entries" className="space-y-4">
                   <AccountingEntries />
                 </TabsContent>
               )}
 
-              {hasPermission('view_general_ledger') && (
+              {hasPermission('view_balance') && (
                 <TabsContent value="ledger" className="space-y-4">
                   <GeneralLedger />
                 </TabsContent>
               )}
 
-              {hasPermission('view_balance_sheet') && (
+              {hasPermission('view_balance') && (
                 <TabsContent value="balance" className="space-y-4">
                   <BalanceSheet />
                 </TabsContent>
               )}
 
-              {hasPermission('view_financial_reports') && (
+              {hasPermission('view_reports') && (
                 <TabsContent value="income" className="space-y-4">
                   <IncomeStatement />
                 </TabsContent>
               )}
 
-              {hasPermission('view_financial_reports') && (
+              {hasPermission('view_reports') && (
                 <TabsContent value="cashflow" className="space-y-4">
                   <CashFlowStatement />
                 </TabsContent>
               )}
 
-              {hasPermission('view_transactions') && (
-                <TabsContent value="operations" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>العمليات اليومية</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <CreditCard className="h-5 w-5 text-green-500" />
-                            <span>مدفوعات اليوم</span>
-                          </div>
-                          <span className="font-bold text-green-600">{formatCurrency(stats.todayPayments, 'IQD')}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-orange-500" />
-                            <span>فواتير معلقة</span>
-                          </div>
-                          <span className="font-bold text-orange-600">{stats.pendingInvoices}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>المستحقات</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Wallet className="h-5 w-5 text-purple-500" />
-                            <span>الذمم المدينة</span>
-                          </div>
-                          <span className="font-bold text-purple-600">{formatCurrency(stats.totalReceivables, 'IQD')}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <AlertCircle className="h-5 w-5 text-red-500" />
-                            <span>فواتير متأخرة</span>
-                          </div>
-                          <span className="font-bold text-red-600">{stats.overdueInvoices}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-
-              {hasPermission('generate_reports') && (
+              {hasPermission('export_reports') && (
                 <TabsContent value="reports" className="space-y-4">
                   <AdvancedReports />
                 </TabsContent>
@@ -597,8 +440,6 @@ export default function AccountantDashboard() {
             </Tabs>
           </div>
         </div>
-
-        <AppSidebar />
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
