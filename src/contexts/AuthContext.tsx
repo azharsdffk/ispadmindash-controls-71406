@@ -64,11 +64,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('Auth event:', event);
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
+        if (event === 'SIGNED_OUT') {
+          // Clear all state on sign out
+          setPermissions([]);
+          setRoles([]);
+          setSession(null);
+          setUser(null);
+          // Clear localStorage
+          localStorage.clear();
+        } else if (session?.user) {
           setTimeout(() => {
             fetchUserPermissions(session.user.id);
           }, 0);
@@ -126,8 +136,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+    try {
+      // Clear all local state first
+      setPermissions([]);
+      setRoles([]);
+      setSession(null);
+      setUser(null);
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear all localStorage
+      localStorage.clear();
+      
+      // Navigate to auth page
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Force navigation even if sign out fails
+      navigate('/auth');
+    }
   };
 
   return (
