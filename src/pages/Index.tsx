@@ -97,13 +97,12 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
-      <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
-
-      <div className="flex flex-1 w-full">
-        <AppSidebar />
-
-        <main className="flex-1 p-6 overflow-y-auto">
+    <div className="min-h-screen bg-background" dir="rtl">
+      <AppSidebar />
+      <div className="lg:mr-64">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        
+        <main className="p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Quick Access to Accountant Dashboard - For Admins Only */}
             {isAdmin && (
