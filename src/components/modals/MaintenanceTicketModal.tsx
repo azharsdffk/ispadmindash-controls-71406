@@ -34,6 +34,7 @@ const ticketSchema = z.object({
   subscriber_id: z.string().uuid("يجب اختيار مشترك"),
   issue_description: z.string().min(5, "الوصف يجب أن يكون 5 أحرف على الأقل"),
   priority: z.enum(["low", "medium", "high", "urgent"]),
+  issue_type: z.string().min(1, "يجب اختيار نوع المشكلة"),
 });
 
 export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: MaintenanceTicketModalProps) => {
@@ -45,6 +46,7 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
     subscriber_id: "",
     priority: "medium",
     issue_description: "",
+    issue_type: "",
   });
   
   // External import states
@@ -159,6 +161,7 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
         subscriber_id: validatedData.subscriber_id,
         issue_description: validatedData.issue_description,
         priority: validatedData.priority as any,
+        issue_type: validatedData.issue_type,
         status: "open" as const,
         created_by: user?.id,
         notes: location 
@@ -172,7 +175,7 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
 
       toast.success("تم فتح تذكرة الصيانة بنجاح");
       onOpenChange(false);
-      setFormData({ subscriber_id: "", priority: "medium", issue_description: "" });
+      setFormData({ subscriber_id: "", priority: "medium", issue_description: "", issue_type: "" });
       setSelectedSubscriberData(null);
       setLocation(null);
       onSuccess?.();
@@ -336,6 +339,31 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
                 )}
               </CardContent>
             </Card>
+
+            <div className="space-y-2">
+              <Label htmlFor="issue_type">نوع المشكلة *</Label>
+              <select
+                id="issue_type"
+                required
+                className="w-full px-3 py-2 border rounded-md bg-background"
+                value={formData.issue_type}
+                onChange={(e) => setFormData({ ...formData, issue_type: e.target.value })}
+              >
+                <option value="">اختر نوع المشكلة</option>
+                <option value="قطع الكابل">قطع الكابل</option>
+                <option value="صيانة داخلية">صيانة داخلية</option>
+                <option value="فيشة مكسورة">فيشة مكسورة</option>
+                <option value="تبديل راوتر">تبديل راوتر</option>
+                <option value="تبديل اونيو">تبديل اونيو</option>
+                <option value="تبديل فيشة خارجية">تبديل فيشة خارجية</option>
+                <option value="تبديل فيشة داخلية">تبديل فيشة داخلية</option>
+                <option value="ربط اجهزة">ربط اجهزة</option>
+                <option value="اعادة برمجة الاجهزة">اعادة برمجة الاجهزة</option>
+                <option value="نقل الاجهزة الى مكان اخر">نقل الاجهزة الى مكان اخر</option>
+                <option value="تفعيل الباقات الترفيهية">تفعيل الباقات الترفيهية</option>
+                <option value="صيانة عامة">صيانة عامة</option>
+              </select>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="priority">الأولوية</Label>
