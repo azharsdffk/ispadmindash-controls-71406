@@ -28,6 +28,8 @@ import {
   TrendingUp,
   AlertCircle,
   Calculator,
+  Zap,
+  Activity,
 } from "lucide-react";
 
 const Index = () => {
@@ -130,55 +132,63 @@ const Index = () => {
               </Card>
             )}
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+            {/* Stats Cards - محسّنة */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">إجمالي المشتركين</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1,234</div>
-                  <p className="text-xs text-success flex items-center gap-1 mt-1">
+                  <div className="text-3xl font-bold text-foreground">1,234</div>
+                  <p className="text-xs text-success flex items-center gap-1 mt-2">
                     <TrendingUp className="h-3 w-3" />
                     +12% من الشهر الماضي
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-warning">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">الفواتير المعلقة</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-warning/10 rounded-lg">
+                    <FileText className="h-5 w-5 text-warning" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">234</div>
-                  <p className="text-xs text-muted-foreground mt-1">بقيمة 125,000 دينار عراقي</p>
+                  <div className="text-3xl font-bold text-foreground">234</div>
+                  <p className="text-xs text-muted-foreground mt-2">بقيمة 125,000 دينار عراقي</p>
                 </CardContent>
               </Card>
 
-              <Card className="shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-destructive">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">تذاكر الصيانة</CardTitle>
-                  <Wrench className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-destructive/10 rounded-lg">
+                    <Wrench className="h-5 w-5 text-destructive" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">45</div>
-                  <p className="text-xs text-warning flex items-center gap-1 mt-1">
+                  <div className="text-3xl font-bold text-foreground">45</div>
+                  <p className="text-xs text-warning flex items-center gap-1 mt-2">
                     <AlertCircle className="h-3 w-3" />
                     12 تذكرة عاجلة
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-success">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">الإيرادات الشهرية</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-success/10 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-success" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">450,000</div>
-                  <p className="text-xs text-success flex items-center gap-1 mt-1">
+                  <div className="text-3xl font-bold text-foreground">450,000</div>
+                  <p className="text-xs text-success flex items-center gap-1 mt-2">
                     <TrendingUp className="h-3 w-3" />
                     +8% من الشهر الماضي
                   </p>
@@ -186,159 +196,188 @@ const Index = () => {
               </Card>
             </div>
 
-            {/* Action Buttons */}
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle>الإجراءات السريعة</CardTitle>
-                <CardDescription>العمليات الأساسية في النظام</CardDescription>
+            {/* Action Buttons - معاد تنظيمها */}
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  الإجراءات السريعة
+                </CardTitle>
+                <CardDescription>العمليات الأساسية والأكثر استخداماً</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  <Button
-                    onClick={() => setAddSubscriberOpen(true)}
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="إضافة مشترك جديد"
-                  >
-                    <UserPlus className="h-5 w-5" />
-                    <span>إضافة مشترك</span>
-                  </Button>
+              <CardContent className="space-y-6 pt-6">
+                {/* العمليات الأساسية */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    العمليات الأساسية
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Button
+                      onClick={() => setAddSubscriberOpen(true)}
+                      className="h-auto py-4 flex-col gap-2 bg-primary hover:bg-primary/90"
+                      title="إضافة مشترك جديد"
+                    >
+                      <UserPlus className="h-6 w-6" />
+                      <span className="text-sm font-medium">إضافة مشترك</span>
+                    </Button>
 
-                  <Button
-                    onClick={() => setIssueInvoiceOpen(true)}
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="إصدار فاتورة جديدة"
-                  >
-                    <FileText className="h-5 w-5" />
-                    <span>فاتورة جديدة</span>
-                  </Button>
+                    <Button
+                      onClick={() => setIssueInvoiceOpen(true)}
+                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700"
+                      title="إصدار فاتورة جديدة"
+                    >
+                      <FileText className="h-6 w-6" />
+                      <span className="text-sm font-medium">فاتورة جديدة</span>
+                    </Button>
 
-                  <Button
-                    variant="default"
-                    className="flex items-center gap-2 h-auto py-3 flex-col bg-success hover:bg-success/90"
-                    title="إصدار سند قبض"
-                    onClick={() => setReceiptOpen(true)}
-                  >
-                    <DollarSign className="h-5 w-5" />
-                    <span>سند قبض</span>
-                  </Button>
+                    <Button
+                      onClick={() => setMaintenanceTicketOpen(true)}
+                      className="h-auto py-4 flex-col gap-2 bg-orange-600 hover:bg-orange-700"
+                      title="فتح تذكرة صيانة"
+                    >
+                      <Wrench className="h-6 w-6" />
+                      <span className="text-sm font-medium">تذكرة صيانة</span>
+                    </Button>
 
-                  <Button
-                    variant="default"
-                    className="flex items-center gap-2 h-auto py-3 flex-col bg-warning hover:bg-warning/90"
-                    title="إصدار سند صرف"
-                    onClick={() => setVoucherOpen(true)}
-                  >
-                    <DollarSign className="h-5 w-5" />
-                    <span>سند صرف</span>
-                  </Button>
+                    <Button
+                      onClick={() => setScheduleTechOpen(true)}
+                      variant="secondary"
+                      className="h-auto py-4 flex-col gap-2"
+                      title="جدولة فني"
+                    >
+                      <Calendar className="h-6 w-6" />
+                      <span className="text-sm font-medium">جدولة فني</span>
+                    </Button>
+                  </div>
+                </div>
 
-                  <Button
-                    onClick={() => setMaintenanceTicketOpen(true)}
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="فتح تذكرة صيانة"
-                  >
-                    <Wrench className="h-5 w-5" />
-                    <span>تذكرة صيانة</span>
-                  </Button>
+                {/* السندات المالية */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    السندات المالية
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <Button
+                      className="h-auto py-4 flex-col gap-2 bg-success hover:bg-success/90"
+                      title="إصدار سند قبض"
+                      onClick={() => setReceiptOpen(true)}
+                    >
+                      <DollarSign className="h-6 w-6" />
+                      <span className="text-sm font-medium">سند قبض</span>
+                    </Button>
 
-                  <Button
-                    variant="secondary"
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="جدولة فني"
-                    onClick={() => setScheduleTechOpen(true)}
-                  >
-                    <Calendar className="h-5 w-5" />
-                    <span>جدولة فني</span>
-                  </Button>
+                    <Button
+                      className="h-auto py-4 flex-col gap-2 bg-warning hover:bg-warning/90"
+                      title="إصدار سند صرف"
+                      onClick={() => setVoucherOpen(true)}
+                    >
+                      <DollarSign className="h-6 w-6" />
+                      <span className="text-sm font-medium">سند صرف</span>
+                    </Button>
 
-                  <Button
-                    variant="secondary"
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="تطبيق خصم"
-                    onClick={handleDiscount}
-                  >
-                    <Percent className="h-5 w-5" />
-                    <span>خصم</span>
-                  </Button>
+                    <Button
+                      variant="secondary"
+                      className="h-auto py-4 flex-col gap-2"
+                      title="تطبيق خصم"
+                      onClick={handleDiscount}
+                    >
+                      <Percent className="h-6 w-6" />
+                      <span className="text-sm font-medium">خصم</span>
+                    </Button>
+                  </div>
+                </div>
 
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="تحديث البيانات (Ctrl+R)"
-                    onClick={handleRefresh}
-                  >
-                    <RefreshCw className="h-5 w-5" />
-                    <span>تحديث</span>
-                  </Button>
+                {/* أدوات إضافية */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Calculator className="h-4 w-4" />
+                    أدوات إضافية
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button
+                      variant="outline"
+                      className="h-auto py-4 flex-col gap-2 hover:bg-accent"
+                      title="تحديث البيانات (Ctrl+R)"
+                      onClick={handleRefresh}
+                    >
+                      <RefreshCw className="h-5 w-5" />
+                      <span className="text-sm font-medium">تحديث</span>
+                    </Button>
 
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="طباعة (Ctrl+P)"
-                    onClick={handlePrint}
-                  >
-                    <Printer className="h-5 w-5" />
-                    <span>طباعة</span>
-                  </Button>
+                    <Button
+                      variant="outline"
+                      className="h-auto py-4 flex-col gap-2 hover:bg-accent"
+                      title="طباعة (Ctrl+P)"
+                      onClick={handlePrint}
+                    >
+                      <Printer className="h-5 w-5" />
+                      <span className="text-sm font-medium">طباعة</span>
+                    </Button>
 
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2 h-auto py-3 flex-col"
-                    title="رجوع"
-                    onClick={handleBack}
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                    <span>رجوع</span>
-                  </Button>
+                    <Button
+                      variant="outline"
+                      className="h-auto py-4 flex-col gap-2 hover:bg-accent"
+                      title="رجوع"
+                      onClick={handleBack}
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                      <span className="text-sm font-medium">رجوع</span>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Recent Activity */}
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle>النشاط الأخير</CardTitle>
-                <CardDescription>آخر العمليات في النظام</CardDescription>
+            {/* Recent Activity - محسّن */}
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-purple-500/5 to-transparent">
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-purple-600" />
+                  النشاط الأخير
+                </CardTitle>
+                <CardDescription>آخر العمليات والأحداث في النظام</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10 hover:border-primary/30 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <UserPlus className="h-5 w-5 text-primary" />
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <UserPlus className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium">تم إضافة مشترك جديد</p>
+                        <p className="font-semibold text-foreground">تم إضافة مشترك جديد</p>
                         <p className="text-sm text-muted-foreground">أحمد محمد - 0501234567</p>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">منذ 5 دقائق</span>
+                    <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">منذ 5 دقائق</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-success/5 to-transparent rounded-xl border border-success/10 hover:border-success/30 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-success" />
+                      <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-success" />
                       </div>
                       <div>
-                        <p className="font-medium">تم إصدار فاتورة</p>
+                        <p className="font-semibold text-foreground">تم إصدار فاتورة</p>
                         <p className="text-sm text-muted-foreground">فاتورة #1234 - 500 دينار عراقي</p>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">منذ 15 دقيقة</span>
+                    <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">منذ 15 دقيقة</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-warning/5 to-transparent rounded-xl border border-warning/10 hover:border-warning/30 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
-                        <Wrench className="h-5 w-5 text-warning" />
+                      <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                        <Wrench className="h-6 w-6 text-warning" />
                       </div>
                       <div>
-                        <p className="font-medium">تذكرة صيانة جديدة</p>
+                        <p className="font-semibold text-foreground">تذكرة صيانة جديدة</p>
                         <p className="text-sm text-muted-foreground">انقطاع الإنترنت - عالية</p>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">منذ 30 دقيقة</span>
+                    <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">منذ 30 دقيقة</span>
                   </div>
                 </div>
               </CardContent>
