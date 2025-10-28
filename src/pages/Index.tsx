@@ -102,7 +102,7 @@ const Index = () => {
       <div className="lg:mr-64">
         <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
         
-        <main className="p-6 overflow-y-auto">
+        <main className="container mx-auto p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Quick Access to Accountant Dashboard - For Admins Only */}
             {isAdmin && (
