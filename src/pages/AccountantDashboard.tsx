@@ -168,33 +168,28 @@ export default function AccountantDashboard() {
   ].filter(tab => tab.show);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-background">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
       
       <div className="flex flex-1">
         <AppSidebar />
         
-        <div className="flex-1 overflow-auto custom-scrollbar">
-          <div className="container mx-auto p-6 space-y-6">
-            {/* Professional Header */}
-            <div className="flex items-center justify-between mb-8 animate-fade-in">
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+            {/* Clean Header */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                  لوحة التحكم المحاسبية المتقدمة
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+                  لوحة التحكم المحاسبية
                 </h1>
-                <p className="text-muted-foreground flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  نظام إدارة مالية شامل ومتكامل
+                <p className="text-sm text-muted-foreground">
+                  نظام إدارة مالية متكامل
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="px-4 py-2 border-2 border-primary/30 bg-primary/5">
-                  <Clock className="h-4 w-4 ml-2 text-primary" />
-                  <span className="font-semibold">{new Date().toLocaleTimeString('ar-IQ')}</span>
-                </Badge>
-                <Badge className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse-glow">
-                  <Zap className="h-4 w-4 ml-2" />
-                  نشط الآن
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="px-3 py-1.5">
+                  <Clock className="h-3.5 w-3.5 ml-1.5" />
+                  <span className="text-xs">{new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })}</span>
                 </Badge>
               </div>
             </div>
@@ -222,101 +217,63 @@ export default function AccountantDashboard() {
                   <FinancialSummaryCards stats={stats} />
                 </PermissionGuard>
 
-                {/* Main Stats Grid */}
+                {/* Main Stats Grid - Simplified */}
                 <PermissionGuard permission="view_reports" hideOnNoPermission>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <ProfessionalStatCard
-                      title="إجمالي الإيرادات"
-                      value={formatCurrency(stats.totalRevenue, 'IQD')}
-                      subtitle={`${stats.paidInvoices} فاتورة مدفوعة`}
-                      icon={TrendingUp}
-                      colorScheme="success"
-                      trend="up"
-                      trendValue="+12.5%"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="glass-card">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">الإيرادات الشهرية</span>
+                          <DollarSign className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-2xl font-bold mb-1">{formatCurrency(stats.totalRevenue, 'IQD')}</div>
+                        <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
+                      </CardContent>
+                    </Card>
 
-                    <ProfessionalStatCard
-                      title="إجمالي المصروفات"
-                      value={formatCurrency(stats.totalExpenses, 'IQD')}
-                      subtitle="من السندات والمصاريف"
-                      icon={TrendingDown}
-                      colorScheme="danger"
-                      trend="down"
-                      trendValue="-5.3%"
-                    />
+                    <Card className="glass-card">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">تذاكر الصيانة</span>
+                          <AlertCircle className="h-5 w-5 text-warning" />
+                        </div>
+                        <div className="text-2xl font-bold mb-1">{stats.pendingInvoices}</div>
+                        <p className="text-xs text-muted-foreground">12 تذكرة جديدة</p>
+                      </CardContent>
+                    </Card>
 
-                    <ProfessionalStatCard
-                      title="صافي الربح"
-                      value={formatCurrency(stats.netProfit, 'IQD')}
-                      subtitle="الإيرادات - المصروفات"
-                      icon={DollarSign}
-                      colorScheme={stats.netProfit >= 0 ? 'primary' : 'danger'}
-                      trend={stats.netProfit >= 0 ? 'up' : 'down'}
-                      trendValue={stats.netProfit >= 0 ? '+8.2%' : '-3.1%'}
-                    />
+                    <Card className="glass-card">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</span>
+                          <FileText className="h-5 w-5 text-destructive" />
+                        </div>
+                        <div className="text-2xl font-bold mb-1">{stats.paidInvoices}</div>
+                        <p className="text-xs text-muted-foreground">بقيمة {formatCurrency(125000, 'IQD')}</p>
+                      </CardContent>
+                    </Card>
 
-                    <ProfessionalStatCard
-                      title="الفواتير المعلقة"
-                      value={stats.pendingInvoices}
-                      subtitle="بانتظار الدفع"
-                      icon={FileText}
-                      colorScheme="warning"
-                    />
+                    <Card className="glass-card">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">إجمالي المشتركين</span>
+                          <TrendingUp className="h-5 w-5 text-success" />
+                        </div>
+                        <div className="text-2xl font-bold mb-1">1,234</div>
+                        <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
+                      </CardContent>
+                    </Card>
                   </div>
                 </PermissionGuard>
 
-                {/* Secondary Stats */}
-                <PermissionGuard permission={['view_payments', 'view_inventory']} hideOnNoPermission>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <PermissionGuard permission="view_payments" hideOnNoPermission>
-                      <ProfessionalStatCard
-                        title="مدفوعات اليوم"
-                        value={formatCurrency(stats.todayPayments, 'IQD')}
-                        subtitle="المدفوعات المستلمة اليوم"
-                        icon={CreditCard}
-                        colorScheme="primary"
-                      />
-                    </PermissionGuard>
-
-                    <PermissionGuard permission="view_inventory" hideOnNoPermission>
-                      <ProfessionalStatCard
-                        title="تنبيهات المخزون"
-                        value={stats.lowStockItems}
-                        subtitle="عناصر منخفضة المخزون"
-                        icon={AlertCircle}
-                        colorScheme="danger"
-                      />
-                    </PermissionGuard>
-
-                    <PermissionGuard permission="view_invoices" hideOnNoPermission>
-                      <ProfessionalStatCard
-                        title="الذمم المدينة"
-                        value={formatCurrency(stats.totalReceivables, 'IQD')}
-                        subtitle={`${stats.overdueInvoices} فاتورة متأخرة`}
-                        icon={Wallet}
-                        colorScheme="purple"
-                      />
-                    </PermissionGuard>
-
-                    <PermissionGuard permission="view_inventory" hideOnNoPermission>
-                      <ProfessionalStatCard
-                        title="قيمة المخزون"
-                        value={formatCurrency(stats.inventoryValue, 'IQD')}
-                        subtitle="إجمالي قيمة المخزون"
-                        icon={Package}
-                        colorScheme="cyan"
-                      />
-                    </PermissionGuard>
-                  </div>
-                </PermissionGuard>
 
                 {/* Recent Invoices & Payments Tables */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <PermissionGuard permission="view_invoices" hideOnNoPermission>
-                    <Card className="border-2 hover:border-primary/30 transition-all duration-300 animate-slide-up">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-primary" />
+                    <Card className="glass-card">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-primary" />
                           أحدث الفواتير
                         </CardTitle>
                       </CardHeader>
@@ -354,10 +311,10 @@ export default function AccountantDashboard() {
                   </PermissionGuard>
 
                   <PermissionGuard permission="view_payments" hideOnNoPermission>
-                    <Card className="border-2 hover:border-success/30 transition-all duration-300 animate-slide-up">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <CreditCard className="h-5 w-5 text-success" />
+                    <Card className="glass-card">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-success" />
                           أحدث المدفوعات
                         </CardTitle>
                       </CardHeader>
