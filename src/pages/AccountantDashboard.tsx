@@ -194,89 +194,74 @@ export default function AccountantDashboard() {
               </div>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full" style={{
-                gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))`
-              }}>
+            <Tabs defaultValue="overview" className="space-y-4">
+              <TabsList className="w-full overflow-x-auto flex">
                 {availableTabs.map(tab => (
-                  <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+                  <TabsTrigger key={tab.value} value={tab.value} className="flex-shrink-0">
+                    {tab.label}
+                  </TabsTrigger>
                 ))}
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
-                {/* Quick Actions */}
-                <QuickActionsPanel />
+              <TabsContent value="overview" className="space-y-4 mt-4">
 
-                {/* Notifications */}
-                <PermissionGuard permission="view_notifications" hideOnNoPermission>
-                  <AccountingNotifications />
-                </PermissionGuard>
+                {/* Main Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">الإيرادات الشهرية</span>
+                        <DollarSign className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-2xl font-bold mb-1">{formatCurrency(stats.totalRevenue, 'IQD')}</div>
+                      <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
+                    </CardContent>
+                  </Card>
 
-                {/* Financial Summary Cards */}
-                <PermissionGuard permission="view_reports" hideOnNoPermission>
-                  <FinancialSummaryCards stats={stats} />
-                </PermissionGuard>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">تذاكر الصيانة</span>
+                        <AlertCircle className="h-5 w-5 text-orange-500" />
+                      </div>
+                      <div className="text-2xl font-bold mb-1">{stats.pendingInvoices}</div>
+                      <p className="text-xs text-muted-foreground">12 تذكرة عادية</p>
+                    </CardContent>
+                  </Card>
 
-                {/* Main Stats Grid - Simplified */}
-                <PermissionGuard permission="view_reports" hideOnNoPermission>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="glass-card">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-muted-foreground">الإيرادات الشهرية</span>
-                          <DollarSign className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="text-2xl font-bold mb-1">{formatCurrency(stats.totalRevenue, 'IQD')}</div>
-                        <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
-                      </CardContent>
-                    </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</span>
+                        <FileText className="h-5 w-5 text-red-500" />
+                      </div>
+                      <div className="text-2xl font-bold mb-1">{stats.paidInvoices}</div>
+                      <p className="text-xs text-muted-foreground">بقيمة {formatCurrency(125000, 'IQD')}</p>
+                    </CardContent>
+                  </Card>
 
-                    <Card className="glass-card">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-muted-foreground">تذاكر الصيانة</span>
-                          <AlertCircle className="h-5 w-5 text-warning" />
-                        </div>
-                        <div className="text-2xl font-bold mb-1">{stats.pendingInvoices}</div>
-                        <p className="text-xs text-muted-foreground">12 تذكرة جديدة</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="glass-card">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</span>
-                          <FileText className="h-5 w-5 text-destructive" />
-                        </div>
-                        <div className="text-2xl font-bold mb-1">{stats.paidInvoices}</div>
-                        <p className="text-xs text-muted-foreground">بقيمة {formatCurrency(125000, 'IQD')}</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="glass-card">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-muted-foreground">إجمالي المشتركين</span>
-                          <TrendingUp className="h-5 w-5 text-success" />
-                        </div>
-                        <div className="text-2xl font-bold mb-1">1,234</div>
-                        <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </PermissionGuard>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">إجمالي المشتركين</span>
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                      </div>
+                      <div className="text-2xl font-bold mb-1">1,234</div>
+                      <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
+                    </CardContent>
+                  </Card>
+                </div>
 
 
                 {/* Recent Invoices & Payments Tables */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <PermissionGuard permission="view_invoices" hideOnNoPermission>
-                    <Card className="glass-card">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-primary" />
-                          أحدث الفواتير
-                        </CardTitle>
-                      </CardHeader>
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-primary" />
+                        أحدث الفواتير
+                      </CardTitle>
+                    </CardHeader>
                       <CardContent>
                         <Table>
                           <TableHeader>
@@ -308,16 +293,14 @@ export default function AccountantDashboard() {
                         </Table>
                       </CardContent>
                     </Card>
-                  </PermissionGuard>
 
-                  <PermissionGuard permission="view_payments" hideOnNoPermission>
-                    <Card className="glass-card">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <CreditCard className="h-4 w-4 text-success" />
-                          أحدث المدفوعات
-                        </CardTitle>
-                      </CardHeader>
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-green-500" />
+                        أحدث المدفوعات
+                      </CardTitle>
+                    </CardHeader>
                       <CardContent>
                         <Table>
                           <TableHeader>
@@ -349,7 +332,6 @@ export default function AccountantDashboard() {
                         </Table>
                       </CardContent>
                     </Card>
-                  </PermissionGuard>
                 </div>
               </TabsContent>
 
