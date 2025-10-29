@@ -806,6 +806,50 @@ export type Database = {
           },
         ]
       }
+      notification_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          rule_name: string
+          rule_type: string
+          template_id: string | null
+          trigger_days_before: number | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          rule_name: string
+          rule_type: string
+          template_id?: string | null
+          trigger_days_before?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          rule_name?: string
+          rule_type?: string
+          template_id?: string | null
+          trigger_days_before?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_rules_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "sms_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -1174,6 +1218,120 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sms_logs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          message: string
+          provider: string
+          provider_message_id: string | null
+          recipient_name: string | null
+          recipient_phone: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          message: string
+          provider: string
+          provider_message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string
+          provider?: string
+          provider_message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      sms_settings: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          provider: string
+          sender_name: string
+          sender_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          provider?: string
+          sender_name: string
+          sender_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          provider?: string
+          sender_name?: string
+          sender_number?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sms_templates: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          message_template: string
+          name: string
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          message_template: string
+          name: string
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          message_template?: string
+          name?: string
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       subscriber_audit_trail: {
         Row: {
