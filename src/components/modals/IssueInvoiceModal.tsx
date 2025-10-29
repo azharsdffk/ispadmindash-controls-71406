@@ -138,7 +138,6 @@ export const IssueInvoiceModal = ({ open, onOpenChange, onSuccess }: IssueInvoic
       const { data: { user } } = await supabase.auth.getUser();
       
       const totalDiscount = validatedData.discount + couponDiscount;
-      const netAmount = validatedData.amount - totalDiscount;
       
       // Generate invoice number
       const invoiceNumber = `INV-${format(new Date(), "yyyyMM")}-${Date.now().toString().slice(-6)}`;
@@ -148,7 +147,6 @@ export const IssueInvoiceModal = ({ open, onOpenChange, onSuccess }: IssueInvoic
         subscriber_id: validatedData.subscriber_id,
         amount: validatedData.amount,
         discount: totalDiscount,
-        net_amount: netAmount,
         due_date: format(validatedData.due_date, "yyyy-MM-dd"),
         issue_date: format(new Date(), "yyyy-MM-dd"),
         currency: validatedData.currency,
