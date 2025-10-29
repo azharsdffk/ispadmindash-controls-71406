@@ -1,253 +1,218 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2, RefreshCw } from "lucide-react";
+import { Eye, Calendar, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { formatCurrency } from "@/lib/currency";
+import { ContractDetailsModal } from "@/components/modals/ContractDetailsModal";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface Contract {
   id: string;
   contract_number: string;
   subscriber_id: string;
-  subscribers: { name: string; phone: string } | null;
-  packages: { name: string } | null;
+  package_id: string | null;
   start_date: string;
   end_date: string;
   status: string;
   auto_renew: boolean;
+  renewal_period_months: number;
   monthly_fee: number;
   currency: string;
+  installation_fee: number;
+  notes: string | null;
+  created_at: string;
+  subscribers: {
+    name: string;
+    phone: string;
+  };
+  packages: {
+    name: string;
+  } | null;
 }
-
-const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  active: { label: "نشط", variant: "default" },
-  expired: { label: "منتهي", variant: "destructive" },
-  suspended: { label: "معلق", variant: "secondary" },
-  cancelled: { label: "ملغي", variant: "outline" },
-  pending: { label: "قيد الانتظار", variant: "secondary" },
-};
 
 export const ContractsTable = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const { hasPermission } = usePermissions();
+
+  const canViewContracts = hasPermission('contracts.view');
+
+  useEffect(() => {
+    if (canViewContracts) {
+      fetchContracts();
+    }
+  }, [canViewContracts]);
 
   const fetchContracts = async () => {
     try {
       const { data, error } = await supabase
-        .from("contracts")
+        .from('contracts')
         .select(`
           *,
           subscribers (name, phone),
           packages (name)
         `)
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setContracts(data || []);
-    } catch (error) {
-      console.error("Error fetching contracts:", error);
-      toast.error("حدث خطأ أثناء تحميل العقود");
+    } catch (error: any) {
+      console.error('Error fetching contracts:', error);
+      toast.error('فشل تحميل العقود');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchContracts();
-
-    const channel = supabase
-      .channel("contracts_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "contracts" },
-        () => {
-          fetchContracts();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+      active: { label: 'نشط', variant: 'default' },
+      expired: { label: 'منتهي', variant: 'destructive' },
+      suspended: { label: 'معلق', variant: 'secondary' },
+      cancelled: { label: 'ملغي', variant: 'outline' },
+      pending: { label: 'قيد الانتظار', variant: 'secondary' }
     };
-  }, []);
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-
-    try {
-      const { error } = await supabase
-        .from("contracts")
-        .delete()
-        .eq("id", deleteId);
-
-      if (error) throw error;
-
-      toast.success("تم حذف العقد بنجاح");
-      setDeleteId(null);
-    } catch (error) {
-      console.error("Error deleting contract:", error);
-      toast.error("حدث خطأ أثناء حذف العقد");
-    }
+    const { label, variant } = statusMap[status] || statusMap.pending;
+    return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const handleRenew = async (id: string) => {
-    try {
-      const contract = contracts.find(c => c.id === id);
-      if (!contract) return;
-
-      const newEndDate = new Date(contract.end_date);
-      newEndDate.setMonth(newEndDate.getMonth() + 12);
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          end_date: format(newEndDate, "yyyy-MM-dd"),
-          status: "active",
-        })
-        .eq("id", id);
-
-      if (error) throw error;
-
-      toast.success("تم تجديد العقد بنجاح");
-    } catch (error) {
-      console.error("Error renewing contract:", error);
-      toast.error("حدث خطأ أثناء تجديد العقد");
-    }
+  const getDaysUntilExpiry = (endDate: string) => {
+    const today = new Date();
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
+
+  const viewDetails = (contract: Contract) => {
+    setSelectedContract(contract);
+    setDetailsOpen(true);
+  };
+
+  if (!canViewContracts) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          ليس لديك صلاحية لعرض العقود
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (loading) {
-    return <div className="text-center py-8">جاري التحميل...</div>;
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          جاري تحميل العقود...
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">رقم العقد</TableHead>
-              <TableHead className="text-right">المشترك</TableHead>
-              <TableHead className="text-right">الباقة</TableHead>
-              <TableHead className="text-right">تاريخ البدء</TableHead>
-              <TableHead className="text-right">تاريخ الانتهاء</TableHead>
-              <TableHead className="text-right">الرسوم الشهرية</TableHead>
-              <TableHead className="text-right">الحالة</TableHead>
-              <TableHead className="text-right">تجديد تلقائي</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {contracts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
-                  لا توجد عقود
-                </TableCell>
-              </TableRow>
-            ) : (
-              contracts.map((contract) => (
-                <TableRow key={contract.id}>
-                  <TableCell className="font-medium">
-                    {contract.contract_number}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div>{contract.subscribers?.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {contract.subscribers?.phone}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{contract.packages?.name || "-"}</TableCell>
-                  <TableCell>
-                    {format(new Date(contract.start_date), "dd/MM/yyyy", {
-                      locale: ar,
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(contract.end_date), "dd/MM/yyyy", {
-                      locale: ar,
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {formatCurrency(contract.monthly_fee, contract.currency as any)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusLabels[contract.status]?.variant}>
-                      {statusLabels[contract.status]?.label || contract.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {contract.auto_renew ? (
-                      <Badge variant="default">نعم</Badge>
-                    ) : (
-                      <Badge variant="outline">لا</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {contract.status === "expired" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRenew(contract.id)}
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteId(contract.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+      <Card>
+        <CardHeader>
+          <CardTitle>قائمة العقود</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {contracts.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              لا توجد عقود حالياً
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>رقم العقد</TableHead>
+                  <TableHead>المشترك</TableHead>
+                  <TableHead>الباقة</TableHead>
+                  <TableHead>تاريخ البدء</TableHead>
+                  <TableHead>تاريخ الانتهاء</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>القيمة الشهرية</TableHead>
+                  <TableHead>تجديد تلقائي</TableHead>
+                  <TableHead className="text-left">الإجراءات</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {contracts.map((contract) => {
+                  const daysUntilExpiry = getDaysUntilExpiry(contract.end_date);
+                  const isExpiringSoon = daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+                  
+                  return (
+                    <TableRow key={contract.id}>
+                      <TableCell className="font-medium">{contract.contract_number}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{contract.subscribers.name}</p>
+                          <p className="text-sm text-muted-foreground">{contract.subscribers.phone}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{contract.packages?.name || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          {format(new Date(contract.start_date), 'dd/MM/yyyy', { locale: ar })}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          {format(new Date(contract.end_date), 'dd/MM/yyyy', { locale: ar })}
+                          {isExpiringSoon && contract.status === 'active' && (
+                            <div className="inline-flex" title={`ينتهي خلال ${daysUntilExpiry} يوم`}>
+                              <AlertCircle className="h-4 w-4 text-destructive" />
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(contract.status)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(Number(contract.monthly_fee), contract.currency as 'IQD' | 'USD')}
+                      </TableCell>
+                      <TableCell>
+                        {contract.auto_renew ? (
+                          <Badge variant="default">مفعّل ({contract.renewal_period_months} شهر)</Badge>
+                        ) : (
+                          <Badge variant="outline">غير مفعّل</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-left">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => viewDetails(contract)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
-            <AlertDialogDescription>
-              هل أنت متأكد من حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              حذف
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {selectedContract && (
+        <ContractDetailsModal
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          contract={selectedContract}
+          onUpdate={fetchContracts}
+        />
+      )}
     </>
   );
 };

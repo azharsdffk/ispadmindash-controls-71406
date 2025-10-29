@@ -1,32 +1,19 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { FileText, Plus } from "lucide-react";
 import { useState } from "react";
 import { SettingsModal } from "@/components/modals/SettingsModal";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileText, Plus } from "lucide-react";
 import { ContractsTable } from "@/components/contracts/ContractsTable";
-import { ContractModal } from "@/components/modals/ContractModal";
-import { useUserRole } from "@/hooks/useUserRole";
-import { Navigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { AddContractModal } from "@/components/modals/AddContractModal";
+import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const Contracts = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [contractModalOpen, setContractModalOpen] = useState(false);
-  const { isAdmin, isAccountant, loading } = useUserRole();
+  const [addContractOpen, setAddContractOpen] = useState(false);
+  const { hasPermission } = usePermissions();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAdmin && !isAccountant) {
-    return <Navigate to="/" replace />;
-  }
+  const canManageContracts = hasPermission('contracts.create') || hasPermission('contracts.update');
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -43,24 +30,21 @@ const Contracts = () => {
                 <h1 className="text-3xl font-bold">إدارة العقود</h1>
               </div>
               
-              <Button onClick={() => setContractModalOpen(true)}>
-                <Plus className="h-4 w-4 ml-2" />
-                عقد جديد
-              </Button>
+              {canManageContracts && (
+                <Button onClick={() => setAddContractOpen(true)}>
+                  <Plus className="h-4 w-4 ml-2" />
+                  عقد جديد
+                </Button>
+              )}
             </div>
 
-            <Card className="p-6">
-              <ContractsTable />
-            </Card>
+            <ContractsTable />
           </div>
         </main>
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <ContractModal 
-        open={contractModalOpen} 
-        onOpenChange={setContractModalOpen}
-      />
+      <AddContractModal open={addContractOpen} onOpenChange={setAddContractOpen} />
     </div>
   );
 };
