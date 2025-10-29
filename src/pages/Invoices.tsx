@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, FilePlus, Eye } from "lucide-react";
+import { FileText, FilePlus, Eye, CreditCard, Smartphone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { IssueInvoiceModal } from "@/components/modals/IssueInvoiceModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { RecordPaymentModal } from "@/components/modals/RecordPaymentModal";
+import { ZainCashPayment } from "@/components/payments/ZainCashPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatCurrency, Currency } from "@/lib/currency";
@@ -29,6 +31,9 @@ type Invoice = {
 const Invoices = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [issueInvoiceOpen, setIssueInvoiceOpen] = useState(false);
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [zainCashPaymentOpen, setZainCashPaymentOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -122,9 +127,37 @@ const Invoices = () => {
                           <TableCell>{new Date(invoice.due_date).toLocaleDateString('ar-IQ')}</TableCell>
                           <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setRecordPaymentOpen(true);
+                                    }}
+                                  >
+                                    <CreditCard className="h-4 w-4 ml-2" />
+                                    تسجيل دفعة
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setZainCashPaymentOpen(true);
+                                    }}
+                                  >
+                                    <Smartphone className="h-4 w-4 ml-2" />
+                                    ZainCash
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -141,6 +174,22 @@ const Invoices = () => {
       <IssueInvoiceModal 
         open={issueInvoiceOpen} 
         onOpenChange={setIssueInvoiceOpen}
+        onSuccess={fetchInvoices}
+      />
+      <RecordPaymentModal
+        open={recordPaymentOpen}
+        onOpenChange={setRecordPaymentOpen}
+        subscriberId={selectedInvoice?.subscriber_id || ''}
+        invoiceId={selectedInvoice?.id}
+        invoiceAmount={selectedInvoice?.amount}
+        onSuccess={fetchInvoices}
+      />
+      <ZainCashPayment
+        open={zainCashPaymentOpen}
+        onOpenChange={setZainCashPaymentOpen}
+        subscriberId={selectedInvoice?.subscriber_id || ''}
+        invoiceId={selectedInvoice?.id}
+        amount={selectedInvoice?.amount || 0}
         onSuccess={fetchInvoices}
       />
     </div>

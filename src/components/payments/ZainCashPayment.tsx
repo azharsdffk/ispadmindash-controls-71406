@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,19 +9,21 @@ import { Smartphone, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface ZainCashPaymentProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   subscriberId: string;
   invoiceId?: string;
   amount: number;
   onSuccess?: () => void;
-  onCancel?: () => void;
 }
 
 export const ZainCashPayment = ({
+  open,
+  onOpenChange,
   subscriberId,
   invoiceId,
   amount,
   onSuccess,
-  onCancel,
 }: ZainCashPaymentProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -86,6 +88,7 @@ export const ZainCashPayment = ({
 
       setTimeout(() => {
         onSuccess?.();
+        onOpenChange(false);
       }, 2000);
       
     } catch (error: any) {
@@ -129,128 +132,126 @@ export const ZainCashPayment = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
           <div className="flex items-center gap-2">
             <Smartphone className="h-5 w-5 text-primary" />
-            <CardTitle>الدفع عبر ZainCash</CardTitle>
+            <DialogTitle>الدفع عبر ZainCash</DialogTitle>
+            {getStatusBadge()}
           </div>
-          {getStatusBadge()}
-        </div>
-        <CardDescription>
-          ادفع بأمان باستخدام محفظة ZainCash الإلكترونية
-        </CardDescription>
-      </CardHeader>
+          <DialogDescription>
+            ادفع بأمان باستخدام محفظة ZainCash الإلكترونية
+          </DialogDescription>
+        </DialogHeader>
 
-      <CardContent className="space-y-4">
-        <div className="rounded-lg bg-muted p-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">المبلغ المطلوب:</span>
-            <span className="text-2xl font-bold">{amount.toLocaleString()} IQD</span>
-          </div>
-        </div>
-
-        {paymentStatus === 'idle' && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="phone">رقم هاتف ZainCash</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="07XXXXXXXXX"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                maxLength={11}
-                dir="ltr"
-              />
-              <p className="text-xs text-muted-foreground">
-                أدخل رقم هاتف ZainCash المسجل
-              </p>
+        <div className="space-y-4">
+          <div className="rounded-lg bg-muted p-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">المبلغ المطلوب:</span>
+              <span className="text-2xl font-bold">{amount.toLocaleString()} IQD</span>
             </div>
+          </div>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={handlePayment}
-                disabled={loading || !phoneNumber}
-                className="flex-1"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    جاري المعالجة...
-                  </>
-                ) : (
-                  <>
-                    <Smartphone className="mr-2 h-4 w-4" />
-                    ادفع الآن
-                  </>
-                )}
-              </Button>
-              {onCancel && (
+          {paymentStatus === 'idle' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="phone">رقم هاتف ZainCash</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="07XXXXXXXXX"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  maxLength={11}
+                  dir="ltr"
+                />
+                <p className="text-xs text-muted-foreground">
+                  أدخل رقم هاتف ZainCash المسجل
+                </p>
+              </div>
+
+              <div className="flex gap-2">
                 <Button
-                  onClick={onCancel}
+                  onClick={handlePayment}
+                  disabled={loading || !phoneNumber}
+                  className="flex-1"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      جاري المعالجة...
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="mr-2 h-4 w-4" />
+                      ادفع الآن
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => onOpenChange(false)}
                   variant="outline"
                   disabled={loading}
                 >
                   إلغاء
                 </Button>
-              )}
-            </div>
-          </>
-        )}
-
-        {paymentStatus === 'success' && transactionId && (
-          <div className="space-y-3">
-            <div className="rounded-lg bg-green-50 dark:bg-green-950 p-4 text-center">
-              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-2" />
-              <p className="font-semibold text-green-700 dark:text-green-400">
-                تمت عملية الدفع بنجاح
-              </p>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">رقم المعاملة:</span>
-                <span className="font-mono font-semibold">{transactionId}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">المبلغ:</span>
-                <span className="font-semibold">{amount.toLocaleString()} IQD</span>
+            </>
+          )}
+
+          {paymentStatus === 'success' && transactionId && (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-green-50 dark:bg-green-950 p-4 text-center">
+                <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                <p className="font-semibold text-green-700 dark:text-green-400">
+                  تمت عملية الدفع بنجاح
+                </p>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">رقم المعاملة:</span>
+                  <span className="font-mono font-semibold">{transactionId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">المبلغ:</span>
+                  <span className="font-semibold">{amount.toLocaleString()} IQD</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {paymentStatus === 'failed' && (
-          <div className="space-y-3">
-            <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-center">
-              <XCircle className="h-12 w-12 text-red-500 mx-auto mb-2" />
-              <p className="font-semibold text-red-700 dark:text-red-400">
-                فشلت عملية الدفع
-              </p>
-              <p className="text-sm text-red-600 dark:text-red-500 mt-1">
-                يرجى المحاولة مرة أخرى أو التواصل مع الدعم الفني
-              </p>
+          {paymentStatus === 'failed' && (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-center">
+                <XCircle className="h-12 w-12 text-red-500 mx-auto mb-2" />
+                <p className="font-semibold text-red-700 dark:text-red-400">
+                  فشلت عملية الدفع
+                </p>
+                <p className="text-sm text-red-600 dark:text-red-500 mt-1">
+                  يرجى المحاولة مرة أخرى أو التواصل مع الدعم الفني
+                </p>
+              </div>
+              
+              <Button
+                onClick={() => {
+                  setPaymentStatus('idle');
+                  setPhoneNumber('');
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                إعادة المحاولة
+              </Button>
             </div>
-            
-            <Button
-              onClick={() => {
-                setPaymentStatus('idle');
-                setPhoneNumber('');
-              }}
-              variant="outline"
-              className="w-full"
-            >
-              إعادة المحاولة
-            </Button>
-          </div>
-        )}
+          )}
 
-        <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-          <p>سيتم إرسال رمز التأكيد إلى رقم هاتفك المسجل في ZainCash</p>
+          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
+            <p>سيتم إرسال رمز التأكيد إلى رقم هاتفك المسجل في ZainCash</p>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
