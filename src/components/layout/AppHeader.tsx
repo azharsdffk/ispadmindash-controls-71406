@@ -18,15 +18,15 @@ interface AppHeaderProps {
 export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   const { signOut, user } = useAuth();
   return (
-    <header className="h-16 border-b bg-gradient-primary text-primary-foreground shadow-lg sticky top-0 z-50 backdrop-blur-md">
-      <div className="flex items-center justify-between h-full px-6 animate-fade-in">
+    <header className="glass border-b border-white/20 sticky top-0 z-50">
+      <div className="flex items-center justify-between h-16 px-6 animate-fade-in">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-110 transition-transform duration-300 shadow-glow">
-            <span className="text-2xl font-bold animate-pulse-glow">ISP</span>
+          <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center hover:scale-110 transition-transform duration-300 glow animate-float">
+            <span className="text-2xl font-bold text-white">ISP</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold">نظام إدارة الإنترنت</h1>
-            <p className="text-xs text-primary-foreground/80">Internet Service Provider Management</p>
+            <h1 className="text-xl font-bold gradient-text">نظام إدارة الإنترنت</h1>
+            <p className="text-xs text-muted-foreground">Internet Service Provider Management</p>
           </div>
         </div>
 
@@ -36,11 +36,11 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-primary-foreground hover:bg-white/20"
+            className="hover:bg-primary/10 hover:scale-110 transition-all"
             onClick={onOpenSettings}
             title="الإعدادات (Alt+S)"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-5 w-5 text-primary" />
           </Button>
 
           <DropdownMenu dir="rtl">
@@ -48,9 +48,9 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-primary-foreground hover:bg-white/20 rounded-full"
+                className="hover:bg-primary/10 hover:scale-110 transition-all rounded-full"
               >
-                <User className="h-5 w-5" />
+                <User className="h-5 w-5 text-primary" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
