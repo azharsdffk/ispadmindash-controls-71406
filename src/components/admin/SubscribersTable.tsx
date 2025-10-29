@@ -62,7 +62,7 @@ export const SubscribersTable = () => {
                 className="pr-10 w-64"
               />
             </div>
-            <Button variant="outline">
+            <Button variant="default" className="bg-primary text-white hover:bg-primary/90">
               <Download className="h-4 w-4 ml-2" />
               تصدير
             </Button>
@@ -105,7 +105,7 @@ export const SubscribersTable = () => {
                   <TableCell className="max-w-xs truncate">{subscriber.address || '-'}</TableCell>
                   <TableCell>{new Date(subscriber.created_at).toLocaleDateString('ar-EG')}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="default" className="bg-primary text-white hover:bg-primary/90">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>

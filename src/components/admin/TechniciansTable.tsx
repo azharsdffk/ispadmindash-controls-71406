@@ -112,7 +112,7 @@ export const TechniciansTable = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="default" className="bg-primary text-white hover:bg-primary/90">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>

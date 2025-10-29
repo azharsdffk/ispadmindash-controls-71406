@@ -211,14 +211,14 @@ export const TicketsTable = () => {
                     <TableCell>{new Date(ticket.created_at).toLocaleDateString('ar-EG')}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="default" className="bg-primary text-white hover:bg-primary/90">
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Select
                           value={ticket.status}
                           onValueChange={(value) => updateStatus(ticket.id, value as 'open' | 'in_progress' | 'closed' | 'resolved')}
                         >
-                          <SelectTrigger className="w-32">
+                          <SelectTrigger className="w-32 border-2 border-primary/30">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
