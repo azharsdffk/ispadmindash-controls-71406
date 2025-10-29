@@ -1164,36 +1164,51 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           currency: Database["public"]["Enums"]["currency_type"] | null
+          gateway_response: Json | null
           id: string
           invoice_id: string | null
           notes: string | null
+          paid_at: string | null
           payment_date: string
+          payment_gateway: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status: string | null
           subscriber_id: string
+          transaction_id: string | null
         }
         Insert: {
           amount: number
           created_at?: string | null
           created_by?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
+          gateway_response?: Json | null
           id?: string
           invoice_id?: string | null
           notes?: string | null
+          paid_at?: string | null
           payment_date?: string
+          payment_gateway?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status?: string | null
           subscriber_id: string
+          transaction_id?: string | null
         }
         Update: {
           amount?: number
           created_at?: string | null
           created_by?: string | null
           currency?: Database["public"]["Enums"]["currency_type"] | null
+          gateway_response?: Json | null
           id?: string
           invoice_id?: string | null
           notes?: string | null
+          paid_at?: string | null
           payment_date?: string
+          payment_gateway?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_status?: string | null
           subscriber_id?: string
+          transaction_id?: string | null
         }
         Relationships: [
           {
