@@ -29,6 +29,7 @@ import AccountantPermissions from "./pages/AccountantPermissions";
 import UserAccountsManagement from "./pages/UserAccountsManagement";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import Contracts from "./pages/Contracts";
+import Discounts from "./pages/Discounts";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -74,6 +75,11 @@ const App = () => (
               <PermissionProtectedRoute permission="view_invoices">
                 <Contracts />
               </PermissionProtectedRoute>
+            } />
+            <Route path="/discounts" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Discounts />
+              </ProtectedRoute>
             } />
             <Route path="/inventory" element={
               <PermissionProtectedRoute permission="view_inventory">

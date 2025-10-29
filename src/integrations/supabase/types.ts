@@ -232,6 +232,124 @@ export type Database = {
           },
         ]
       }
+      coupon_usage: {
+        Row: {
+          coupon_id: string
+          discount_amount: number
+          id: string
+          invoice_id: string | null
+          subscriber_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          coupon_id: string
+          discount_amount: number
+          id?: string
+          invoice_id?: string | null
+          subscriber_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          coupon_id?: string
+          discount_amount?: number
+          id?: string
+          invoice_id?: string | null
+          subscriber_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usage_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "discount_coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usage_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usage_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discount_coupons: {
+        Row: {
+          active: boolean | null
+          applicable_to: string | null
+          code: string
+          created_at: string | null
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"] | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          max_discount_amount: number | null
+          min_purchase_amount: number | null
+          package_ids: string[] | null
+          per_user_limit: number | null
+          updated_at: string | null
+          usage_count: number | null
+          usage_limit: number | null
+          valid_from: string
+          valid_until: string
+        }
+        Insert: {
+          active?: boolean | null
+          applicable_to?: string | null
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          package_ids?: string[] | null
+          per_user_limit?: number | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          valid_from?: string
+          valid_until: string
+        }
+        Update: {
+          active?: boolean | null
+          applicable_to?: string | null
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"] | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          package_ids?: string[] | null
+          per_user_limit?: number | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          valid_from?: string
+          valid_until?: string
+        }
+        Relationships: []
+      }
       employee_access_logs: {
         Row: {
           accessed_by: string
@@ -733,6 +851,91 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_points: {
+        Row: {
+          created_at: string | null
+          id: string
+          lifetime_points: number
+          points: number
+          subscriber_id: string
+          tier: string | null
+          tier_discount_percentage: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lifetime_points?: number
+          points?: number
+          subscriber_id: string
+          tier?: string | null
+          tier_discount_percentage?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lifetime_points?: number
+          points?: number
+          subscriber_id?: string
+          tier?: string | null
+          tier_discount_percentage?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_points_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: true
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_transactions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          points: number
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          subscriber_id: string
+          transaction_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          points: number
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          subscriber_id: string
+          transaction_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          points?: number
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          subscriber_id?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_tickets: {
         Row: {
           created_at: string | null
@@ -1101,6 +1304,60 @@ export type Database = {
         }
         Relationships: []
       }
+      promotional_offers: {
+        Row: {
+          active: boolean | null
+          applicable_packages: string[] | null
+          auto_apply: boolean | null
+          bonus_speed_mbps: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          discount_percentage: number | null
+          free_months: number | null
+          id: string
+          name: string
+          offer_type: string
+          updated_at: string | null
+          valid_from: string
+          valid_until: string
+        }
+        Insert: {
+          active?: boolean | null
+          applicable_packages?: string[] | null
+          auto_apply?: boolean | null
+          bonus_speed_mbps?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          free_months?: number | null
+          id?: string
+          name: string
+          offer_type: string
+          updated_at?: string | null
+          valid_from?: string
+          valid_until: string
+        }
+        Update: {
+          active?: boolean | null
+          applicable_packages?: string[] | null
+          auto_apply?: boolean | null
+          bonus_speed_mbps?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          free_months?: number | null
+          id?: string
+          name?: string
+          offer_type?: string
+          updated_at?: string | null
+          valid_from?: string
+          valid_until?: string
+        }
+        Relationships: []
+      }
       rate_limit_attempts: {
         Row: {
           attempt_type: string
@@ -1130,6 +1387,63 @@ export type Database = {
           last_attempt_at?: string | null
         }
         Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          id: string
+          referral_code: string
+          referred_at: string | null
+          referred_id: string | null
+          referrer_id: string
+          reward_applied: boolean | null
+          reward_type: string | null
+          reward_value: number | null
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          referral_code: string
+          referred_at?: string | null
+          referred_id?: string | null
+          referrer_id: string
+          reward_applied?: boolean | null
+          reward_type?: string | null
+          reward_value?: number | null
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          referral_code?: string
+          referred_at?: string | null
+          referred_id?: string | null
+          referrer_id?: string
+          reward_applied?: boolean | null
+          reward_type?: string | null
+          reward_value?: number | null
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {
@@ -1608,6 +1922,22 @@ export type Database = {
       }
     }
     Functions: {
+      apply_discount_coupon: {
+        Args: {
+          p_coupon_code: string
+          p_invoice_amount: number
+          p_subscriber_id: string
+        }
+        Returns: {
+          discount_amount: number
+          message: string
+          success: boolean
+        }[]
+      }
+      calculate_loyalty_points: {
+        Args: { p_amount: number; p_subscriber_id: string }
+        Returns: number
+      }
       check_expired_contracts: { Args: never; Returns: undefined }
       check_password_reset_rate_limit: {
         Args: { p_identifier: string }
@@ -1616,6 +1946,10 @@ export type Database = {
       generate_complaint_number: { Args: never; Returns: string }
       generate_contract_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
+      generate_referral_code: {
+        Args: { p_subscriber_id: string }
+        Returns: string
+      }
       generate_ticket_number: { Args: never; Returns: string }
       generate_voucher_number: { Args: never; Returns: string }
       has_permission: {
