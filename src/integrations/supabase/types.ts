@@ -153,6 +153,85 @@ export type Database = {
           },
         ]
       }
+      contracts: {
+        Row: {
+          auto_renew: boolean
+          contract_number: string
+          created_at: string
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency_type"]
+          end_date: string
+          id: string
+          installation_fee: number | null
+          monthly_fee: number
+          notes: string | null
+          package_id: string | null
+          renewal_period_months: number | null
+          start_date: string
+          status: Database["public"]["Enums"]["contract_status"]
+          subscriber_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_renew?: boolean
+          contract_number: string
+          created_at?: string
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"]
+          end_date: string
+          id?: string
+          installation_fee?: number | null
+          monthly_fee?: number
+          notes?: string | null
+          package_id?: string | null
+          renewal_period_months?: number | null
+          start_date: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          subscriber_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_renew?: boolean
+          contract_number?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_type"]
+          end_date?: string
+          id?: string
+          installation_fee?: number | null
+          monthly_fee?: number
+          notes?: string | null
+          package_id?: string | null
+          renewal_period_months?: number | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          subscriber_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "public_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_access_logs: {
         Row: {
           accessed_by: string
@@ -1371,11 +1450,13 @@ export type Database = {
       }
     }
     Functions: {
+      check_expired_contracts: { Args: never; Returns: undefined }
       check_password_reset_rate_limit: {
         Args: { p_identifier: string }
         Returns: boolean
       }
       generate_complaint_number: { Args: never; Returns: string }
+      generate_contract_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
       generate_voucher_number: { Args: never; Returns: string }
@@ -1423,6 +1504,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "accountant" | "technician" | "user" | "client"
+      contract_status:
+        | "active"
+        | "expired"
+        | "suspended"
+        | "cancelled"
+        | "pending"
       currency_type: "IQD" | "USD"
       invoice_status: "pending" | "paid" | "overdue" | "cancelled"
       payment_method: "cash" | "bank_transfer" | "card" | "other"
@@ -1557,6 +1644,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "accountant", "technician", "user", "client"],
+      contract_status: [
+        "active",
+        "expired",
+        "suspended",
+        "cancelled",
+        "pending",
+      ],
       currency_type: ["IQD", "USD"],
       invoice_status: ["pending", "paid", "overdue", "cancelled"],
       payment_method: ["cash", "bank_transfer", "card", "other"],

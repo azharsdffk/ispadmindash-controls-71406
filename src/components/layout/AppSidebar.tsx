@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole, type AppRole } from "@/hooks/useUserRole";
@@ -16,6 +16,7 @@ const menuGroups = {
   operations: [
     { icon: Users, label: "المشتركين", path: "/subscribers", permission: "view_subscribers", roles: ['admin', 'accountant'] },
     { icon: FileText, label: "الفواتير", path: "/invoices", permission: "view_invoices", roles: ['admin', 'accountant'] },
+    { icon: FileSignature, label: "العقود", path: "/contracts", permission: "view_invoices", roles: ['admin', 'accountant'] },
     { icon: DollarSign, label: "السندات", path: "/vouchers", permission: "view_vouchers", roles: ['admin', 'accountant'] },
     { icon: Package, label: "الباقات", path: "/plans", permission: "view_packages", roles: ['admin'] },
   ],
