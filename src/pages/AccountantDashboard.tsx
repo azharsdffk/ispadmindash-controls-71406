@@ -7,21 +7,24 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/currency';
 import { 
-  Wallet, 
+  Coins, 
   TrendingUp, 
   TrendingDown, 
-  Receipt, 
-  CreditCard, 
-  AlertTriangle,
+  FileText, 
+  Banknote, 
+  AlertCircle,
   Clock,
-  BarChart3,
-  PieChart,
-  FileSpreadsheet,
+  Activity,
+  Target,
+  Layers,
   Calculator,
-  DollarSign,
-  Users,
-  ShoppingCart,
-  Package
+  Wallet2,
+  Users2,
+  ShoppingBag,
+  Archive,
+  ArrowUpRight,
+  ArrowDownRight,
+  CircleDollarSign
 } from 'lucide-react';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -186,32 +189,40 @@ export default function AccountantDashboard() {
         <AppSidebar />
         
         <div className="flex-1 overflow-auto">
-          <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-            {/* Enhanced Header */}
-            <div className="glass-card p-6 rounded-2xl">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl gradient-bg">
-                    <Calculator className="h-8 w-8 text-white" />
+          <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
+            {/* Professional Header */}
+            <div className="glass-card p-8 rounded-3xl animate-fade-in">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="relative">
+                    <div className="absolute -inset-1 gradient-bg rounded-2xl blur opacity-30 animate-pulse-glow"></div>
+                    <div className="relative p-4 rounded-2xl gradient-bg">
+                      <Calculator className="h-10 w-10 text-white" />
+                    </div>
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold gradient-text mb-1">
-                      لوحة التحكم المحاسبية
+                    <h1 className="text-4xl font-bold mb-2">
+                      <span className="gradient-text">مركز التحكم المالي</span>
                     </h1>
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      نظام إدارة مالية شامل ومتكامل
+                    <p className="text-muted-foreground flex items-center gap-2 text-base">
+                      <Activity className="h-5 w-5 text-primary" />
+                      إدارة ومراقبة شاملة للعمليات المحاسبية
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="px-4 py-2 glass">
-                    <Clock className="h-4 w-4 ml-2" />
-                    {new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge variant="outline" className="px-5 py-2.5 glass text-base">
+                    <Clock className="h-5 w-5 ml-2 text-primary" />
+                    {new Date().toLocaleString('ar-IQ', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      day: 'numeric',
+                      month: 'short'
+                    })}
                   </Badge>
-                  <Badge variant="default" className="px-4 py-2">
-                    <Users className="h-4 w-4 ml-2" />
-                    محاسب
+                  <Badge className="px-5 py-2.5 gradient-bg text-base">
+                    <Users2 className="h-5 w-5 ml-2" />
+                    محاسب نظام
                   </Badge>
                 </div>
               </div>
@@ -230,150 +241,189 @@ export default function AccountantDashboard() {
                 ))}
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6 mt-6">
-                {/* Primary Financial Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="glass-card hover-scale border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-3">
+              <TabsContent value="overview" className="space-y-8 mt-8">
+                {/* Enhanced Financial Overview Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
+                  {/* Revenue Card */}
+                  <Card className="glass-card hover-scale border-0 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500"></div>
+                    <CardContent className="pt-7 pb-6 relative z-10">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-muted-foreground mb-1">إجمالي الإيرادات</p>
-                          <h3 className="text-2xl font-bold mb-1 text-primary">{formatCurrency(stats.totalRevenue, 'IQD')}</h3>
-                          <div className="flex items-center gap-1 text-xs">
-                            <TrendingUp className="h-3 w-3 text-secondary" />
-                            <span className="text-muted-foreground">+12% من الشهر السابق</span>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+                            <p className="text-sm font-semibold text-muted-foreground">إجمالي الإيرادات</p>
+                          </div>
+                          <h3 className="text-3xl font-bold mb-2 bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent">
+                            {formatCurrency(stats.totalRevenue, 'IQD')}
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <ArrowUpRight className="h-4 w-4 text-secondary" />
+                            <span className="text-secondary font-medium">+12.5%</span>
+                            <span className="text-muted-foreground text-xs">هذا الشهر</span>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl gradient-bg">
-                          <Wallet className="h-6 w-6 text-white" />
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg">
+                          <Coins className="h-7 w-7 text-white" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-card hover-scale border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-3">
+                  {/* Expenses Card */}
+                  <Card className="glass-card hover-scale border-0 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500"></div>
+                    <CardContent className="pt-7 pb-6 relative z-10">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-muted-foreground mb-1">إجمالي المصروفات</p>
-                          <h3 className="text-2xl font-bold mb-1 text-destructive">{formatCurrency(stats.totalExpenses, 'IQD')}</h3>
-                          <div className="flex items-center gap-1 text-xs">
-                            <TrendingDown className="h-3 w-3 text-destructive" />
-                            <span className="text-muted-foreground">-5% من الشهر السابق</span>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-2 w-2 rounded-full bg-destructive animate-pulse"></div>
+                            <p className="text-sm font-semibold text-muted-foreground">إجمالي المصروفات</p>
+                          </div>
+                          <h3 className="text-3xl font-bold mb-2 text-destructive">
+                            {formatCurrency(stats.totalExpenses, 'IQD')}
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <ArrowDownRight className="h-4 w-4 text-secondary" />
+                            <span className="text-secondary font-medium">-8.3%</span>
+                            <span className="text-muted-foreground text-xs">هذا الشهر</span>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-destructive">
-                          <ShoppingCart className="h-6 w-6 text-white" />
+                        <div className="p-4 rounded-2xl bg-destructive shadow-lg">
+                          <ShoppingBag className="h-7 w-7 text-white" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-card hover-scale border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-3">
+                  {/* Net Profit Card */}
+                  <Card className="glass-card hover-scale border-0 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500"></div>
+                    <CardContent className="pt-7 pb-6 relative z-10">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-muted-foreground mb-1">صافي الربح</p>
-                          <h3 className={`text-2xl font-bold mb-1 ${stats.netProfit >= 0 ? 'text-secondary' : 'text-destructive'}`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-2 w-2 rounded-full bg-accent animate-pulse"></div>
+                            <p className="text-sm font-semibold text-muted-foreground">صافي الربح</p>
+                          </div>
+                          <h3 className={`text-3xl font-bold mb-2 ${stats.netProfit >= 0 ? 'text-secondary' : 'text-destructive'}`}>
                             {formatCurrency(stats.netProfit, 'IQD')}
                           </h3>
-                          <div className="flex items-center gap-1 text-xs">
-                            <PieChart className="h-3 w-3 text-accent" />
-                            <span className="text-muted-foreground">هامش {stats.profitMargin.toFixed(1)}%</span>
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <Target className="h-4 w-4 text-accent" />
+                            <span className="text-accent font-medium">{stats.profitMargin.toFixed(1)}%</span>
+                            <span className="text-muted-foreground text-xs">هامش الربح</span>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-secondary">
-                          <DollarSign className="h-6 w-6 text-white" />
+                        <div className="p-4 rounded-2xl bg-accent shadow-lg">
+                          <CircleDollarSign className="h-7 w-7 text-white" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-card hover-scale border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-3">
+                  {/* Cash Flow Card */}
+                  <Card className="glass-card hover-scale border-0 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500"></div>
+                    <CardContent className="pt-7 pb-6 relative z-10">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-muted-foreground mb-1">التدفق النقدي</p>
-                          <h3 className={`text-2xl font-bold mb-1 ${stats.cashFlow >= 0 ? 'text-secondary' : 'text-destructive'}`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-2 w-2 rounded-full bg-secondary animate-pulse"></div>
+                            <p className="text-sm font-semibold text-muted-foreground">التدفق النقدي</p>
+                          </div>
+                          <h3 className={`text-3xl font-bold mb-2 ${stats.cashFlow >= 0 ? 'text-secondary' : 'text-destructive'}`}>
                             {formatCurrency(stats.cashFlow, 'IQD')}
                           </h3>
-                          <div className="flex items-center gap-1 text-xs">
-                            <BarChart3 className="h-3 w-3 text-primary" />
-                            <span className="text-muted-foreground">التدفقات الشهرية</span>
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <Activity className="h-4 w-4 text-primary" />
+                            <span className="text-primary font-medium">نشط</span>
+                            <span className="text-muted-foreground text-xs">التدفقات</span>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-accent">
-                          <TrendingUp className="h-6 w-6 text-white" />
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary to-accent shadow-lg">
+                          <Wallet2 className="h-7 w-7 text-white" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Secondary Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="glass-card border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-muted-foreground">الفواتير المدفوعة</span>
-                        <div className="p-2 rounded-lg bg-secondary/10">
-                          <Receipt className="h-5 w-5 text-secondary" />
+                {/* Quick Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 animate-fade-in">
+                  <Card className="glass-card border-0 hover:shadow-xl transition-shadow">
+                    <CardContent className="pt-6 pb-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5">
+                          <FileText className="h-6 w-6 text-secondary" />
                         </div>
+                        <Badge variant="secondary" className="text-xs px-2.5">مدفوع</Badge>
                       </div>
-                      <div className="text-2xl font-bold">{stats.paidInvoices}</div>
-                      <p className="text-xs text-muted-foreground mt-1">فاتورة مكتملة</p>
+                      <div className="space-y-1">
+                        <h4 className="text-3xl font-bold">{stats.paidInvoices}</h4>
+                        <p className="text-sm text-muted-foreground font-medium">الفواتير المدفوعة</p>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-card border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</span>
-                        <div className="p-2 rounded-lg bg-accent/10">
-                          <AlertTriangle className="h-5 w-5 text-accent" />
+                  <Card className="glass-card border-0 hover:shadow-xl transition-shadow">
+                    <CardContent className="pt-6 pb-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5">
+                          <AlertCircle className="h-6 w-6 text-accent" />
                         </div>
+                        <Badge variant="outline" className="text-xs px-2.5 border-accent text-accent">معلق</Badge>
                       </div>
-                      <div className="text-2xl font-bold">{stats.pendingInvoices}</div>
-                      <p className="text-xs text-muted-foreground mt-1">بانتظار الدفع</p>
+                      <div className="space-y-1">
+                        <h4 className="text-3xl font-bold">{stats.pendingInvoices}</h4>
+                        <p className="text-sm text-muted-foreground font-medium">الفواتير المعلقة</p>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-card border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-muted-foreground">مدفوعات اليوم</span>
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <CreditCard className="h-5 w-5 text-primary" />
+                  <Card className="glass-card border-0 hover:shadow-xl transition-shadow">
+                    <CardContent className="pt-6 pb-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+                          <Banknote className="h-6 w-6 text-primary" />
                         </div>
+                        <Badge variant="default" className="text-xs px-2.5">اليوم</Badge>
                       </div>
-                      <div className="text-2xl font-bold">{formatCurrency(stats.todayPayments, 'IQD')}</div>
-                      <p className="text-xs text-muted-foreground mt-1">إجمالي اليوم</p>
+                      <div className="space-y-1">
+                        <h4 className="text-2xl font-bold">{formatCurrency(stats.todayPayments, 'IQD')}</h4>
+                        <p className="text-sm text-muted-foreground font-medium">مدفوعات اليوم</p>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-card border-0">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-muted-foreground">قيمة المخزون</span>
-                        <div className="p-2 rounded-lg bg-destructive/10">
-                          <Package className="h-5 w-5 text-destructive" />
+                  <Card className="glass-card border-0 hover:shadow-xl transition-shadow">
+                    <CardContent className="pt-6 pb-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/5">
+                          <Archive className="h-6 w-6 text-destructive" />
                         </div>
+                        <Badge variant="destructive" className="text-xs px-2.5">{stats.lowStockItems} ناقص</Badge>
                       </div>
-                      <div className="text-2xl font-bold">{formatCurrency(stats.inventoryValue, 'IQD')}</div>
-                      <p className="text-xs text-muted-foreground mt-1">{stats.lowStockItems} صنف ناقص</p>
+                      <div className="space-y-1">
+                        <h4 className="text-2xl font-bold">{formatCurrency(stats.inventoryValue, 'IQD')}</h4>
+                        <p className="text-sm text-muted-foreground font-medium">قيمة المخزون</p>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Recent Transactions Tables */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up">
                   <Card className="glass-card border-0">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg flex items-center gap-3">
-                        <div className="p-2 rounded-lg gradient-bg">
-                          <Receipt className="h-5 w-5 text-white" />
+                    <CardHeader className="pb-4 border-b border-border/50">
+                      <CardTitle className="text-xl flex items-center gap-3">
+                        <div className="relative">
+                          <div className="absolute inset-0 gradient-bg rounded-xl blur opacity-50"></div>
+                          <div className="relative p-2.5 rounded-xl gradient-bg">
+                            <FileText className="h-6 w-6 text-white" />
+                          </div>
                         </div>
-                        <span>أحدث الفواتير</span>
+                        <span className="gradient-text">آخر الفواتير الصادرة</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -390,7 +440,7 @@ export default function AccountantDashboard() {
                           {recentInvoices.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                                <FileSpreadsheet className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
                                 <p>لا توجد فواتير حالياً</p>
                               </TableCell>
                             </TableRow>
@@ -412,12 +462,15 @@ export default function AccountantDashboard() {
                   </Card>
 
                   <Card className="glass-card border-0">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-secondary">
-                          <CreditCard className="h-5 w-5 text-white" />
+                    <CardHeader className="pb-4 border-b border-border/50">
+                      <CardTitle className="text-xl flex items-center gap-3">
+                        <div className="relative">
+                          <div className="absolute inset-0 gradient-bg rounded-xl blur opacity-50"></div>
+                          <div className="relative p-2.5 rounded-xl gradient-bg">
+                            <Banknote className="h-6 w-6 text-white" />
+                          </div>
                         </div>
-                        <span>أحدث المدفوعات</span>
+                        <span className="gradient-text">آخر المدفوعات الواردة</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -434,7 +487,7 @@ export default function AccountantDashboard() {
                           {recentPayments.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                                <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <Banknote className="h-12 w-12 mx-auto mb-2 opacity-50" />
                                 <p>لا توجد مدفوعات حالياً</p>
                               </TableCell>
                             </TableRow>
