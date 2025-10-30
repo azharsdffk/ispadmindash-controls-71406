@@ -211,7 +211,7 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">الإيرادات الشهرية</span>
-                        <DollarSign className="h-5 w-5 text-primary" />
+                        <DollarSign className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
                       </div>
                       <div className="text-2xl font-bold mb-1">{formatCurrency(stats.totalRevenue, 'IQD')}</div>
                       <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
@@ -222,7 +222,7 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">تذاكر الصيانة</span>
-                        <AlertCircle className="h-5 w-5 text-orange-500" />
+                        <AlertCircle className="h-5 w-5" style={{ color: 'hsl(var(--accent))' }} />
                       </div>
                       <div className="text-2xl font-bold mb-1">{stats.pendingInvoices}</div>
                       <p className="text-xs text-muted-foreground">12 تذكرة عادية</p>
@@ -233,7 +233,7 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</span>
-                        <FileText className="h-5 w-5 text-red-500" />
+                        <FileText className="h-5 w-5" style={{ color: 'hsl(var(--destructive))' }} />
                       </div>
                       <div className="text-2xl font-bold mb-1">{stats.paidInvoices}</div>
                       <p className="text-xs text-muted-foreground">بقيمة {formatCurrency(125000, 'IQD')}</p>
@@ -244,7 +244,7 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">إجمالي المشتركين</span>
-                        <TrendingUp className="h-5 w-5 text-green-500" />
+                        <TrendingUp className="h-5 w-5" style={{ color: 'hsl(var(--secondary))' }} />
                       </div>
                       <div className="text-2xl font-bold mb-1">1,234</div>
                       <p className="text-xs text-muted-foreground">+12% من الشهر الماضي</p>
@@ -258,7 +258,7 @@ export default function AccountantDashboard() {
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-primary" />
+                        <FileText className="h-4 w-4" style={{ color: 'hsl(var(--primary))' }} />
                         أحدث الفواتير
                       </CardTitle>
                     </CardHeader>
@@ -297,7 +297,7 @@ export default function AccountantDashboard() {
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-green-500" />
+                        <CreditCard className="h-4 w-4" style={{ color: 'hsl(var(--secondary))' }} />
                         أحدث المدفوعات
                       </CardTitle>
                     </CardHeader>
