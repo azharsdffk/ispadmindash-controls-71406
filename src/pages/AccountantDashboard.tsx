@@ -238,9 +238,9 @@ export default function AccountantDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <p className="text-sm font-medium text-muted-foreground mb-1">إجمالي الإيرادات</p>
-                          <h3 className="text-2xl font-bold mb-1">{formatCurrency(stats.totalRevenue, 'IQD')}</h3>
+                          <h3 className="text-2xl font-bold mb-1 text-primary">{formatCurrency(stats.totalRevenue, 'IQD')}</h3>
                           <div className="flex items-center gap-1 text-xs">
-                            <TrendingUp className="h-3 w-3" style={{ color: 'hsl(var(--secondary))' }} />
+                            <TrendingUp className="h-3 w-3 text-secondary" />
                             <span className="text-muted-foreground">+12% من الشهر السابق</span>
                           </div>
                         </div>
@@ -256,9 +256,9 @@ export default function AccountantDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <p className="text-sm font-medium text-muted-foreground mb-1">إجمالي المصروفات</p>
-                          <h3 className="text-2xl font-bold mb-1">{formatCurrency(stats.totalExpenses, 'IQD')}</h3>
+                          <h3 className="text-2xl font-bold mb-1 text-destructive">{formatCurrency(stats.totalExpenses, 'IQD')}</h3>
                           <div className="flex items-center gap-1 text-xs">
-                            <TrendingDown className="h-3 w-3" style={{ color: 'hsl(var(--destructive))' }} />
+                            <TrendingDown className="h-3 w-3 text-destructive" />
                             <span className="text-muted-foreground">-5% من الشهر السابق</span>
                           </div>
                         </div>
@@ -274,11 +274,11 @@ export default function AccountantDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <p className="text-sm font-medium text-muted-foreground mb-1">صافي الربح</p>
-                          <h3 className="text-2xl font-bold mb-1" style={{ color: stats.netProfit >= 0 ? 'hsl(var(--secondary))' : 'hsl(var(--destructive))' }}>
+                          <h3 className={`text-2xl font-bold mb-1 ${stats.netProfit >= 0 ? 'text-secondary' : 'text-destructive'}`}>
                             {formatCurrency(stats.netProfit, 'IQD')}
                           </h3>
                           <div className="flex items-center gap-1 text-xs">
-                            <PieChart className="h-3 w-3" style={{ color: 'hsl(var(--accent))' }} />
+                            <PieChart className="h-3 w-3 text-accent" />
                             <span className="text-muted-foreground">هامش {stats.profitMargin.toFixed(1)}%</span>
                           </div>
                         </div>
@@ -294,15 +294,15 @@ export default function AccountantDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <p className="text-sm font-medium text-muted-foreground mb-1">التدفق النقدي</p>
-                          <h3 className="text-2xl font-bold mb-1" style={{ color: stats.cashFlow >= 0 ? 'hsl(var(--secondary))' : 'hsl(var(--destructive))' }}>
+                          <h3 className={`text-2xl font-bold mb-1 ${stats.cashFlow >= 0 ? 'text-secondary' : 'text-destructive'}`}>
                             {formatCurrency(stats.cashFlow, 'IQD')}
                           </h3>
                           <div className="flex items-center gap-1 text-xs">
-                            <BarChart3 className="h-3 w-3" style={{ color: 'hsl(var(--primary))' }} />
+                            <BarChart3 className="h-3 w-3 text-primary" />
                             <span className="text-muted-foreground">التدفقات الشهرية</span>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl" style={{ background: 'hsl(var(--accent))' }}>
+                        <div className="p-3 rounded-xl bg-accent">
                           <TrendingUp className="h-6 w-6 text-white" />
                         </div>
                       </div>
@@ -316,8 +316,8 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">الفواتير المدفوعة</span>
-                        <div className="p-2 rounded-lg" style={{ background: 'hsl(var(--secondary) / 0.1)' }}>
-                          <Receipt className="h-5 w-5" style={{ color: 'hsl(var(--secondary))' }} />
+                        <div className="p-2 rounded-lg bg-secondary/10">
+                          <Receipt className="h-5 w-5 text-secondary" />
                         </div>
                       </div>
                       <div className="text-2xl font-bold">{stats.paidInvoices}</div>
@@ -329,8 +329,8 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</span>
-                        <div className="p-2 rounded-lg" style={{ background: 'hsl(var(--accent) / 0.1)' }}>
-                          <AlertTriangle className="h-5 w-5" style={{ color: 'hsl(var(--accent))' }} />
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <AlertTriangle className="h-5 w-5 text-accent" />
                         </div>
                       </div>
                       <div className="text-2xl font-bold">{stats.pendingInvoices}</div>
@@ -342,8 +342,8 @@ export default function AccountantDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">مدفوعات اليوم</span>
-                        <div className="p-2 rounded-lg" style={{ background: 'hsl(var(--primary) / 0.1)' }}>
-                          <CreditCard className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <CreditCard className="h-5 w-5 text-primary" />
                         </div>
                       </div>
                       <div className="text-2xl font-bold">{formatCurrency(stats.todayPayments, 'IQD')}</div>
@@ -356,7 +356,7 @@ export default function AccountantDashboard() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-muted-foreground">قيمة المخزون</span>
                         <div className="p-2 rounded-lg bg-destructive/10">
-                          <Package className="h-5 w-5" style={{ color: 'hsl(var(--destructive))' }} />
+                          <Package className="h-5 w-5 text-destructive" />
                         </div>
                       </div>
                       <div className="text-2xl font-bold">{formatCurrency(stats.inventoryValue, 'IQD')}</div>
