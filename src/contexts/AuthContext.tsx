@@ -107,11 +107,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (!error) {
+    
+    if (!error && data.session) {
+      // إنشاء سجل للجلسة الجديدة
+      try {
+        const deviceName = navigator.platform || 'Unknown Device';
+        const userAgent = navigator.userAgent;
+        
+        // حساب تاريخ انتهاء الجلسة (7 أيام من الآن)
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        
+        await supabase.functions.invoke('manage-sessions', {
+          body: {
+            action: 'create',
+            sessionToken: data.session.access_token,
+            deviceName,
+            userAgent,
+            expiresAt: expiresAt.toISOString(),
+          },
+        });
+      } catch (sessionError) {
+        console.error('Error creating session record:', sessionError);
+        // لا نريد إيقاف تسجيل الدخول إذا فشل تسجيل الجلسة
+      }
+      
       navigate('/');
     }
     return { error };
@@ -137,6 +161,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // إلغاء الجلسة الحالية
+      if (session?.access_token) {
+        try {
+          const { data: sessions } = await supabase
+            .from('sessions')
+            .select('id')
+            .eq('session_token', session.access_token)
+            .eq('revoked', false)
+            .single();
+          
+          if (sessions) {
+            await supabase.functions.invoke('manage-sessions', {
+              body: {
+                action: 'revoke',
+                sessionId: sessions.id,
+              },
+            });
+          }
+        } catch (sessionError) {
+          console.error('Error revoking session:', sessionError);
+        }
+      }
+      
       // Clear all local state first
       setPermissions([]);
       setRoles([]);
