@@ -32,6 +32,7 @@ const menuGroups = {
     { icon: BarChart3, label: "التقارير", path: "/reports", permission: "view_reports", roles: ['admin', 'accountant'] },
   ],
   system: [
+    { icon: Shield, label: "الأمان والجلسات", path: "/security", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
     { icon: Download, label: "استيراد البيانات", path: "/import", permission: "import_data", roles: ['admin'] },
     { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
     { icon: Settings, label: "الإعدادات", path: "/settings", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
@@ -57,7 +58,7 @@ export const AppSidebar = () => {
   }
 
   const renderMenuItem = (item: any) => {
-    const basicPaths = ['/', '/settings', '/notifications'];
+    const basicPaths = ['/', '/settings', '/notifications', '/security'];
     const isBasicPath = basicPaths.includes(item.path);
     const hasRequiredRole = item.roles && (isBasicPath || item.roles.some((role: AppRole) => roles.includes(role)));
     

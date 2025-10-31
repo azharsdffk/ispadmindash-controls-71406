@@ -24,7 +24,8 @@ import {
   Archive,
   ArrowUpRight,
   ArrowDownRight,
-  CircleDollarSign
+  CircleDollarSign,
+  LayoutGrid
 } from 'lucide-react';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,11 +37,16 @@ import { BalanceSheet } from '@/components/accountant/BalanceSheet';
 import { IncomeStatement } from '@/components/accountant/IncomeStatement';
 import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
 import { usePermissions } from '@/hooks/usePermissions';
+import { DraggableIconGrid } from '@/components/accountant/DraggableIconGrid';
+import { useDashboardLayout } from '@/hooks/useDashboardLayout';
+import { accountantMenuItems } from '@/config/accountantMenu';
 
 export default function AccountantDashboard() {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
+  const { layout, loading: layoutLoading, updateIconOrder, updateViewMode } = useDashboardLayout();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('menu');
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalExpenses: 0,
@@ -61,6 +67,12 @@ export default function AccountantDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    
+    // التحقق من التبويب في الـ hash
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      setActiveTab(hash);
+    }
   }, []);
 
   const fetchDashboardData = async () => {
@@ -162,7 +174,20 @@ export default function AccountantDashboard() {
     return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
   };
 
-  if (loading || permissionsLoading) {
+  // تصفية القائمة حسب الصلاحيات
+  const filteredMenuItems = accountantMenuItems.filter(item => 
+    !item.permission || hasPermission(item.permission)
+  );
+
+  // ترتيب القائمة حسب التخصيص أو الترتيب الافتراضي
+  const sortedMenuItems = layout.iconOrder.length > 0
+    ? layout.iconOrder
+        .map(id => filteredMenuItems.find(item => item.id === id))
+        .filter(Boolean)
+        .concat(filteredMenuItems.filter(item => !layout.iconOrder.includes(item.id)))
+    : filteredMenuItems;
+
+  if (loading || permissionsLoading || layoutLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -171,14 +196,15 @@ export default function AccountantDashboard() {
   }
 
   const availableTabs = [
-    { value: 'overview', label: 'نظرة عامة', show: true },
-    { value: 'financial', label: 'التحليل المالي', show: hasPermission('view_reports') },
-    { value: 'entries', label: 'القيود المحاسبية', show: hasPermission('add_transaction') },
-    { value: 'ledger', label: 'دفتر الأستاذ', show: hasPermission('view_balance') },
-    { value: 'balance', label: 'الميزانية العمومية', show: hasPermission('view_balance') },
-    { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_reports') },
-    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_reports') },
-    { value: 'reports', label: 'التقارير المتقدمة', show: hasPermission('export_reports') },
+    { value: 'menu', label: 'القائمة الرئيسية', show: true, icon: LayoutGrid },
+    { value: 'overview', label: 'نظرة عامة', show: true, icon: Activity },
+    { value: 'financial', label: 'التحليل المالي', show: hasPermission('view_reports'), icon: TrendingUp },
+    { value: 'entries', label: 'القيود المحاسبية', show: hasPermission('add_transaction'), icon: FileText },
+    { value: 'ledger', label: 'دفتر الأستاذ', show: hasPermission('view_balance'), icon: Layers },
+    { value: 'balance', label: 'الميزانية العمومية', show: hasPermission('view_balance'), icon: Target },
+    { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_reports'), icon: Coins },
+    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_reports'), icon: Wallet2 },
+    { value: 'reports', label: 'التقارير المتقدمة', show: hasPermission('export_reports'), icon: Archive },
   ].filter(tab => tab.show);
 
   return (
@@ -228,18 +254,49 @@ export default function AccountantDashboard() {
               </div>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="w-full glass p-1 h-auto flex-wrap gap-1">
-                {availableTabs.map(tab => (
-                  <TabsTrigger 
-                    key={tab.value} 
-                    value={tab.value} 
-                    className="flex-1 min-w-[140px] data-[state=active]:gradient-bg data-[state=active]:text-white"
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
+                {availableTabs.map(tab => {
+                  const Icon = tab.icon;
+                  return (
+                    <TabsTrigger 
+                      key={tab.value} 
+                      value={tab.value} 
+                      className="flex-1 min-w-[140px] data-[state=active]:gradient-bg data-[state=active]:text-white flex items-center gap-2"
+                    >
+                      <Icon className="h-4 w-4" />
+                      {tab.label}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
+
+              {/* Menu Tab with Draggable Icons */}
+              <TabsContent value="menu" className="space-y-6 mt-8">
+                <Card className="glass-card">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 rounded-xl gradient-bg">
+                        <LayoutGrid className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-2xl">القائمة الرئيسية</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          يمكنك ترتيب الأيقونات بالسحب والإفلات حسب تفضيلاتك
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <DraggableIconGrid
+                      items={sortedMenuItems as any}
+                      onReorder={updateIconOrder}
+                      viewMode={layout.viewMode}
+                      onViewModeChange={updateViewMode}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="overview" className="space-y-8 mt-8">
                 {/* Enhanced Financial Overview Cards */}
