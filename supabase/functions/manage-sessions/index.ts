@@ -36,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    const { action, sessionId } = await req.json();
+    const { action, sessionId, sessionToken, deviceName, ipAddress, userAgent, expiresAt } = await req.json();
 
     console.log(`Session action: ${action} for user: ${user.id}`);
 
@@ -102,8 +102,6 @@ serve(async (req) => {
       );
     } else if (action === 'create') {
       // Create new session (called during login)
-      const { sessionToken, deviceName, ipAddress, userAgent, expiresAt } = await req.json();
-
       // Check if multiple sessions are allowed
       const { data: settings } = await supabaseAdmin
         .from('user_security_settings')
