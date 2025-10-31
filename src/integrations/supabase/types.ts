@@ -1548,6 +1548,84 @@ export type Database = {
           },
         ]
       }
+      security_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          device_name: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown
+          last_active: string
+          metadata: Json | null
+          revoked: boolean
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown
+          last_active?: string
+          metadata?: Json | null
+          revoked?: boolean
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown
+          last_active?: string
+          metadata?: Json | null
+          revoked?: boolean
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       sms_logs: {
         Row: {
           created_at: string
@@ -1825,6 +1903,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_dashboard_layout: {
+        Row: {
+          created_at: string
+          id: string
+          layout_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          layout_data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          layout_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1842,6 +1944,36 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_security_settings: {
+        Row: {
+          allow_multiple_sessions: boolean
+          created_at: string
+          id: string
+          two_factor_enabled: boolean
+          two_factor_secret: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allow_multiple_sessions?: boolean
+          created_at?: string
+          id?: string
+          two_factor_enabled?: boolean
+          two_factor_secret?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allow_multiple_sessions?: boolean
+          created_at?: string
+          id?: string
+          two_factor_enabled?: boolean
+          two_factor_secret?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1958,6 +2090,7 @@ export type Database = {
         Args: { p_identifier: string }
         Returns: boolean
       }
+      cleanup_expired_sessions: { Args: never; Returns: undefined }
       generate_complaint_number: { Args: never; Returns: string }
       generate_contract_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
@@ -1988,6 +2121,18 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      log_security_event: {
+        Args: {
+          p_action: string
+          p_ip_address?: unknown
+          p_metadata?: Json
+          p_resource_id?: string
+          p_resource_type?: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: string
       }
       process_payment_transaction: {
         Args: {
