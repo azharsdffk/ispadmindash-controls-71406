@@ -30,6 +30,7 @@ import UserAccountsManagement from "./pages/UserAccountsManagement";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import Contracts from "./pages/Contracts";
 import Discounts from "./pages/Discounts";
+import SecuritySettings from "./pages/SecuritySettings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -117,6 +118,7 @@ const App = () => (
             <Route path="/roles" element={<ProtectedRoute allowedRoles={['admin']}><RoleManagement /></ProtectedRoute>} />
             <Route path="/permissions" element={<ProtectedRoute allowedRoles={['admin']}><PermissionsManagement /></ProtectedRoute>} />
             <Route path="/accounts" element={<ProtectedRoute allowedRoles={['admin']}><UserAccountsManagement /></ProtectedRoute>} />
+            <Route path="/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
