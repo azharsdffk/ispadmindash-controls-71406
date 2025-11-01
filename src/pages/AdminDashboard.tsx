@@ -35,9 +35,9 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex w-full">
       <AppSidebar />
-      <div className="lg:mr-64">
+      <main className="flex-1">
         <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
         
         {/* Hero Header Section */}
@@ -145,7 +145,7 @@ const AdminDashboard = () => {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </main>
       
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
