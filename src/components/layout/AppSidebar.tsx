@@ -85,7 +85,7 @@ export const AppSidebar = () => {
   };
 
   return (
-    <aside className="fixed right-0 top-0 h-screen w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0 overflow-y-auto z-40">
+    <aside className="w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0 overflow-y-auto h-screen sticky top-0">
       <nav className="p-4 space-y-6">
         {/* القائمة الرئيسية */}
         <div className="space-y-1">

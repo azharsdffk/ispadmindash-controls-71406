@@ -35,9 +35,9 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex w-full">
+    <div className="min-h-screen bg-background flex flex-row-reverse">
       <AppSidebar />
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-hidden">
         <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
         
         {/* Hero Header Section */}
