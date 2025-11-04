@@ -210,13 +210,13 @@ export default function AccountantDashboard() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col bg-background w-full">
-        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+      <div className="min-h-screen flex bg-background w-full" dir="rtl">
+        <AppSidebar />
         
-        <div className="flex flex-1 w-full">
-          <AppSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
         
-        <div className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-y-auto">
           <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
             {/* Professional Header */}
             <div className="glass-card p-8 rounded-3xl animate-fade-in">
@@ -618,10 +618,10 @@ export default function AccountantDashboard() {
             )}
           </Tabs>
         </div>
-      </div>
-      </div>
-
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+        </main>
+        </div>
+        
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </SidebarProvider>
   );

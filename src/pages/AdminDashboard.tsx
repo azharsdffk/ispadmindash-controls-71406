@@ -37,10 +37,13 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background flex flex-row-reverse w-full">
+      <div className="min-h-screen bg-background flex w-full" dir="rtl">
         <AppSidebar />
-        <main className="flex-1 overflow-x-hidden">
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
           <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
+        
+          <main className="flex-1 overflow-y-auto"  >
         
         {/* Hero Header Section */}
         <div className="relative overflow-hidden border-b">
@@ -148,8 +151,9 @@ const AdminDashboard = () => {
           </Tabs>
         </div>
       </main>
-      
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+        </div>
+        
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </SidebarProvider>
   );
