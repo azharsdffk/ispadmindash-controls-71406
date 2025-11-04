@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -208,11 +209,12 @@ export default function AccountantDashboard() {
   ].filter(tab => tab.show);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
-      
-      <div className="flex flex-1">
-        <AppSidebar />
+    <SidebarProvider>
+      <div className="min-h-screen flex flex-col bg-background w-full">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        
+        <div className="flex flex-1 w-full">
+          <AppSidebar />
         
         <div className="flex-1 overflow-auto">
           <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
@@ -613,13 +615,14 @@ export default function AccountantDashboard() {
                 <TabsContent value="reports" className="space-y-4">
                   <AdvancedReports />
                 </TabsContent>
-              )}
-            </Tabs>
-          </div>
+            )}
+          </Tabs>
         </div>
+      </div>
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }

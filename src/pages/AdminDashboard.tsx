@@ -3,6 +3,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { ProfessionalHeader } from '@/components/admin/ProfessionalHeader';
 import { AdminStatsCards } from '@/components/admin/AdminStatsCards';
 import { AdminCharts } from '@/components/admin/AdminCharts';
@@ -35,10 +36,11 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-row-reverse">
-      <AppSidebar />
-      <main className="flex-1 overflow-x-hidden">
-        <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
+    <SidebarProvider>
+      <div className="min-h-screen bg-background flex flex-row-reverse w-full">
+        <AppSidebar />
+        <main className="flex-1 overflow-x-hidden">
+          <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
         
         {/* Hero Header Section */}
         <div className="relative overflow-hidden border-b">
@@ -148,7 +150,8 @@ const AdminDashboard = () => {
       </main>
       
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
