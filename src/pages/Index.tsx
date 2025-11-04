@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { IssueInvoiceModal } from "@/components/modals/IssueInvoiceModal";
@@ -99,13 +100,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex" dir="rtl">
-      <AppSidebar />
-      
-      <div className="flex-1 flex flex-col">
-        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+    <SidebarProvider>
+      <div className="min-h-screen bg-background flex w-full" dir="rtl">
+        <AppSidebar />
         
-        <main className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 flex flex-col">
+          <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+          
+          <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Quick Access to Accountant Dashboard - For Admins Only */}
             {isAdmin && (
@@ -394,7 +396,8 @@ const Index = () => {
       <VoucherModal open={voucherOpen} onOpenChange={setVoucherOpen} />
       <ScheduleTechnicianModal open={scheduleTechOpen} onOpenChange={setScheduleTechOpen} />
       <AIChatbot />
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
