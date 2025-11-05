@@ -195,33 +195,36 @@ const Auth = () => {
           </form>
           <div className="mt-4 text-center space-y-2">
             {isLogin && !isForgotPassword && (
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm text-primary hover:underline block w-full"
+                className="text-sm w-full"
               >
                 نسيت كلمة المرور؟
-              </button>
+              </Button>
             )}
             {isForgotPassword ? (
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={() => {
                   setIsForgotPassword(false);
                   setIsLogin(true);
                 }}
-                className="text-sm text-primary hover:underline"
+                className="text-sm"
               >
                 العودة إلى تسجيل الدخول
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-sm text-primary hover:underline"
+                className="text-sm"
               >
                 {isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل الدخول'}
-              </button>
+              </Button>
             )}
           </div>
         </CardContent>
