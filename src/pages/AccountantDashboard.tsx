@@ -41,6 +41,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { DraggableIconGrid } from '@/components/accountant/DraggableIconGrid';
 import { useDashboardLayout } from '@/hooks/useDashboardLayout';
 import { accountantMenuItems } from '@/config/accountantMenu';
+import { RevenueExpenseCharts } from '@/components/accountant/RevenueExpenseCharts';
 
 export default function AccountantDashboard() {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
@@ -280,6 +281,9 @@ export default function AccountantDashboard() {
                 </TabsContent>
 
                 <TabsContent value="overview" className="space-y-4">
+                  {/* الرسوم البيانية */}
+                  <RevenueExpenseCharts stats={stats} />
+
                   {/* Financial Stats */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Revenue Card */}
