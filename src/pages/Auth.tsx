@@ -101,22 +101,29 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <LogIn className="h-12 w-12 text-primary" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5" dir="rtl">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-card/95 backdrop-blur">
+        <CardHeader className="text-center space-y-4 pb-8">
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+              <div className="relative p-4 rounded-2xl gradient-bg">
+                <LogIn className="h-10 w-10 text-white" />
+              </div>
+            </div>
           </div>
-          <CardTitle className="text-2xl">
-            {isForgotPassword ? 'إعادة تعيين كلمة المرور' : isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
-          </CardTitle>
-          <CardDescription>
-            {isForgotPassword
-              ? 'أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين'
-              : isLogin
-                ? 'أدخل بيانات الدخول الخاصة بك'
-                : 'أدخل بياناتك لإنشاء حساب'}
-          </CardDescription>
+          <div>
+            <CardTitle className="text-3xl font-bold gradient-text">
+              {isForgotPassword ? 'إعادة تعيين كلمة المرور' : isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
+            </CardTitle>
+            <CardDescription className="text-base mt-2">
+              {isForgotPassword
+                ? 'أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين'
+                : isLogin
+                  ? 'أدخل بيانات الدخول الخاصة بك'
+                  : 'أدخل بياناتك لإنشاء حساب'}
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -183,7 +190,7 @@ const Auth = () => {
                 )}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-12 text-base gradient-bg hover:opacity-90 transition-opacity" disabled={loading}>
               {loading
                 ? 'جارٍ التحميل...'
                 : isForgotPassword
@@ -193,13 +200,13 @@ const Auth = () => {
                     : 'إنشاء حساب'}
             </Button>
           </form>
-          <div className="mt-4 text-center space-y-2">
+          <div className="mt-6 text-center space-y-2 pt-4 border-t">
             {isLogin && !isForgotPassword && (
               <Button
                 type="button"
                 variant="link"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm w-full"
+                className="text-sm w-full text-primary hover:text-primary/80"
               >
                 نسيت كلمة المرور؟
               </Button>
@@ -212,19 +219,24 @@ const Auth = () => {
                   setIsForgotPassword(false);
                   setIsLogin(true);
                 }}
-                className="text-sm"
+                className="text-sm text-primary hover:text-primary/80"
               >
                 العودة إلى تسجيل الدخول
               </Button>
             ) : (
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-sm"
-              >
-                {isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل الدخول'}
-              </Button>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="w-full"
+                >
+                  {isLogin ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}
+                </Button>
+              </div>
             )}
           </div>
         </CardContent>
