@@ -102,145 +102,197 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle>إضافة مشترك جديد</DialogTitle>
-          <DialogDescription>أدخل بيانات المشترك الجديد</DialogDescription>
+          <DialogTitle className="text-2xl gradient-text">إضافة مشترك جديد</DialogTitle>
+          <DialogDescription className="text-base">أدخل بيانات المشترك الجديد بشكل كامل</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">الاسم *</Label>
-            <Input
-              id="name"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="أدخل اسم المشترك"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* المعلومات الأساسية */}
+          <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-transparent border border-primary/10">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              المعلومات الأساسية
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="font-medium">الاسم الكامل *</Label>
+                <Input
+                  id="name"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="أدخل اسم المشترك الكامل"
+                  className="h-11"
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">رقم الهاتف *</Label>
-            <Input
-              id="phone"
-              required
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="07xxxxxxxxx"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone_secondary">رقم هاتف ثاني</Label>
-            <Input
-              id="phone_secondary"
-              type="tel"
-              value={formData.phone_secondary}
-              onChange={(e) => setFormData({ ...formData, phone_secondary: e.target.value })}
-              placeholder="07xxxxxxxxx"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="username">اسم المستخدم</Label>
-            <Input
-              id="username"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              placeholder="اسم المستخدم للمشترك"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="example@email.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">العنوان</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="أدخل العنوان"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="plan">الباقة</Label>
-            <select
-              id="plan"
-              className="w-full px-3 py-2 border rounded-md bg-background"
-              value={formData.plan}
-              onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-            >
-              <option value="">اختر الباقة</option>
-              {packages.map((pkg) => (
-                <option key={pkg.id} value={pkg.name}>
-                  {pkg.name} - {pkg.speed_mbps} ميجابايت
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">خط العرض</Label>
-              <Input
-                id="latitude"
-                type="number"
-                step="any"
-                value={formData.latitude}
-                onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                placeholder="33.3152"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">خط الطول</Label>
-              <Input
-                id="longitude"
-                type="number"
-                step="any"
-                value={formData.longitude}
-                onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                placeholder="44.3661"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="username" className="font-medium">اسم المستخدم</Label>
+                <Input
+                  id="username"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  placeholder="اسم المستخدم للنظام"
+                  className="h-11"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="addressNotes">ملاحظات الموقع</Label>
-            <Input
-              id="addressNotes"
-              value={formData.addressNotes}
-              onChange={(e) => setFormData({ ...formData, addressNotes: e.target.value })}
-              placeholder="معلومات إضافية عن الموقع"
-            />
+          {/* معلومات الاتصال */}
+          <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-blue-500/5 to-transparent border border-blue-500/10">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              معلومات الاتصال
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="font-medium">رقم الهاتف الأساسي *</Label>
+                <Input
+                  id="phone"
+                  required
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="07xxxxxxxxx"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone_secondary" className="font-medium">رقم هاتف ثانوي</Label>
+                <Input
+                  id="phone_secondary"
+                  type="tel"
+                  value={formData.phone_secondary}
+                  onChange={(e) => setFormData({ ...formData, phone_secondary: e.target.value })}
+                  placeholder="07xxxxxxxxx"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="email" className="font-medium">البريد الإلكتروني</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="example@email.com"
+                  className="h-11"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="statusComment">التعليق على حالة المشترك</Label>
-            <Input
-              id="statusComment"
-              value={formData.statusComment}
-              onChange={(e) => setFormData({ ...formData, statusComment: e.target.value })}
-              placeholder="حالة المشترك أو أي ملاحظات"
-            />
+          {/* معلومات العنوان */}
+          <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-green-500/5 to-transparent border border-green-500/10">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              العنوان والموقع
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address" className="font-medium">العنوان</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="أدخل العنوان الكامل"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="addressNotes" className="font-medium">ملاحظات الموقع</Label>
+                <Input
+                  id="addressNotes"
+                  value={formData.addressNotes}
+                  onChange={(e) => setFormData({ ...formData, addressNotes: e.target.value })}
+                  placeholder="معلومات إضافية عن الموقع (قرب معلم معين، رقم الدار، إلخ)"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="latitude" className="font-medium">خط العرض (Latitude)</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                    placeholder="33.3152"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="longitude" className="font-medium">خط الطول (Longitude)</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                    placeholder="44.3661"
+                    className="h-11"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          {/* معلومات الخدمة */}
+          <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-purple-500/5 to-transparent border border-purple-500/10">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+              معلومات الخدمة
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="plan" className="font-medium">الباقة</Label>
+                <select
+                  id="plan"
+                  className="w-full h-11 px-3 py-2 border rounded-md bg-background text-foreground"
+                  value={formData.plan}
+                  onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                >
+                  <option value="">اختر الباقة المناسبة</option>
+                  {packages.map((pkg) => (
+                    <option key={pkg.id} value={pkg.name}>
+                      {pkg.name} - {pkg.speed_mbps} ميجابايت/ثانية
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="statusComment" className="font-medium">ملاحظات حالة المشترك</Label>
+                <Input
+                  id="statusComment"
+                  value={formData.statusComment}
+                  onChange={(e) => setFormData({ ...formData, statusComment: e.target.value })}
+                  placeholder="أي ملاحظات عن حالة المشترك أو الخدمة"
+                  className="h-11"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-6 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-11 px-6">
               إلغاء
             </Button>
-            <Button type="submit">إضافة المشترك</Button>
+            <Button type="submit" className="h-11 px-8">
+              إضافة المشترك
+            </Button>
           </div>
         </form>
       </DialogContent>
