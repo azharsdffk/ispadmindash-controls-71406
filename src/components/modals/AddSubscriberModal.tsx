@@ -307,13 +307,16 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
                   onChange={(e) => setFormData({ ...formData, issueType: e.target.value })}
                 >
                   <option value="">اختر نوع المشكلة</option>
-                  <option value="no_connection">انقطاع الاتصال الكامل</option>
-                  <option value="slow_speed">سرعة الإنترنت بطيئة</option>
-                  <option value="intermittent">انقطاع متقطع</option>
-                  <option value="wifi_issue">مشكلة في الواي فاي</option>
-                  <option value="router_issue">مشكلة في الراوتر</option>
-                  <option value="cable_issue">مشكلة في الكابلات</option>
-                  <option value="payment_issue">مشكلة في الدفع</option>
+                  <option value="cable_cut_external">انقطاع في الكابل الخارجي</option>
+                  <option value="internal_connector_broken">فيشه الداخلية مكسورة</option>
+                  <option value="ont_burned">جهاز الـ ONT محروق</option>
+                  <option value="ups_disconnected">الـ UPS مفصول عن الكهرباء</option>
+                  <option value="device_reprogramming">إعادة برمجة الأجهزة</option>
+                  <option value="external_connector_replacement">تبديل فيشه خارجية</option>
+                  <option value="internal_connector_replacement">تبديل فيشه داخلية</option>
+                  <option value="router_replacement">تبديل راوتر</option>
+                  <option value="ont_replacement">تبديل جهاز الـ ONT</option>
+                  <option value="ont_reprogramming">إعادة برمجة الـ ONT</option>
                   <option value="other">مشكلة أخرى</option>
                 </select>
               </div>
