@@ -35,6 +35,7 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
     statusComment: "",
     issueType: "",
     issueDescription: "",
+    estimatedRepairCost: "",
   });
   
   const [packages, setPackages] = useState<Array<{ id: string; name: string; speed_mbps: number }>>([]);
@@ -96,6 +97,7 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         statusComment: "",
         issueType: "",
         issueDescription: "",
+        estimatedRepairCost: "",
       });
       onSuccess?.();
     } catch (error: any) {
@@ -322,16 +324,32 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
               </div>
 
               {formData.issueType && (
-                <div className="space-y-2">
-                  <Label htmlFor="issueDescription" className="font-medium">وصف المشكلة بالتفصيل</Label>
-                  <textarea
-                    id="issueDescription"
-                    className="w-full min-h-[100px] px-3 py-2 border rounded-md bg-background text-foreground resize-y"
-                    value={formData.issueDescription}
-                    onChange={(e) => setFormData({ ...formData, issueDescription: e.target.value })}
-                    placeholder="اكتب وصفاً تفصيلياً للمشكلة التي يعاني منها المشترك..."
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="issueDescription" className="font-medium">وصف المشكلة بالتفصيل</Label>
+                    <textarea
+                      id="issueDescription"
+                      className="w-full min-h-[100px] px-3 py-2 border rounded-md bg-background text-foreground resize-y"
+                      value={formData.issueDescription}
+                      onChange={(e) => setFormData({ ...formData, issueDescription: e.target.value })}
+                      placeholder="اكتب وصفاً تفصيلياً للمشكلة التي يعاني منها المشترك..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="estimatedRepairCost" className="font-medium">تكلفة الإصلاح المتوقعة (دينار عراقي)</Label>
+                    <Input
+                      id="estimatedRepairCost"
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={formData.estimatedRepairCost}
+                      onChange={(e) => setFormData({ ...formData, estimatedRepairCost: e.target.value })}
+                      placeholder="أدخل التكلفة المتوقعة للإصلاح"
+                      className="h-11"
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>
