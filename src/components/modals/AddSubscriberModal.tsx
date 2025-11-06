@@ -33,6 +33,8 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
     longitude: "",
     addressNotes: "",
     statusComment: "",
+    issueType: "",
+    issueDescription: "",
   });
   
   const [packages, setPackages] = useState<Array<{ id: string; name: string; speed_mbps: number }>>([]);
@@ -92,6 +94,8 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         longitude: "", 
         addressNotes: "",
         statusComment: "",
+        issueType: "",
+        issueDescription: "",
       });
       onSuccess?.();
     } catch (error: any) {
@@ -283,6 +287,49 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
                   className="h-11"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* المشاكل والأعطال */}
+          <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-orange-500/5 to-transparent border border-orange-500/10">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+              المشاكل والأعطال (إن وجدت)
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="issueType" className="font-medium">نوع المشكلة</Label>
+                <select
+                  id="issueType"
+                  className="w-full h-11 px-3 py-2 border rounded-md bg-background text-foreground"
+                  value={formData.issueType}
+                  onChange={(e) => setFormData({ ...formData, issueType: e.target.value })}
+                >
+                  <option value="">اختر نوع المشكلة</option>
+                  <option value="no_connection">انقطاع الاتصال الكامل</option>
+                  <option value="slow_speed">سرعة الإنترنت بطيئة</option>
+                  <option value="intermittent">انقطاع متقطع</option>
+                  <option value="wifi_issue">مشكلة في الواي فاي</option>
+                  <option value="router_issue">مشكلة في الراوتر</option>
+                  <option value="cable_issue">مشكلة في الكابلات</option>
+                  <option value="payment_issue">مشكلة في الدفع</option>
+                  <option value="other">مشكلة أخرى</option>
+                </select>
+              </div>
+
+              {formData.issueType && (
+                <div className="space-y-2">
+                  <Label htmlFor="issueDescription" className="font-medium">وصف المشكلة بالتفصيل</Label>
+                  <textarea
+                    id="issueDescription"
+                    className="w-full min-h-[100px] px-3 py-2 border rounded-md bg-background text-foreground resize-y"
+                    value={formData.issueDescription}
+                    onChange={(e) => setFormData({ ...formData, issueDescription: e.target.value })}
+                    placeholder="اكتب وصفاً تفصيلياً للمشكلة التي يعاني منها المشترك..."
+                  />
+                </div>
+              )}
             </div>
           </div>
 
