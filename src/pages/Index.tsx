@@ -217,7 +217,8 @@ const Index = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Button
                       onClick={() => setAddSubscriberOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-primary hover:bg-primary/90"
+                      variant="default"
+                      className="h-auto py-4 flex-col gap-2"
                       title="إضافة مشترك جديد"
                     >
                       <UserPlus className="h-6 w-6" />
@@ -226,7 +227,8 @@ const Index = () => {
 
                     <Button
                       onClick={() => setIssueInvoiceOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700"
+                      variant="default"
+                      className="h-auto py-4 flex-col gap-2"
                       title="إصدار فاتورة جديدة"
                     >
                       <FileText className="h-6 w-6" />
@@ -235,7 +237,8 @@ const Index = () => {
 
                     <Button
                       onClick={() => setMaintenanceTicketOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-orange-600 hover:bg-orange-700"
+                      variant="default"
+                      className="h-auto py-4 flex-col gap-2"
                       title="فتح تذكرة صيانة"
                     >
                       <Wrench className="h-6 w-6" />
@@ -262,7 +265,8 @@ const Index = () => {
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <Button
-                      className="h-auto py-4 flex-col gap-2 bg-success hover:bg-success/90"
+                      variant="default"
+                      className="h-auto py-4 flex-col gap-2"
                       title="إصدار سند قبض"
                       onClick={() => setReceiptOpen(true)}
                     >
@@ -271,7 +275,8 @@ const Index = () => {
                     </Button>
 
                     <Button
-                      className="h-auto py-4 flex-col gap-2 bg-warning hover:bg-warning/90"
+                      variant="default"
+                      className="h-auto py-4 flex-col gap-2"
                       title="إصدار سند صرف"
                       onClick={() => setVoucherOpen(true)}
                     >
