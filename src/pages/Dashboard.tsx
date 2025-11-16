@@ -255,18 +255,18 @@ const Dashboard = () => {
       <div className="flex flex-1 w-full">
         <AppSidebar />
         
-        <main className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+          <div className="max-w-7xl mx-auto space-y-4">
             <div className="flex items-center justify-between animate-fade-in">
               <div className="space-y-1">
-                <h1 className="text-4xl font-bold text-gradient-primary drop-shadow-sm">
-                  لوحة التحكم الاحترافية
+                <h1 className="text-3xl font-bold text-gradient-primary drop-shadow-sm">
+                  لوحة التحكم
                 </h1>
-                <p className="text-muted-foreground text-lg">مرحباً بك في نظام إدارة مزود خدمة الإنترنت المتطور 🚀</p>
+                <p className="text-muted-foreground">نظام إدارة مزود خدمة الإنترنت 🚀</p>
               </div>
-              <div className="glass-effect px-6 py-3 rounded-xl">
-                <p className="text-sm text-muted-foreground">آخر تحديث</p>
-                <p className="font-bold text-foreground">{new Date().toLocaleDateString('ar-IQ')}</p>
+              <div className="glass-effect px-4 py-2 rounded-lg">
+                <p className="text-xs text-muted-foreground">آخر تحديث</p>
+                <p className="font-bold text-sm text-foreground">{new Date().toLocaleDateString('ar-IQ')}</p>
               </div>
             </div>
 
