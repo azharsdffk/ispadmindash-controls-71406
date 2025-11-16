@@ -43,24 +43,24 @@ const AdminDashboard = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
         
-          <main className="flex-1 overflow-y-auto"  >
+          <main className="flex-1 overflow-y-auto">
         
         {/* Hero Header Section */}
         <div className="relative overflow-hidden border-b">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent"></div>
-          <div className="container mx-auto px-6 py-12 relative">
+          <div className="container mx-auto px-6 py-6 relative">
             <div className="flex items-center justify-between">
-              <div className="space-y-4 animate-fade-in">
+              <div className="space-y-2 animate-fade-in">
                 <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
-                    <LayoutDashboard className="h-7 w-7 text-white" />
+                  <div className="h-12 w-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
+                    <LayoutDashboard className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-5xl font-bold text-gradient-primary">
+                    <h1 className="text-3xl font-bold text-gradient-primary">
                       لوحة المدير العام
                     </h1>
-                    <p className="text-muted-foreground text-lg mt-1">
-                      إدارة شاملة واحترافية لجميع عمليات النظام
+                    <p className="text-muted-foreground text-sm mt-1">
+                      إدارة شاملة لجميع عمليات النظام
                     </p>
                   </div>
                 </div>
