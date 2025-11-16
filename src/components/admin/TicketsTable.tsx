@@ -43,20 +43,52 @@ export const TicketsTable = () => {
 
   const fetchData = async () => {
     try {
-      const [ticketsRes, techRes, subsRes] = await Promise.all([
-        supabase.from('maintenance_tickets').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('id, full_name').in('id', 
-          (await supabase.from('user_roles').select('user_id').eq('role', 'technician')).data?.map(r => r.user_id) || []
-        ),
-        supabase.from('subscribers').select('id, name, phone'),
+      setLoading(true);
+      
+      // Execute all queries in parallel
+      const [ticketsRes, techRolesRes, subsRes] = await Promise.all([
+        supabase
+          .from('maintenance_tickets')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100), // Limit results for better performance
+        supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'technician'),
+        supabase
+          .from('subscribers')
+          .select('id, name, phone')
       ]);
 
+      if (ticketsRes.error) {
+        console.error('Error fetching tickets:', ticketsRes.error);
+        toast.error('خطأ في تحميل التذاكر');
+      }
+
+      // Get technician profiles
+      const techIds = techRolesRes.data?.map(r => r.user_id) || [];
+      let techProfiles: any[] = [];
+      
+      if (techIds.length > 0) {
+        const techRes = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', techIds);
+        
+        techProfiles = techRes.data || [];
+      }
+
       setTickets(ticketsRes.data || []);
-      setTechnicians(techRes.data || []);
+      setTechnicians(techProfiles);
       setSubscribers(subsRes.data || []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       toast.error('خطأ في تحميل التذاكر');
+      // Set empty arrays to prevent infinite loading
+      setTickets([]);
+      setTechnicians([]);
+      setSubscribers([]);
     } finally {
       setLoading(false);
     }

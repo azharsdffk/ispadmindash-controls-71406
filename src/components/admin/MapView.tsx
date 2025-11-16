@@ -20,27 +20,36 @@ export const MapView = () => {
 
   const fetchLocations = async () => {
     try {
-      // جلب مواقع المشتركين
-      const { data: subscribers } = await supabase
-        .from('subscribers')
-        .select('id, name, latitude, longitude')
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null);
+      // Execute queries in parallel with limits for better performance
+      const [subscribersRes, techLocationsRes] = await Promise.all([
+        supabase
+          .from('subscribers')
+          .select('id, name, latitude, longitude')
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
+          .limit(50), // Limit for performance
+        supabase
+          .from('employee_locations')
+          .select(`
+            id,
+            latitude,
+            longitude,
+            user_id,
+            profiles!inner(full_name)
+          `)
+          .order('recorded_at', { ascending: false })
+          .limit(10)
+      ]);
 
-      // جلب مواقع الفنيين
-      const { data: technicianLocations } = await supabase
-        .from('employee_locations')
-        .select(`
-          id,
-          latitude,
-          longitude,
-          user_id,
-          profiles!inner(full_name)
-        `)
-        .order('recorded_at', { ascending: false })
-        .limit(10);
+      if (subscribersRes.error) {
+        console.error('Error fetching subscribers:', subscribersRes.error);
+      }
 
-      const subscriberLocs: Location[] = (subscribers || []).map(s => ({
+      if (techLocationsRes.error) {
+        console.error('Error fetching technician locations:', techLocationsRes.error);
+      }
+
+      const subscriberLocs: Location[] = (subscribersRes.data || []).map(s => ({
         id: s.id,
         name: s.name,
         latitude: Number(s.latitude),
@@ -48,7 +57,7 @@ export const MapView = () => {
         type: 'subscriber' as const
       }));
 
-      const techLocs: Location[] = (technicianLocations || []).map((t: any) => ({
+      const techLocs: Location[] = (techLocationsRes.data || []).map((t: any) => ({
         id: t.id,
         name: t.profiles?.full_name || 'فني',
         latitude: Number(t.latitude),
@@ -59,6 +68,7 @@ export const MapView = () => {
       setLocations([...subscriberLocs, ...techLocs]);
     } catch (error) {
       console.error('Error fetching locations:', error);
+      setLocations([]);
     }
   };
 

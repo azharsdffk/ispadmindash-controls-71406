@@ -46,56 +46,89 @@ export const AdminStatsCards = () => {
 
   const fetchStats = async () => {
     try {
-      // Open tickets
-      const { count: openCount } = await supabase
-        .from('maintenance_tickets')
-        .select('*', { count: 'exact', head: true })
-        .in('status', ['open', 'in_progress']);
+      setLoading(true);
+      
+      // Execute all queries in parallel for better performance
+      const [
+        openTicketsResult,
+        todayTicketsResult,
+        urgentTicketsResult,
+        subscribersResult,
+        techniciansResult,
+        paymentsResult
+      ] = await Promise.all([
+        // Open tickets
+        supabase
+          .from('maintenance_tickets')
+          .select('*', { count: 'exact', head: true })
+          .in('status', ['open', 'in_progress'])
+          .then(res => ({ count: res.count, error: res.error })),
+        
+        // Today's tickets
+        supabase
+          .from('maintenance_tickets')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', new Date().toISOString().split('T')[0])
+          .then(res => ({ count: res.count, error: res.error })),
+        
+        // Urgent tickets
+        supabase
+          .from('maintenance_tickets')
+          .select('*', { count: 'exact', head: true })
+          .eq('priority', 'urgent')
+          .in('status', ['open', 'in_progress'])
+          .then(res => ({ count: res.count, error: res.error })),
+        
+        // Active subscribers
+        supabase
+          .from('subscribers')
+          .select('*', { count: 'exact', head: true })
+          .then(res => ({ count: res.count, error: res.error })),
+        
+        // Active technicians
+        supabase
+          .from('user_roles')
+          .select('*', { count: 'exact', head: true })
+          .eq('role', 'technician')
+          .then(res => ({ count: res.count, error: res.error })),
+        
+        // Monthly revenue
+        supabase
+          .from('payments')
+          .select('amount')
+          .gte('payment_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+          .then(res => ({ data: res.data, error: res.error }))
+      ]);
 
-      // Today's tickets
-      const today = new Date().toISOString().split('T')[0];
-      const { count: todayCount } = await supabase
-        .from('maintenance_tickets')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', today);
+      // Check for errors
+      if (openTicketsResult.error) console.error('Error fetching open tickets:', openTicketsResult.error);
+      if (todayTicketsResult.error) console.error('Error fetching today tickets:', todayTicketsResult.error);
+      if (urgentTicketsResult.error) console.error('Error fetching urgent tickets:', urgentTicketsResult.error);
+      if (subscribersResult.error) console.error('Error fetching subscribers:', subscribersResult.error);
+      if (techniciansResult.error) console.error('Error fetching technicians:', techniciansResult.error);
+      if (paymentsResult.error) console.error('Error fetching payments:', paymentsResult.error);
 
-      // Urgent tickets
-      const { count: urgentCount } = await supabase
-        .from('maintenance_tickets')
-        .select('*', { count: 'exact', head: true })
-        .eq('priority', 'urgent')
-        .in('status', ['open', 'in_progress']);
-
-      // Active subscribers
-      const { count: subscribersCount } = await supabase
-        .from('subscribers')
-        .select('*', { count: 'exact', head: true });
-
-      // Active technicians (users with technician role)
-      const { count: techCount } = await supabase
-        .from('user_roles')
-        .select('*', { count: 'exact', head: true })
-        .eq('role', 'technician');
-
-      // Monthly revenue (current month)
-      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const { data: paymentsData } = await supabase
-        .from('payments')
-        .select('amount')
-        .gte('payment_date', startOfMonth);
-
-      const revenue = paymentsData?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+      const revenue = paymentsResult.data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
       setStats({
-        openTickets: openCount || 0,
-        activeTechnicians: techCount || 0,
-        activeSubscribers: subscribersCount || 0,
+        openTickets: openTicketsResult.count || 0,
+        activeTechnicians: techniciansResult.count || 0,
+        activeSubscribers: subscribersResult.count || 0,
         monthlyRevenue: revenue,
-        todayTickets: todayCount || 0,
-        urgentTickets: urgentCount || 0,
+        todayTickets: todayTicketsResult.count || 0,
+        urgentTickets: urgentTicketsResult.count || 0,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // Set default values on error to prevent infinite loading
+      setStats({
+        openTickets: 0,
+        activeTechnicians: 0,
+        activeSubscribers: 0,
+        monthlyRevenue: 0,
+        todayTickets: 0,
+        urgentTickets: 0,
+      });
     } finally {
       setLoading(false);
     }
