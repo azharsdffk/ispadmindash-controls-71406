@@ -15,75 +15,90 @@ export const AdminCharts = () => {
 
   const fetchChartsData = async () => {
     try {
-      // Weekly tickets
+      setLoading(true);
+      
+      // Weekly tickets - optimized query
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - (6 - i));
         return date.toISOString().split('T')[0];
       });
 
-      const weeklyData = await Promise.all(
-        last7Days.map(async (date) => {
-          const { count } = await supabase
-            .from('maintenance_tickets')
-            .select('*', { count: 'exact', head: true })
-            .gte('created_at', date)
-            .lt('created_at', new Date(new Date(date).getTime() + 86400000).toISOString());
+      const weeklyPromises = last7Days.map(async (date) => {
+        const nextDate = new Date(new Date(date).getTime() + 86400000).toISOString();
+        const { count, error } = await supabase
+          .from('maintenance_tickets')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', date)
+          .lt('created_at', nextDate);
 
-          return {
-            date: new Date(date).toLocaleDateString('ar-EG', { weekday: 'short' }),
-            count: count || 0,
-          };
-        })
-      );
-      setWeeklyTickets(weeklyData);
+        if (error) console.error(`Error fetching tickets for ${date}:`, error);
 
-      // Monthly revenue (last 6 months)
+        return {
+          date: new Date(date).toLocaleDateString('ar-EG', { weekday: 'short' }),
+          count: count || 0,
+        };
+      });
+
+      // Monthly revenue (last 6 months) - optimized
       const last6Months = Array.from({ length: 6 }, (_, i) => {
         const date = new Date();
         date.setMonth(date.getMonth() - (5 - i));
         return { month: date.getMonth(), year: date.getFullYear() };
       });
 
-      const revenueData = await Promise.all(
-        last6Months.map(async ({ month, year }) => {
-          const startDate = new Date(year, month, 1).toISOString();
-          const endDate = new Date(year, month + 1, 0).toISOString();
+      const revenuePromises = last6Months.map(async ({ month, year }) => {
+        const startDate = new Date(year, month, 1).toISOString();
+        const endDate = new Date(year, month + 1, 0).toISOString();
 
-          const { data } = await supabase
-            .from('payments')
-            .select('amount')
-            .gte('payment_date', startDate)
-            .lte('payment_date', endDate);
+        const { data, error } = await supabase
+          .from('payments')
+          .select('amount')
+          .gte('payment_date', startDate)
+          .lte('payment_date', endDate);
 
-          const total = data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+        if (error) console.error(`Error fetching revenue for ${month}/${year}:`, error);
 
-          return {
-            month: new Date(year, month).toLocaleDateString('ar-EG', { month: 'short' }),
-            revenue: total,
-          };
-        })
-      );
-      setMonthlyRevenue(revenueData);
+        const total = data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
 
-      // Tickets by status
+        return {
+          month: new Date(year, month).toLocaleDateString('ar-EG', { month: 'short' }),
+          revenue: total,
+        };
+      });
+
+      // Tickets by status - optimized
       const statuses: Array<'open' | 'in_progress' | 'closed' | 'resolved'> = ['open', 'in_progress', 'closed', 'resolved'];
-      const statusData = await Promise.all(
-        statuses.map(async (status) => {
-          const { count } = await supabase
-            .from('maintenance_tickets')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', status);
+      const statusPromises = statuses.map(async (status) => {
+        const { count, error } = await supabase
+          .from('maintenance_tickets')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', status);
 
-          return {
-            name: status === 'open' ? 'مفتوح' : status === 'in_progress' ? 'قيد التنفيذ' : status === 'closed' ? 'مغلق' : 'تم الحل',
-            value: count || 0,
-          };
-        })
-      );
+        if (error) console.error(`Error fetching status ${status}:`, error);
+
+        return {
+          name: status === 'open' ? 'مفتوح' : status === 'in_progress' ? 'قيد التنفيذ' : status === 'closed' ? 'مغلق' : 'تم الحل',
+          value: count || 0,
+        };
+      });
+
+      // Execute all promises in parallel
+      const [weeklyData, revenueData, statusData] = await Promise.all([
+        Promise.all(weeklyPromises),
+        Promise.all(revenuePromises),
+        Promise.all(statusPromises)
+      ]);
+
+      setWeeklyTickets(weeklyData);
+      setMonthlyRevenue(revenueData);
       setTicketsByStatus(statusData);
     } catch (error) {
       console.error('Error fetching charts data:', error);
+      // Set default empty data to prevent infinite loading
+      setWeeklyTickets([]);
+      setMonthlyRevenue([]);
+      setTicketsByStatus([]);
     } finally {
       setLoading(false);
     }
