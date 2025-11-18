@@ -2091,6 +2091,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
+      cleanup_old_data: { Args: never; Returns: undefined }
       generate_complaint_number: { Args: never; Returns: string }
       generate_contract_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
