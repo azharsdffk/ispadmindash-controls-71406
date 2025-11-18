@@ -161,7 +161,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in manage-sessions function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'حدث خطأ غير متوقع' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
