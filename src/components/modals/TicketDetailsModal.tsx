@@ -50,13 +50,16 @@ interface TicketDetails {
     id: string;
     name: string;
     phone: string;
+    phone_secondary: string | null;
     email: string | null;
     address: string | null;
+    address_notes: string | null;
     username: string | null;
     latitude: number | null;
     longitude: number | null;
     plan: string | null;
     balance: number | null;
+    status_comment: string | null;
   };
 }
 
@@ -117,13 +120,16 @@ export const TicketDetailsModal = ({
             id,
             name,
             phone,
+            phone_secondary,
             email,
             address,
+            address_notes,
             username,
             latitude,
             longitude,
             plan,
-            balance
+            balance,
+            status_comment
           )
         `)
         .eq('id', ticketId)
@@ -402,12 +408,42 @@ export const TicketDetailsModal = ({
                   </div>
                 )}
 
+                {ticket.subscribers.phone_secondary && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-sky-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">رقم هاتف إضافي</p>
+                      <a
+                        href={`tel:${ticket.subscribers.phone_secondary}`}
+                        className="text-sm font-semibold text-sky-600 hover:underline"
+                      >
+                        {ticket.subscribers.phone_secondary}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 {ticket.subscribers.address && (
                   <div className="col-span-full flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-sky-600 flex-shrink-0 mt-1" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground mb-1">العنوان</p>
                       <p className="text-sm font-semibold text-foreground">{ticket.subscribers.address}</p>
+                      {ticket.subscribers.address_notes && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          <span className="font-medium">ملاحظات:</span> {ticket.subscribers.address_notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {ticket.subscribers.status_comment && (
+                  <div className="col-span-full flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-sky-600 flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">ملاحظات الحالة</p>
+                      <p className="text-sm font-semibold text-foreground">{ticket.subscribers.status_comment}</p>
                     </div>
                   </div>
                 )}
