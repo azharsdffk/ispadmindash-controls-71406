@@ -98,7 +98,10 @@ export const TicketDetailsModal = ({
   }, [open, ticketId]);
 
   const fetchTicketDetails = async () => {
-    if (!ticketId) return;
+    if (!ticketId) {
+      console.log('⚠️ No ticketId provided');
+      return;
+    }
 
     console.log('🎫 Fetching ticket details for ID:', ticketId);
     setLoading(true);
