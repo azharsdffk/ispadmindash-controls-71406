@@ -19,13 +19,13 @@ import {
   Target,
   Layers,
   Calculator,
-  Wallet2,
-  Users2,
-  ShoppingBag,
+  Wallet,
+  Users,
+  Package,
   Archive,
   ArrowUpRight,
   ArrowDownRight,
-  CircleDollarSign,
+  DollarSign,
   LayoutGrid
 } from 'lucide-react';
 import { SettingsModal } from '@/components/modals/SettingsModal';
@@ -205,7 +205,7 @@ export default function AccountantDashboard() {
     { value: 'ledger', label: 'دفتر الأستاذ', show: hasPermission('view_balance'), icon: Layers },
     { value: 'balance', label: 'الميزانية العمومية', show: hasPermission('view_balance'), icon: Target },
     { value: 'income', label: 'قائمة الدخل', show: hasPermission('view_reports'), icon: Coins },
-    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_reports'), icon: Wallet2 },
+    { value: 'cashflow', label: 'التدفقات النقدية', show: hasPermission('view_reports'), icon: Wallet },
     { value: 'reports', label: 'التقارير المتقدمة', show: hasPermission('export_reports'), icon: Archive },
   ].filter(tab => tab.show);
 
@@ -314,7 +314,7 @@ export default function AccountantDashboard() {
                             </h3>
                           </div>
                           <div className="p-3 rounded-lg bg-destructive">
-                            <ShoppingBag className="h-6 w-6 text-white" />
+                            <Package className="h-6 w-6 text-white" />
                           </div>
                         </div>
                       </CardContent>
@@ -351,7 +351,7 @@ export default function AccountantDashboard() {
                             </h3>
                           </div>
                           <div className={`p-3 rounded-lg ${stats.cashFlow >= 0 ? 'bg-secondary' : 'bg-destructive'}`}>
-                            <Wallet2 className="h-6 w-6 text-white" />
+                            <Wallet className="h-6 w-6 text-white" />
                           </div>
                         </div>
                       </CardContent>

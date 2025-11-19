@@ -1,5 +1,5 @@
 import { StatCard } from '@/components/dashboard/StatCard';
-import { FileText, Clock, CheckCircle2, Calendar, Bell } from 'lucide-react';
+import { ListTodo, Clock, CheckCircle, CalendarClock, Bell } from 'lucide-react';
 
 interface TechnicianStatsProps {
   totalTickets: number;
@@ -19,37 +19,37 @@ export const TechnicianStats = ({
       <StatCard
         title="إجمالي التذاكر"
         value={totalTickets}
-        icon={FileText}
-        gradient="gradient-bg"
+        icon={ListTodo}
+        gradient="bg-gradient-to-br from-primary to-primary-hover"
         borderColor="border-l-primary"
       />
       <StatCard
         title="التذاكر الجارية"
         value={openTickets}
         icon={Clock}
-        gradient="bg-gradient-to-br from-yellow-500 to-yellow-600"
-        borderColor="border-l-yellow-500"
+        gradient="bg-gradient-to-br from-warning to-warning/80"
+        borderColor="border-l-warning"
       />
       <StatCard
         title="التذاكر المكتملة"
         value={completedTickets}
-        icon={CheckCircle2}
-        gradient="bg-gradient-to-br from-green-500 to-green-600"
-        borderColor="border-l-green-500"
+        icon={CheckCircle}
+        gradient="bg-gradient-to-br from-success to-success/80"
+        borderColor="border-l-success"
       />
       <StatCard
         title="التذاكر المجدولة"
         value={scheduledTickets}
-        icon={Calendar}
-        gradient="bg-gradient-to-br from-blue-500 to-blue-600"
-        borderColor="border-l-blue-500"
+        icon={CalendarClock}
+        gradient="bg-gradient-to-br from-info to-info/80"
+        borderColor="border-l-info"
       />
       <StatCard
         title="الإشعارات"
         value={0}
         icon={Bell}
-        gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-        borderColor="border-l-purple-500"
+        gradient="bg-gradient-to-br from-accent to-accent/80"
+        borderColor="border-l-accent"
       />
     </div>
   );

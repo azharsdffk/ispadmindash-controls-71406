@@ -6,49 +6,61 @@
 
 @layer base {
   :root {
-    /* Glassmorphism Theme - Vibrant Purple-Blue-Pink */
-    --background: 240 25% 98%;
-    --foreground: 240 10% 15%;
+    /* Modern Professional Theme - Deep Blue & Vibrant Accents */
+    --background: 220 30% 98%;
+    --foreground: 220 15% 12%;
     
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 220 15% 12%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 220 15% 12%;
     
-    /* Vibrant Purple-Blue Primary */
-    --primary: 262 83% 58%;
+    /* Deep Professional Blue Primary */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 55%;
+    --primary-light: 217 91% 90%;
     
-    /* Cyan Secondary */
-    --secondary: 189 94% 43%;
+    /* Teal Secondary */
+    --secondary: 173 80% 40%;
     --secondary-foreground: 0 0% 100%;
     
-    /* Pink Accent */
-    --accent: 328 86% 70%;
+    /* Vibrant Orange Accent */
+    --accent: 24 95% 53%;
     --accent-foreground: 0 0% 100%;
     
-    --muted: 240 20% 96%;
-    --muted-foreground: 240 5% 45%;
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
     
-    --destructive: 0 84% 60%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 10% 45%;
+    
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 240 20% 92%;
-    --input: 240 20% 92%;
-    --ring: 262 83% 58%;
+    --border: 220 20% 90%;
+    --input: 220 20% 90%;
+    --ring: 217 91% 60%;
     
     /* Glassmorphism Effects */
     --glass-bg: 0 0% 100%;
-    --glass-border: 240 20% 90%;
-    --glass-shadow: 262 83% 58%;
+    --glass-border: 220 20% 88%;
+    --glass-shadow: 217 91% 60%;
     
     /* Gradient Colors */
-    --gradient-from: 262 83% 58%;
-    --gradient-via: 189 94% 43%;
-    --gradient-to: 328 86% 70%;
+    --gradient-from: 217 91% 60%;
+    --gradient-via: 173 80% 40%;
+    --gradient-to: 24 95% 53%;
     
-    --radius: 1rem;
+    --radius: 0.75rem;
     
     --sidebar-background: 240 15% 12%;
     --sidebar-foreground: 0 0% 98%;
@@ -61,41 +73,52 @@
   }
   
   .dark {
-    --background: 240 15% 8%;
+    --background: 220 30% 8%;
     --foreground: 0 0% 98%;
     
-    --card: 240 15% 12%;
+    --card: 220 25% 12%;
     --card-foreground: 0 0% 98%;
     
-    --popover: 240 15% 12%;
+    --popover: 220 25% 12%;
     --popover-foreground: 0 0% 98%;
     
-    --primary: 262 83% 58%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 55%;
+    --primary-light: 217 91% 20%;
     
-    --secondary: 189 94% 43%;
+    --secondary: 173 80% 40%;
     --secondary-foreground: 0 0% 100%;
     
-    --accent: 328 86% 70%;
+    --accent: 24 95% 53%;
     --accent-foreground: 0 0% 100%;
     
-    --muted: 240 15% 18%;
-    --muted-foreground: 240 5% 65%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
     
-    --destructive: 0 84% 60%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    
+    --muted: 220 25% 18%;
+    --muted-foreground: 220 10% 65%;
+    
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 240 15% 20%;
-    --input: 240 15% 20%;
-    --ring: 262 83% 58%;
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 217 91% 60%;
     
-    --glass-bg: 240 15% 12%;
-    --glass-border: 240 15% 25%;
-    --glass-shadow: 262 83% 58%;
+    --glass-bg: 220 25% 12%;
+    --glass-border: 220 25% 25%;
+    --glass-shadow: 217 91% 60%;
     
-    --gradient-from: 262 83% 58%;
-    --gradient-via: 189 94% 43%;
-    --gradient-to: 328 86% 70%;
+    --gradient-from: 217 91% 60%;
+    --gradient-via: 173 80% 40%;
+    --gradient-to: 24 95% 53%;
     
     --sidebar-background: 240 15% 8%;
     --sidebar-foreground: 0 0% 95%;

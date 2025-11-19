@@ -3,7 +3,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, UserPlus, MapPin, Phone, Mail, Edit, Trash2, Shield, History } from "lucide-react";
+import { Users, UserPlus, MapPin, Phone, Mail, Edit2, Trash2, Shield, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
@@ -241,7 +241,7 @@ const Subscribers = () => {
                                 title="تعديل"
                                 className="hover:bg-primary/10"
                               >
-                                <Edit className="h-4 w-4 text-primary" />
+                                <Edit2 className="h-4 w-4 text-primary" />
                               </Button>
                               {isAdmin && (
                                 <Button 

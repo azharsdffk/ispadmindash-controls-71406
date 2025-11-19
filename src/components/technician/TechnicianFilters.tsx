@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, Bell } from 'lucide-react';
+import { Search, SlidersHorizontal, AlertCircle } from 'lucide-react';
 
 interface TechnicianFiltersProps {
   searchQuery: string;
@@ -33,7 +33,7 @@ export const TechnicianFilters = ({
       
       <Select value={statusFilter} onValueChange={onStatusChange}>
         <SelectTrigger className="w-[180px] h-12 glass-input">
-          <Filter className="h-4 w-4 mr-2" />
+          <SlidersHorizontal className="h-4 w-4 mr-2" />
           <SelectValue placeholder="حسب الحالة" />
         </SelectTrigger>
         <SelectContent>
@@ -47,7 +47,7 @@ export const TechnicianFilters = ({
 
       <Select value={priorityFilter} onValueChange={onPriorityChange}>
         <SelectTrigger className="w-[180px] h-12 glass-input">
-          <Bell className="h-4 w-4 mr-2" />
+          <AlertCircle className="h-4 w-4 mr-2" />
           <SelectValue placeholder="حسب الأولوية" />
         </SelectTrigger>
         <SelectContent>
