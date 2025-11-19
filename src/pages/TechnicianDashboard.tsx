@@ -16,14 +16,14 @@ import { TechnicianFilters } from '@/components/technician/TechnicianFilters';
 import { TechnicianTicketCard } from '@/components/technician/TechnicianTicketCard';
 import { TechnicianStats } from '@/components/technician/TechnicianStats';
 import { 
-  CheckCircle2, 
+  CheckCircle, 
   Clock, 
-  FileText, 
+  ListTodo, 
   Bell,
   MapPin,
-  Calendar,
+  CalendarClock,
   Activity,
-  Ticket,
+  Wrench,
   Search
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -369,7 +369,7 @@ const TechnicianDashboard = () => {
                 {completedTickets.length === 0 ? (
                   <Card className="glass-card border-dashed">
                     <CardContent className="pt-6 text-center py-16">
-                      <CheckCircle2 className="h-16 w-16 mx-auto text-green-500 mb-4 opacity-50" />
+                      <CheckCircle className="h-16 w-16 mx-auto text-success mb-4 opacity-50" />
                       <p className="text-muted-foreground text-lg font-medium">لا توجد تذاكر مكتملة</p>
                     </CardContent>
                   </Card>
@@ -449,11 +449,11 @@ const TechnicianDashboard = () => {
 
         <Button
           onClick={() => setAllTicketsSheetOpen(true)}
-          className="fixed left-6 bottom-6 h-16 w-16 rounded-full shadow-glow gradient-bg z-50 group hover:scale-110 transition-all"
+          className="fixed left-6 bottom-6 h-16 w-16 rounded-full shadow-glow bg-gradient-to-br from-primary to-primary-hover z-50 group hover:scale-110 transition-all"
           size="icon"
         >
           <div className="relative">
-            <Ticket className="h-7 w-7 text-white" />
+            <Wrench className="h-7 w-7 text-white" />
             <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full">
               {tickets.length}
             </Badge>
@@ -464,7 +464,7 @@ const TechnicianDashboard = () => {
           <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto glass-card border-primary/20">
             <SheetHeader>
               <SheetTitle className="text-2xl font-bold gradient-text flex items-center gap-2">
-                <Ticket className="h-6 w-6" />
+                <Wrench className="h-6 w-6" />
                 جميع التذاكر ({tickets.length})
               </SheetTitle>
               <SheetDescription>
@@ -488,7 +488,7 @@ const TechnicianDashboard = () => {
               <div className="space-y-3">
                 {filteredAndSortedTickets.length === 0 ? (
                   <div className="text-center py-12">
-                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+                    <ListTodo className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
                     <p className="text-muted-foreground">لا توجد تذاكر</p>
                   </div>
                 ) : (
