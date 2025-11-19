@@ -57,8 +57,7 @@ export const TechnicianTicketCard = ({ ticket, onOpenDetails }: TechnicianTicket
 
   return (
     <Card 
-      className="glass-card hover:shadow-glow transition-all duration-300 border-r-4 border-r-primary cursor-pointer group"
-      onClick={() => onOpenDetails(ticket.id)}
+      className="glass-card hover:shadow-glow transition-all duration-300 border-r-4 border-r-primary group"
     >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start gap-4">
@@ -69,7 +68,10 @@ export const TechnicianTicketCard = ({ ticket, onOpenDetails }: TechnicianTicket
               </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-lg font-bold gradient-text">
+              <CardTitle 
+                className="text-lg font-bold gradient-text cursor-pointer hover:underline"
+                onClick={() => onOpenDetails(ticket.id)}
+              >
                 {ticket.subscribers?.name || 'غير محدد'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">{ticket.ticket_number}</p>
