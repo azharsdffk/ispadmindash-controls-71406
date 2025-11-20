@@ -343,28 +343,37 @@ const DataImport = () => {
                     </Alert>
 
                     <div className="space-y-4">
+                      <Alert className="border-blue-200 bg-blue-50">
+                        <AlertDescription className="text-sm space-y-2">
+                          <p className="font-semibold">📡 كيف تحصل على رابط API من صفحة SAS:</p>
+                          <ol className="list-decimal mr-5 space-y-1 text-xs">
+                            <li>افتح صفحة SAS في المتصفح</li>
+                            <li>اضغط F12 لفتح Developer Tools</li>
+                            <li>اذهب لتبويب Network</li>
+                            <li>حدّث الصفحة وابحث عن طلب API يُرجع بيانات المشتركين</li>
+                            <li>انسخ رابط الطلب (Request URL) والصقه هنا</li>
+                          </ol>
+                        </AlertDescription>
+                      </Alert>
+
                       <div className="space-y-2">
-                        <Label htmlFor="sas-url">رابط API للبيانات (JSON)</Label>
+                        <Label htmlFor="sas-url">رابط API للسحب المباشر من الويب</Label>
                         <Input
                           id="sas-url"
                           type="url"
-                          placeholder="https://api.sas.com/subscribers.json"
+                          placeholder="https://api.sas.com/v1/subscribers?format=json"
                           value={sasUrl}
                           onChange={(e) => setSasUrl(e.target.value)}
                           disabled={loading}
                           dir="ltr"
                         />
-                        <Alert className="mt-2">
-                          <AlertDescription className="text-xs">
-                            💡 استخدم رابط API مباشر للبيانات بصيغة JSON
-                            <br />
-                            ⚠️ روابط الصفحات العادية مثل https://reseller.scn-ftth.com لا تعمل لأن البيانات تُحمل ديناميكياً بـ JavaScript
-                          </AlertDescription>
-                        </Alert>
+                        <p className="text-xs text-muted-foreground">
+                          الصق رابط API الذي حصلت عليه من Developer Tools
+                        </p>
                       </div>
                       
                       <div className="border-t pt-4 space-y-2">
-                        <Label htmlFor="sas-file">أو ارفع ملف CSV</Label>
+                        <Label htmlFor="sas-file">البديل: ارفع ملف CSV</Label>
                         <Input
                           id="sas-file"
                           type="file"
@@ -373,7 +382,7 @@ const DataImport = () => {
                           disabled={loading}
                         />
                         <p className="text-xs text-muted-foreground">
-                          صدّر البيانات من صفحة SAS كملف CSV ثم ارفعه هنا
+                          إذا لم تتمكن من الحصول على رابط API، صدّر البيانات كـ CSV
                         </p>
                       </div>
                     </div>
