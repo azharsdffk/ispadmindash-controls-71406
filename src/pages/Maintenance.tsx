@@ -10,6 +10,7 @@ import { MaintenanceTicketModal } from "@/components/modals/MaintenanceTicketMod
 import { ScheduleTechnicianModal } from "@/components/modals/ScheduleTechnicianModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { SubscriberDetailsModal } from "@/components/modals/SubscriberDetailsModal";
+import { TicketDetailsModal } from "@/components/modals/TicketDetailsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,9 +18,15 @@ type Ticket = {
   id: string;
   ticket_number: string;
   issue_description: string;
+  issue_type?: string;
   status: string;
   priority: string;
+  notes?: string;
   created_at: string;
+  updated_at?: string;
+  scheduled_date?: string;
+  resolved_at?: string;
+  technician_id?: string;
   subscribers?: {
     id: string;
     name: string;
@@ -45,7 +52,9 @@ const Maintenance = () => {
   const [maintenanceTicketOpen, setMaintenanceTicketOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [ticketDetailsOpen, setTicketDetailsOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -92,6 +101,11 @@ const Maintenance = () => {
   const openSubscriberDetails = (subscriber: any) => {
     setSelectedSubscriber(subscriber);
     setDetailsModalOpen(true);
+  };
+
+  const openTicketDetails = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setTicketDetailsOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -166,11 +180,14 @@ const Maintenance = () => {
                     </TableHeader>
                     <TableBody>
                       {tickets.map((ticket) => (
-                        <TableRow key={ticket.id}>
+                        <TableRow key={ticket.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openTicketDetails(ticket.id)}>
                           <TableCell className="font-medium">{ticket.ticket_number}</TableCell>
                           <TableCell 
-                            className="cursor-pointer hover:text-primary transition-colors font-medium"
-                            onClick={() => ticket.subscribers && openSubscriberDetails(ticket.subscribers)}
+                            className="hover:text-primary transition-colors font-medium"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              ticket.subscribers && openSubscriberDetails(ticket.subscribers);
+                            }}
                           >
                             {ticket.subscribers?.name}
                           </TableCell>
@@ -200,6 +217,12 @@ const Maintenance = () => {
         open={detailsModalOpen}
         onOpenChange={setDetailsModalOpen}
         subscriber={selectedSubscriber}
+      />
+      <TicketDetailsModal
+        ticketId={selectedTicketId}
+        open={ticketDetailsOpen}
+        onOpenChange={setTicketDetailsOpen}
+        onTicketUpdated={fetchTickets}
       />
     </div>
   );
