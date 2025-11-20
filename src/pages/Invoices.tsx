@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { IssueInvoiceModal } from "@/components/modals/IssueInvoiceModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { RecordPaymentModal } from "@/components/modals/RecordPaymentModal";
+import { SubscriberDetailsModal } from "@/components/modals/SubscriberDetailsModal";
 import { ZainCashPayment } from "@/components/payments/ZainCashPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,7 +25,18 @@ type Invoice = {
   issue_date: string;
   due_date: string;
   subscribers?: {
+    id: string;
     name: string;
+    phone: string;
+    phone_secondary?: string;
+    username?: string;
+    email?: string;
+    address?: string;
+    plan?: string;
+    balance: number;
+    status_comment?: string;
+    address_notes?: string;
+    created_at?: string;
   };
 };
 
@@ -33,7 +45,9 @@ const Invoices = () => {
   const [issueInvoiceOpen, setIssueInvoiceOpen] = useState(false);
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [zainCashPaymentOpen, setZainCashPaymentOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +58,18 @@ const Invoices = () => {
         .select(`
           *,
           subscribers (
-            name
+            id,
+            name,
+            phone,
+            phone_secondary,
+            username,
+            email,
+            address,
+            plan,
+            balance,
+            status_comment,
+            address_notes,
+            created_at
           )
         `)
         .order('created_at', { ascending: false });
@@ -61,6 +86,11 @@ const Invoices = () => {
   useEffect(() => {
     fetchInvoices();
   }, []);
+
+  const openSubscriberDetails = (subscriber: any) => {
+    setSelectedSubscriber(subscriber);
+    setDetailsModalOpen(true);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -121,7 +151,12 @@ const Invoices = () => {
                       {invoices.map((invoice) => (
                         <TableRow key={invoice.id}>
                           <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                          <TableCell>{invoice.subscribers?.name}</TableCell>
+                          <TableCell 
+                            className="cursor-pointer hover:text-primary transition-colors font-medium"
+                            onClick={() => invoice.subscribers && openSubscriberDetails(invoice.subscribers)}
+                          >
+                            {invoice.subscribers?.name}
+                          </TableCell>
                           <TableCell>{formatCurrency(invoice.amount, invoice.currency || "IQD")}</TableCell>
                           <TableCell>{new Date(invoice.issue_date).toLocaleDateString('ar-IQ')}</TableCell>
                           <TableCell>{new Date(invoice.due_date).toLocaleDateString('ar-IQ')}</TableCell>
@@ -191,6 +226,11 @@ const Invoices = () => {
         invoiceId={selectedInvoice?.id}
         amount={selectedInvoice?.amount || 0}
         onSuccess={fetchInvoices}
+      />
+      <SubscriberDetailsModal
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+        subscriber={selectedSubscriber}
       />
     </div>
   );
