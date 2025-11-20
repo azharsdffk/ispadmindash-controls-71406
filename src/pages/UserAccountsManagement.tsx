@@ -20,6 +20,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, UserPlus, Shield, X } from 'lucide-react';
 import { AddUserModal } from '@/components/modals/AddUserModal';
 import { SettingsModal } from '@/components/modals/SettingsModal';
+import { DeleteConfirmDialog } from '@/components/modals/DeleteConfirmDialog';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
@@ -42,6 +43,8 @@ export default function UserAccountsManagement() {
   const [loading, setLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<{ userId: string; role: AppRole; userName: string } | null>(null);
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -120,17 +123,20 @@ export default function UserAccountsManagement() {
     }
   };
 
-  const removeRole = async (userId: string, role: AppRole) => {
-    if (!confirm(`هل أنت متأكد من إزالة دور "${getRoleLabel(role)}"؟`)) {
-      return;
-    }
+  const handleRemoveRoleClick = (userId: string, role: AppRole, userName: string) => {
+    setRoleToDelete({ userId, role, userName });
+    setDeleteDialogOpen(true);
+  };
+
+  const removeRole = async () => {
+    if (!roleToDelete) return;
 
     try {
       const { error } = await supabase.functions.invoke('manage-user-roles', {
         body: {
           action: 'remove_role',
-          userId,
-          role
+          userId: roleToDelete.userId,
+          role: roleToDelete.role
         }
       });
 
@@ -138,6 +144,7 @@ export default function UserAccountsManagement() {
 
       toast.success('تم إزالة الدور بنجاح');
       fetchUsers();
+      setRoleToDelete(null);
     } catch (error: any) {
       console.error('Error removing role:', error);
       toast.error('فشل في إزالة الدور');
@@ -241,7 +248,7 @@ export default function UserAccountsManagement() {
                                   key={role}
                                   variant={getRoleBadgeVariant(role)}
                                   className="gap-1 cursor-pointer hover:opacity-80"
-                                  onClick={() => removeRole(user.id, role)}
+                                  onClick={() => handleRemoveRoleClick(user.id, role, user.full_name)}
                                 >
                                   {getRoleLabel(role)}
                                   <X className="h-3 w-3" />
@@ -297,6 +304,13 @@ export default function UserAccountsManagement() {
         open={addUserOpen} 
         onOpenChange={setAddUserOpen}
         onUserCreated={fetchUsers}
+      />
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={removeRole}
+        title="إزالة الدور"
+        description={`هل أنت متأكد من إزالة دور "${roleToDelete ? getRoleLabel(roleToDelete.role) : ''}" من المستخدم "${roleToDelete?.userName}"؟ لا يمكن التراجع عن هذا الإجراء.`}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import { Shield, AlertCircle, UserPlus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { AddUserModal } from "@/components/modals/AddUserModal";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -26,6 +27,8 @@ const RoleManagement = () => {
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<{ userId: string; role: string; userName: string } | null>(null);
   const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
@@ -77,20 +80,24 @@ const RoleManagement = () => {
     }
   };
 
-  const removeRole = async (userId: string, role: string) => {
-    if (!confirm(`هل أنت متأكد من إزالة دور "${role}" من هذا المستخدم؟`)) {
-      return;
-    }
+  const handleRemoveRoleClick = (userId: string, role: string, userName: string) => {
+    setRoleToDelete({ userId, role, userName });
+    setDeleteDialogOpen(true);
+  };
+
+  const removeRole = async () => {
+    if (!roleToDelete) return;
 
     try {
       const { data, error } = await supabase.functions.invoke('manage-user-roles', {
-        body: { action: 'remove_role', userId, role }
+        body: { action: 'remove_role', userId: roleToDelete.userId, role: roleToDelete.role }
       });
 
       if (error) throw error;
       
       toast.success(data.message || "تم إزالة الدور بنجاح");
       fetchUsers();
+      setRoleToDelete(null);
     } catch (error: any) {
       toast.error("فشل إزالة الدور: " + error.message);
     }
@@ -185,7 +192,7 @@ const RoleManagement = () => {
                                     key={role} 
                                     variant={role === 'admin' ? 'destructive' : 'default'}
                                     className="cursor-pointer hover:opacity-70"
-                                    onClick={() => removeRole(user.id, role)}
+                                    onClick={() => handleRemoveRoleClick(user.id, role, user.full_name)}
                                   >
                                      {role === 'admin' && 'مدير'}
                                     {role === 'accountant' && 'محاسب'}
@@ -226,6 +233,13 @@ const RoleManagement = () => {
         open={addUserOpen} 
         onOpenChange={setAddUserOpen}
         onUserCreated={fetchUsers}
+      />
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={removeRole}
+        title="إزالة الدور"
+        description={`هل أنت متأكد من إزالة دور "${roleToDelete?.role}" من المستخدم "${roleToDelete?.userName}"؟ لا يمكن التراجع عن هذا الإجراء.`}
       />
     </div>
   );
