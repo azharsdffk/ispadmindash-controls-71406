@@ -332,74 +332,35 @@ const DataImport = () => {
                   <CardHeader>
                     <CardTitle>استيراد من SAS</CardTitle>
                     <CardDescription>
-                      أدخل رابط صفحة SAS لسحب بيانات المشتركين تلقائياً
+                      ارفع ملف CSV مصدّر من نظام SAS
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Alert>
-                      <AlertDescription>
-                        سيتم سحب جميع بيانات المشتركين من الصفحة المدخلة تلقائياً
+                    <Alert className="border-amber-200 bg-amber-50">
+                      <AlertDescription className="text-sm">
+                        <strong>ملاحظة مهمة:</strong> السحب المباشر من صفحات الويب لا يعمل مع أنظمة SAS لأنها تستخدم تقنيات ديناميكية.
+                        <br />
+                        <strong>الحل البسيط:</strong> صدّر البيانات كملف CSV من نظام SAS ثم ارفعه هنا.
                       </AlertDescription>
                     </Alert>
 
-                    <div className="space-y-4">
-                      <Alert className="border-blue-200 bg-blue-50">
-                        <AlertDescription className="text-sm space-y-2">
-                          <p className="font-semibold">📡 كيف تحصل على رابط API من صفحة SAS:</p>
-                          <ol className="list-decimal mr-5 space-y-1 text-xs">
-                            <li>افتح صفحة SAS في المتصفح</li>
-                            <li>اضغط F12 لفتح Developer Tools</li>
-                            <li>اذهب لتبويب Network</li>
-                            <li>حدّث الصفحة وابحث عن طلب API يُرجع بيانات المشتركين</li>
-                            <li>انسخ رابط الطلب (Request URL) والصقه هنا</li>
-                          </ol>
-                        </AlertDescription>
-                      </Alert>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="sas-url">رابط API للسحب المباشر من الويب</Label>
-                        <Input
-                          id="sas-url"
-                          type="url"
-                          placeholder="https://api.sas.com/v1/subscribers?format=json"
-                          value={sasUrl}
-                          onChange={(e) => setSasUrl(e.target.value)}
-                          disabled={loading}
-                          dir="ltr"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          الصق رابط API الذي حصلت عليه من Developer Tools
-                        </p>
-                      </div>
-                      
-                      <div className="border-t pt-4 space-y-2">
-                        <Label htmlFor="sas-file">البديل: ارفع ملف CSV</Label>
-                        <Input
-                          id="sas-file"
-                          type="file"
-                          accept=".csv,.xlsx"
-                          onChange={handleSASFileUpload}
-                          disabled={loading}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          إذا لم تتمكن من الحصول على رابط API، صدّر البيانات كـ CSV
-                        </p>
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sas-file">ملف CSV من نظام SAS</Label>
+                      <Input
+                        id="sas-file"
+                        type="file"
+                        accept=".csv,.xlsx"
+                        onChange={handleSASFileUpload}
+                        disabled={loading}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        قم بتصدير بيانات المشتركين من نظام SAS بصيغة CSV ثم ارفعه هنا
+                      </p>
                     </div>
 
                     {loading && progress > 0 && (
                       <Progress value={progress} />
                     )}
-
-                    <Button
-                      type="button"
-                      onClick={handleSASImport}
-                      disabled={loading || !sasUrl}
-                      className="w-full"
-                    >
-                      {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                      سحب البيانات من SAS
-                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>
