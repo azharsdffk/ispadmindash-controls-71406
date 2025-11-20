@@ -64,38 +64,115 @@ function validateCoordinates(lat?: number, lng?: number): boolean {
   return true;
 }
 
-// Simple scraper fallback (requires proper authorization)
-async function scrapeSASData(serviceId: string): Promise<any> {
-  console.warn('⚠️ Using scraping fallback - ensure proper authorization');
+// Scrape data from SAS page
+async function scrapeSASData(url: string): Promise<any[]> {
+  console.log('🔍 Fetching SAS page:', url);
   
-  // Placeholder - actual implementation depends on SAS website structure
-  return {
-    warning: 'Scraping not fully implemented - requires authorization',
-    serviceId: serviceId,
-    name: `مشترك تجريبي ${serviceId}`,
-    phone: '07701234567',
-    address: 'عنوان تجريبي',
-    plan: 'باقة تجريبية',
-    status: 'active',
-    balance: 0,
-    source: 'scraping_fallback',
-  };
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+    }
+    
+    const html = await response.text();
+    const subscribers: any[] = [];
+    
+    // Parse HTML to extract subscriber data
+    // This is a basic implementation - adjust selectors based on actual SAS page structure
+    const tableRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    
+    let match;
+    let isFirstRow = true;
+    
+    while ((match = tableRegex.exec(html)) !== null) {
+      if (isFirstRow) {
+        isFirstRow = false;
+        continue; // Skip header row
+      }
+      
+      const row = match[1];
+      const cells: string[] = [];
+      let cellMatch;
+      
+      while ((cellMatch = cellRegex.exec(row)) !== null) {
+        const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
+        cells.push(cellContent);
+      }
+      
+      if (cells.length >= 3) {
+        subscribers.push({
+          name: sanitizeCSVValue(cells[0] || ''),
+          phone: sanitizeCSVValue(cells[1] || ''),
+          email: sanitizeCSVValue(cells[2] || ''),
+          address: sanitizeCSVValue(cells[3] || ''),
+          plan: sanitizeCSVValue(cells[4] || ''),
+          balance: parseFloat(cells[5]) || 0,
+        });
+      }
+    }
+    
+    console.log(`✅ Scraped ${subscribers.length} subscribers from SAS`);
+    return subscribers;
+  } catch (error) {
+    console.error('❌ SAS scraping error:', error);
+    throw error;
+  }
 }
 
-async function scrapeNationalProjectData(serviceId: string): Promise<any> {
-  console.warn('⚠️ Using scraping fallback - ensure proper authorization');
+// Scrape data from National Project page
+async function scrapeNationalProjectData(url: string): Promise<any[]> {
+  console.log('🔍 Fetching National Project page:', url);
   
-  return {
-    warning: 'Scraping not fully implemented - requires authorization',
-    serviceId: serviceId,
-    name: `مشترك مشروع وطني ${serviceId}`,
-    phone: '07709876543',
-    address: 'عنوان المشروع الوطني',
-    plan: 'باقة المشروع الوطني',
-    status: 'active',
-    balance: 0,
-    source: 'scraping_fallback',
-  };
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+    }
+    
+    const html = await response.text();
+    const subscribers: any[] = [];
+    
+    // Parse HTML to extract subscriber data
+    const tableRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    
+    let match;
+    let isFirstRow = true;
+    
+    while ((match = tableRegex.exec(html)) !== null) {
+      if (isFirstRow) {
+        isFirstRow = false;
+        continue; // Skip header row
+      }
+      
+      const row = match[1];
+      const cells: string[] = [];
+      let cellMatch;
+      
+      while ((cellMatch = cellRegex.exec(row)) !== null) {
+        const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
+        cells.push(cellContent);
+      }
+      
+      if (cells.length >= 3) {
+        subscribers.push({
+          name: sanitizeCSVValue(cells[0] || ''),
+          phone: sanitizeCSVValue(cells[1] || ''),
+          email: sanitizeCSVValue(cells[2] || ''),
+          address: sanitizeCSVValue(cells[3] || ''),
+          plan: sanitizeCSVValue(cells[4] || ''),
+          balance: parseFloat(cells[5]) || 0,
+        });
+      }
+    }
+    
+    console.log(`✅ Scraped ${subscribers.length} subscribers from National Project`);
+    return subscribers;
+  } catch (error) {
+    console.error('❌ National Project scraping error:', error);
+    throw error;
+  }
 }
 
 serve(async (req) => {
@@ -219,76 +296,95 @@ serve(async (req) => {
           }
         }
       } else if (url) {
-        // URL import with API fallback to scraping
-        let importedData: any = null;
-        let usedScraping = false;
+        // URL import - scrape data directly from the page
+        console.log(`📥 Starting import from ${source} URL:`, url);
         
-        // Try API first (if configured)
-        const apiUrl = source === 'sas' 
-          ? Deno.env.get('SAS_API_URL') 
-          : Deno.env.get('NATIONAL_PROJECT_API_URL');
+        let subscribersData: any[] = [];
         
-        if (apiUrl) {
+        try {
+          if (source === 'sas') {
+            subscribersData = await scrapeSASData(url);
+          } else if (source === 'national_project') {
+            subscribersData = await scrapeNationalProjectData(url);
+          }
+        } catch (scrapeError: any) {
+          console.error('❌ Scraping failed:', scrapeError);
+          throw new Error(`فشل سحب البيانات من الصفحة: ${scrapeError?.message || 'خطأ غير معروف'}`);
+        }
+
+        // Process scraped data
+        for (const subscriber of subscribersData) {
           try {
-            const apiResponse = await fetch(`${apiUrl}?serviceId=${url}`, {
-              headers: {
-                'Authorization': Deno.env.get('EXTERNAL_API_KEY') || '',
-              },
-            });
-            
-            if (apiResponse.ok) {
-              importedData = await apiResponse.json();
+            // Validate data
+            if (!subscriber.name || !subscriber.phone) {
+              failed++;
+              errors.push(`بيانات ناقصة للمشترك`);
+              continue;
             }
-          } catch (apiError) {
-            console.error('API failed, using scraping:', apiError);
-          }
-        }
-        
-        // Fallback to scraping
-        if (!importedData) {
-          usedScraping = true;
-          importedData = source === 'sas'
-            ? await scrapeSASData(url)
-            : await scrapeNationalProjectData(url);
-        }
-        
-        if (importedData?.warning) {
-          errors.push(importedData.warning);
-        }
-        
-        // Save subscriber
-        if (importedData) {
-          const subscriberData = {
-            name: importedData.name,
-            phone: importedData.phone,
-            address: importedData.address || '',
-            plan: importedData.plan || '',
-            balance: importedData.balance || 0,
-            status_comment: usedScraping ? 'مستورد عبر scraping - يتطلب تأكيد' : 'مستورد من API',
-            created_by: user.id,
-          };
-          
-          const { data: existing } = await supabaseClient
-            .from('subscribers')
-            .select('id')
-            .eq('phone', subscriberData.phone)
-            .maybeSingle();
-          
-          if (existing) {
-            await supabaseClient
+
+            if (!validatePhone(subscriber.phone)) {
+              failed++;
+              errors.push(`رقم هاتف غير صحيح: ${subscriber.phone}`);
+              continue;
+            }
+
+            if (subscriber.email && !validateEmail(subscriber.email)) {
+              failed++;
+              errors.push(`بريد إلكتروني غير صحيح: ${subscriber.email}`);
+              continue;
+            }
+
+            // Check for existing subscriber by phone
+            const { data: existing } = await supabaseClient
               .from('subscribers')
-              .update(subscriberData)
-              .eq('id', existing.id);
-            imported++;
-          } else {
-            await supabaseClient
-              .from('subscribers')
-              .insert(subscriberData);
-            imported++;
+              .select('id')
+              .eq('phone', subscriber.phone)
+              .maybeSingle();
+
+            if (existing) {
+              // Update existing subscriber
+              const { error: updateError } = await supabaseClient
+                .from('subscribers')
+                .update({
+                  name: subscriber.name,
+                  email: subscriber.email,
+                  address: subscriber.address,
+                  plan: subscriber.plan,
+                  balance: subscriber.balance,
+                })
+                .eq('id', existing.id);
+
+              if (updateError) {
+                failed++;
+                errors.push(`فشل تحديث ${subscriber.name}: ${updateError.message}`);
+              } else {
+                imported++;
+              }
+            } else {
+              // Insert new subscriber
+              const { error: insertError } = await supabaseClient
+                .from('subscribers')
+                .insert({
+                  name: subscriber.name,
+                  phone: subscriber.phone,
+                  email: subscriber.email,
+                  address: subscriber.address,
+                  plan: subscriber.plan,
+                  balance: subscriber.balance || 0,
+                  created_by: user.id,
+                });
+
+              if (insertError) {
+                failed++;
+                errors.push(`فشل إضافة ${subscriber.name}: ${insertError.message}`);
+              } else {
+                imported++;
+              }
+            }
+          } catch (err: any) {
+            failed++;
+            errors.push(`خطأ في معالجة المشترك: ${err.message}`);
           }
-        } else {
-          failed++;
-          errors.push('فشل الحصول على البيانات');
         }
       }
 
