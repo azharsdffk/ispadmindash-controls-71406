@@ -251,6 +251,10 @@ const DataImport = () => {
                         onChange={(e) => setNationalProjectUrl(e.target.value)}
                         disabled={loading}
                       />
+                      <p className="text-sm text-muted-foreground">
+                        ملاحظة: إذا كانت الصفحة تتطلب تسجيل دخول أو تستخدم JavaScript لتحميل البيانات، 
+                        قد تحتاج لتصدير البيانات كملف CSV واستيرادها بدلاً من استخدام الرابط المباشر.
+                      </p>
                     </div>
 
                     {loading && progress > 0 && (
@@ -295,6 +299,10 @@ const DataImport = () => {
                         onChange={(e) => setSasUrl(e.target.value)}
                         disabled={loading}
                       />
+                      <p className="text-sm text-muted-foreground">
+                        ملاحظة: إذا كانت الصفحة تتطلب تسجيل دخول أو تستخدم JavaScript لتحميل البيانات، 
+                        قد تحتاج لتصدير البيانات كملف CSV واستيرادها بدلاً من استخدام الرابط المباشر.
+                      </p>
                     </div>
 
                     {loading && progress > 0 && (
