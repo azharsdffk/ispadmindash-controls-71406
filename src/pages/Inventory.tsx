@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUserRole } from "@/hooks/useUserRole";
 import { formatCurrency } from "@/lib/currency";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 
 interface InventoryItem {
   id: string;
@@ -41,6 +42,8 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const { isAdmin, loading: roleLoading } = useUserRole();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const [formData, setFormData] = useState({
     item_name: '',
@@ -156,14 +159,19 @@ const Inventory = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الصنف؟')) return;
+  const handleDeleteClick = (id: string, name: string) => {
+    setItemToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
 
     try {
       const { error } = await supabase
         .from('inventory')
         .delete()
-        .eq('id', id);
+        .eq('id', itemToDelete.id);
 
       if (error) throw error;
 
@@ -491,7 +499,7 @@ const Inventory = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDelete(item.id)}
+                                onClick={() => handleDeleteClick(item.id, item.item_name)}
                               >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
@@ -552,6 +560,15 @@ const Inventory = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title="حذف صنف من المخزون"
+        description="هل أنت متأكد من حذف هذا الصنف؟ لا يمكن التراجع عن هذا الإجراء."
+        itemName={itemToDelete?.name}
+      />
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
