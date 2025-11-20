@@ -35,10 +35,12 @@ const ticketSchema = z.object({
   issue_description: z.string().min(5, "الوصف يجب أن يكون 5 أحرف على الأقل"),
   priority: z.enum(["low", "medium", "high", "urgent"]),
   issue_type: z.string().min(1, "يجب اختيار نوع المشكلة"),
+  technician_id: z.string().optional(),
 });
 
 export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: MaintenanceTicketModalProps) => {
   const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [technicians, setTechnicians] = useState<any[]>([]);
   const [isLookupOpen, setIsLookupOpen] = useState(false);
   const [selectedSubscriberData, setSelectedSubscriberData] = useState<any>(null);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
@@ -47,6 +49,7 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
     priority: "medium",
     issue_description: "",
     issue_type: "",
+    technician_id: "",
   });
   
   // External import states
@@ -57,6 +60,7 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
   useEffect(() => {
     if (open) {
       loadSubscribers();
+      loadTechnicians();
       getCurrentLocation();
     }
   }, [open]);
@@ -85,6 +89,15 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
       .select("id, name, phone")
       .order("name");
     if (data) setSubscribers(data);
+  };
+
+  const loadTechnicians = async () => {
+    const { data } = await supabase
+      .from("technicians")
+      .select("id, name, phone, available")
+      .eq("available", true)
+      .order("name");
+    if (data) setTechnicians(data);
   };
 
   const handleSubscriberSelected = (subscriber: any) => {
@@ -162,7 +175,8 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
         issue_description: validatedData.issue_description,
         priority: validatedData.priority as any,
         issue_type: validatedData.issue_type,
-        status: "open" as const,
+        status: validatedData.technician_id ? "in_progress" : "open",
+        technician_id: validatedData.technician_id || null,
         created_by: user?.id,
         notes: location 
           ? `موقع الفني عند الإنشاء: ${location.lat}, ${location.lng}`
@@ -175,7 +189,7 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
 
       toast.success("تم فتح تذكرة الصيانة بنجاح");
       onOpenChange(false);
-      setFormData({ subscriber_id: "", priority: "medium", issue_description: "", issue_type: "" });
+      setFormData({ subscriber_id: "", priority: "medium", issue_description: "", issue_type: "", technician_id: "" });
       setSelectedSubscriberData(null);
       setLocation(null);
       onSuccess?.();
@@ -365,19 +379,38 @@ export const MaintenanceTicketModal = ({ open, onOpenChange, onSuccess }: Mainte
               </select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="priority">الأولوية</Label>
-              <select
-                id="priority"
-                className="w-full px-3 py-2 border rounded-md bg-background"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-              >
-                <option value="low">منخفضة</option>
-                <option value="medium">متوسطة</option>
-                <option value="high">عالية</option>
-                <option value="urgent">عاجلة</option>
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="priority">الأولوية</Label>
+                <select
+                  id="priority"
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                >
+                  <option value="low">منخفضة</option>
+                  <option value="medium">متوسطة</option>
+                  <option value="high">عالية</option>
+                  <option value="urgent">عاجلة</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="technician">الفني المسؤول</Label>
+                <select
+                  id="technician"
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  value={formData.technician_id}
+                  onChange={(e) => setFormData({ ...formData, technician_id: e.target.value })}
+                >
+                  <option value="">اختر الفني (اختياري)</option>
+                  {technicians.map((tech) => (
+                    <option key={tech.id} value={tech.id}>
+                      {tech.name} - {tech.phone}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="space-y-2">
