@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { SubscriberAuditModal } from "@/components/modals/SubscriberAuditModal";
+import { SubscriberDetailsModal } from "@/components/modals/SubscriberDetailsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -32,7 +33,9 @@ const Subscribers = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
   const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<{ id: string; name: string } | null>(null);
+  const [selectedSubscriberDetails, setSelectedSubscriberDetails] = useState<Subscriber | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin, isAccountant, isTechnician, loading: roleLoading } = useUserRole();
@@ -42,6 +45,11 @@ const Subscribers = () => {
   const openAuditModal = (subscriber: Subscriber) => {
     setSelectedSubscriber({ id: subscriber.id, name: subscriber.name });
     setAuditModalOpen(true);
+  };
+
+  const openDetailsModal = (subscriber: Subscriber) => {
+    setSelectedSubscriberDetails(subscriber);
+    setDetailsModalOpen(true);
   };
 
   const fetchSubscribers = async () => {
@@ -167,7 +175,12 @@ const Subscribers = () => {
                     <TableBody>
                       {subscribers.map((subscriber) => (
                         <TableRow key={subscriber.id} className="hover:bg-muted/50 transition-colors">
-                          <TableCell className="font-medium">{subscriber.name}</TableCell>
+                          <TableCell 
+                            className="font-medium cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => openDetailsModal(subscriber)}
+                          >
+                            {subscriber.name}
+                          </TableCell>
                           <TableCell>
                             {subscriber.username ? (
                               <span className="text-sm px-2 py-1 bg-accent/10 rounded-md">
@@ -290,6 +303,12 @@ const Subscribers = () => {
           subscriberName={selectedSubscriber.name}
         />
       )}
+
+      <SubscriberDetailsModal
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+        subscriber={selectedSubscriberDetails}
+      />
 
       <DeleteConfirmDialog
         open={deleteDialogOpen}
