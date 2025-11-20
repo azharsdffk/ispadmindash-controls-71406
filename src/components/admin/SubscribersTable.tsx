@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Eye, Search, Download } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
+import { SubscriberDetailsModal } from '@/components/modals/SubscriberDetailsModal';
 
 export const SubscribersTable = () => {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
 
   useEffect(() => {
     fetchSubscribers();
@@ -46,6 +49,11 @@ export const SubscribersTable = () => {
     sub.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
     sub.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const openSubscriberDetails = (subscriber: any) => {
+    setSelectedSubscriber(subscriber);
+    setDetailsModalOpen(true);
+  };
 
   return (
     <Card>
@@ -91,7 +99,12 @@ export const SubscribersTable = () => {
             <TableBody>
               {filteredSubscribers.map((subscriber) => (
                 <TableRow key={subscriber.id}>
-                  <TableCell className="font-medium">{subscriber.name}</TableCell>
+                  <TableCell 
+                    className="font-medium cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => openSubscriberDetails(subscriber)}
+                  >
+                    {subscriber.name}
+                  </TableCell>
                   <TableCell>{subscriber.phone}</TableCell>
                   <TableCell>{subscriber.username || '-'}</TableCell>
                   <TableCell>
@@ -105,7 +118,12 @@ export const SubscribersTable = () => {
                   <TableCell className="max-w-xs truncate">{subscriber.address || '-'}</TableCell>
                   <TableCell>{new Date(subscriber.created_at).toLocaleDateString('ar-EG')}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="default" className="bg-primary text-white hover:bg-primary/90">
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      className="bg-primary text-white hover:bg-primary/90"
+                      onClick={() => openSubscriberDetails(subscriber)}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -115,6 +133,11 @@ export const SubscribersTable = () => {
           </Table>
         )}
       </CardContent>
+      <SubscriberDetailsModal
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+        subscriber={selectedSubscriber}
+      />
     </Card>
   );
 };

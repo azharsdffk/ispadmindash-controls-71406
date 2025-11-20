@@ -27,6 +27,11 @@ type Subscriber = {
   balance: number;
   status_comment?: string;
   address_notes?: string;
+  latitude?: number;
+  longitude?: number;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
 };
 
 const Subscribers = () => {
