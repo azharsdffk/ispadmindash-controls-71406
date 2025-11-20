@@ -32,7 +32,11 @@ type Ticket = {
     balance: number;
     status_comment?: string;
     address_notes?: string;
+    latitude?: number;
+    longitude?: number;
     created_at?: string;
+    updated_at?: string;
+    created_by?: string;
   };
 };
 
@@ -63,7 +67,11 @@ const Maintenance = () => {
             balance,
             status_comment,
             address_notes,
-            created_at
+            latitude,
+            longitude,
+            created_at,
+            updated_at,
+            created_by
           )
         `)
         .order('created_at', { ascending: false });
