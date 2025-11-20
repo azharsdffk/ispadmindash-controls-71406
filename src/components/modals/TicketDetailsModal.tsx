@@ -99,11 +99,9 @@ export const TicketDetailsModal = ({
 
   const fetchTicketDetails = async () => {
     if (!ticketId) {
-      console.log('⚠️ No ticketId provided');
       return;
     }
 
-    console.log('🎫 Fetching ticket details for ID:', ticketId);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -140,11 +138,9 @@ export const TicketDetailsModal = ({
         .single();
 
       if (error) {
-        console.error('❌ Error fetching ticket:', error);
         throw error;
       }
       
-      console.log('✅ Ticket data loaded:', data);
       setTicket(data);
       setReportText(data.notes || '');
       

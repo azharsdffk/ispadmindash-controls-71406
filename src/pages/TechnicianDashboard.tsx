@@ -230,7 +230,6 @@ const TechnicianDashboard = () => {
 
   // فتح نافذة تفاصيل التذكرة
   const handleOpenTicketDetails = (ticketId: string) => {
-    console.log('🔍 Opening ticket details for:', ticketId);
     setSelectedTicketId(ticketId);
     setDetailsModalOpen(true);
   };
