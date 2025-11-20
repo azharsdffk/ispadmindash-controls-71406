@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { MaintenanceTicketModal } from "@/components/modals/MaintenanceTicketModal";
 import { ScheduleTechnicianModal } from "@/components/modals/ScheduleTechnicianModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
+import { SubscriberDetailsModal } from "@/components/modals/SubscriberDetailsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -20,7 +21,18 @@ type Ticket = {
   priority: string;
   created_at: string;
   subscribers?: {
+    id: string;
     name: string;
+    phone: string;
+    phone_secondary?: string;
+    username?: string;
+    email?: string;
+    address?: string;
+    plan?: string;
+    balance: number;
+    status_comment?: string;
+    address_notes?: string;
+    created_at?: string;
   };
 };
 
@@ -28,6 +40,8 @@ const Maintenance = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [maintenanceTicketOpen, setMaintenanceTicketOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +52,18 @@ const Maintenance = () => {
         .select(`
           *,
           subscribers (
-            name
+            id,
+            name,
+            phone,
+            phone_secondary,
+            username,
+            email,
+            address,
+            plan,
+            balance,
+            status_comment,
+            address_notes,
+            created_at
           )
         `)
         .order('created_at', { ascending: false });
@@ -55,6 +80,11 @@ const Maintenance = () => {
   useEffect(() => {
     fetchTickets();
   }, []);
+
+  const openSubscriberDetails = (subscriber: any) => {
+    setSelectedSubscriber(subscriber);
+    setDetailsModalOpen(true);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -130,7 +160,12 @@ const Maintenance = () => {
                       {tickets.map((ticket) => (
                         <TableRow key={ticket.id}>
                           <TableCell className="font-medium">{ticket.ticket_number}</TableCell>
-                          <TableCell>{ticket.subscribers?.name}</TableCell>
+                          <TableCell 
+                            className="cursor-pointer hover:text-primary transition-colors font-medium"
+                            onClick={() => ticket.subscribers && openSubscriberDetails(ticket.subscribers)}
+                          >
+                            {ticket.subscribers?.name}
+                          </TableCell>
                           <TableCell className="max-w-xs truncate">{ticket.issue_description}</TableCell>
                           <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
                           <TableCell>{getStatusBadge(ticket.status)}</TableCell>
@@ -153,6 +188,11 @@ const Maintenance = () => {
         onSuccess={fetchTickets}
       />
       <ScheduleTechnicianModal open={scheduleTechOpen} onOpenChange={setScheduleTechOpen} />
+      <SubscriberDetailsModal
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+        subscriber={selectedSubscriber}
+      />
     </div>
   );
 };
