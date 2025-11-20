@@ -12,8 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImportHistory } from "@/components/import/ImportHistory";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { importFromNationalProject } from "@/services/importers/nationalProject";
-import { importFromSAS } from "@/services/importers/sas";
+import { supabase } from "@/integrations/supabase/client";
 
 const DataImport = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -75,33 +74,38 @@ const DataImport = () => {
     setProgress(0);
     try {
       setProgress(30);
-      const results = await importFromNationalProject(nationalProjectUrl, nationalProjectKey);
+      
+      const { data, error } = await supabase.functions.invoke('import-subscribers', {
+        body: {
+          source: 'national_project',
+          url: nationalProjectUrl,
+        },
+      });
+
       setProgress(100);
       
-      if (results.failed === -1) {
-        toast({
-          title: "فشل الاستيراد",
-          description: results.errors.join(', '),
-          variant: "destructive",
-        });
-      } else if (results.errors.length > 0) {
+      if (error) throw error;
+      
+      if (data.failed > 0) {
+        const errorSample = data.errors?.slice(0, 3).join(', ') || 'حدثت أخطاء';
         toast({
           title: "تم الاستيراد مع أخطاء",
-          description: `${results.success} نجح، ${results.failed} فشل`,
+          description: `${data.imported} نجح، ${data.failed} فشل. ${errorSample}`,
         });
       } else {
         toast({
           title: "تم بنجاح",
-          description: `تم استيراد ${results.success} مشترك بنجاح`,
+          description: `تم استيراد ${data.imported} مشترك بنجاح من المشروع الوطني`,
         });
       }
       
       setNationalProjectUrl('');
       setNationalProjectKey('');
     } catch (error: any) {
+      console.error('Import error:', error);
       toast({
-        title: "خطأ",
-        description: error.message,
+        title: "خطأ في الاستيراد",
+        description: error.message || "فشل الاتصال بالخادم",
         variant: "destructive",
       });
     } finally {
@@ -123,34 +127,43 @@ const DataImport = () => {
     setLoading(true);
     setProgress(0);
     try {
-      setProgress(30);
-      const csvText = await csvFile.text();
-      const results = await importFromSAS(csvText);
+      setProgress(20);
+      const content = await csvFile.text();
+      setProgress(40);
+      
+      const { data, error } = await supabase.functions.invoke('import-subscribers', {
+        body: {
+          source: 'sas',
+          content: content,
+          filename: csvFile.name,
+        },
+      });
+
       setProgress(100);
       
-      if (results.failed === -1) {
-        toast({
-          title: "فشل الاستيراد",
-          description: results.errors.join(', '),
-          variant: "destructive",
-        });
-      } else if (results.errors.length > 0) {
+      if (error) throw error;
+      
+      if (data.failed > 0) {
+        const errorSample = data.errors?.slice(0, 3).join(', ') || 'حدثت أخطاء';
         toast({
           title: "تم الاستيراد مع أخطاء",
-          description: `${results.success} نجح، ${results.failed} فشل`,
+          description: `${data.imported} نجح، ${data.failed} فشل. ${errorSample}`,
         });
       } else {
         toast({
           title: "تم بنجاح",
-          description: `تم استيراد ${results.success} مشترك بنجاح`,
+          description: `تم استيراد ${data.imported} مشترك من ملف ${csvFile.name}`,
         });
       }
       
       setCsvFile(null);
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     } catch (error: any) {
+      console.error('Import error:', error);
       toast({
-        title: "خطأ",
-        description: error.message,
+        title: "خطأ في الاستيراد",
+        description: error.message || "فشل الاتصال بالخادم",
         variant: "destructive",
       });
     } finally {
@@ -197,7 +210,7 @@ const DataImport = () => {
                       onKeyDown={(e) => e.key === 'Enter' && handleQuickFetch()}
                     />
                   </div>
-                  <Button onClick={handleQuickFetch} disabled={loading}>
+                  <Button type="button" onClick={handleQuickFetch} disabled={loading}>
                     <Download className="ml-2 h-4 w-4" />
                     سحب البيانات
                   </Button>
@@ -264,6 +277,7 @@ const DataImport = () => {
                     )}
 
                     <Button
+                      type="button"
                       onClick={handleNationalProjectImport}
                       disabled={loading || !nationalProjectUrl}
                       className="w-full"
@@ -310,6 +324,7 @@ const DataImport = () => {
                       />
                       <div className="flex gap-2 justify-center">
                         <Button
+                          type="button"
                           variant="outline"
                           onClick={() => document.getElementById('csv-upload')?.click()}
                           disabled={loading}
@@ -317,6 +332,7 @@ const DataImport = () => {
                           اختر ملف CSV
                         </Button>
                         <Button
+                          type="button"
                           onClick={handleSASImport}
                           disabled={loading || !csvFile}
                         >
