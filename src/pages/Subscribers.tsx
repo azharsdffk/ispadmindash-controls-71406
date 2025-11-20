@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 
 type Subscriber = {
   id: string;
@@ -35,6 +36,8 @@ const Subscribers = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin, isAccountant, isTechnician, loading: roleLoading } = useUserRole();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subscriberToDelete, setSubscriberToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const openAuditModal = (subscriber: Subscriber) => {
     setSelectedSubscriber({ id: subscriber.id, name: subscriber.name });
@@ -63,14 +66,19 @@ const Subscribers = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا المشترك؟")) return;
+  const handleDeleteClick = (id: string, name: string) => {
+    setSubscriberToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!subscriberToDelete) return;
 
     try {
       const { error } = await supabase
         .from('subscribers')
         .delete()
-        .eq('id', id);
+        .eq('id', subscriberToDelete.id);
 
       if (error) throw error;
       toast.success("تم حذف المشترك بنجاح");
@@ -247,7 +255,7 @@ const Subscribers = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon"
-                                  onClick={() => handleDelete(subscriber.id)}
+                                  onClick={() => handleDeleteClick(subscriber.id, subscriber.name)}
                                   title="حذف"
                                   className="hover:bg-destructive/10"
                                 >
@@ -282,6 +290,15 @@ const Subscribers = () => {
           subscriberName={selectedSubscriber.name}
         />
       )}
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title="حذف مشترك"
+        description="هل أنت متأكد من حذف هذا المشترك؟ سيتم حذف جميع البيانات المتعلقة به. لا يمكن التراجع عن هذا الإجراء."
+        itemName={subscriberToDelete?.name}
+      />
     </div>
   );
 };

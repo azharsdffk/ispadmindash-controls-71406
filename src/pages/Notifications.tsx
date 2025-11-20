@@ -11,6 +11,7 @@ import { Bell, BellOff, Check, Trash2, Eye, Mail, MessageSquare } from "lucide-r
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 
 interface Notification {
   id: string;
@@ -27,6 +28,8 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [notificationToDelete, setNotificationToDelete] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -117,16 +120,23 @@ const Notifications = () => {
     }
   };
 
-  const deleteNotification = async (id: string) => {
+  const handleDeleteClick = (id: string, title: string) => {
+    setNotificationToDelete({ id, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteNotification = async () => {
+    if (!notificationToDelete) return;
+
     try {
       const { error } = await supabase
         .from('notifications')
         .delete()
-        .eq('id', id);
+        .eq('id', notificationToDelete.id);
 
       if (error) throw error;
 
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      setNotifications(prev => prev.filter(n => n.id !== notificationToDelete.id));
       toast.success('تم حذف الإشعار');
     } catch (error) {
       console.error('Error deleting notification:', error);
@@ -247,7 +257,7 @@ const Notifications = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => deleteNotification(notification.id)}
+                                  onClick={() => handleDeleteClick(notification.id, notification.title)}
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -302,7 +312,7 @@ const Notifications = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => deleteNotification(notification.id)}
+                                  onClick={() => handleDeleteClick(notification.id, notification.title)}
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -346,7 +356,7 @@ const Notifications = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => deleteNotification(notification.id)}
+                                onClick={() => handleDeleteClick(notification.id, notification.title)}
                               >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
@@ -362,6 +372,15 @@ const Notifications = () => {
           </div>
         </main>
       </div>
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={deleteNotification}
+        title="حذف إشعار"
+        description="هل أنت متأكد من حذف هذا الإشعار؟ لا يمكن التراجع عن هذا الإجراء."
+        itemName={notificationToDelete?.title}
+      />
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>

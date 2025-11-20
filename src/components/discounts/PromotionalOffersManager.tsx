@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AddPromotionalOfferModal } from "./AddPromotionalOfferModal";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 
 interface PromotionalOffer {
   id: string;
@@ -27,6 +28,8 @@ export const PromotionalOffersManager = () => {
   const [offers, setOffers] = useState<PromotionalOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchOffers();
@@ -64,14 +67,19 @@ export const PromotionalOffersManager = () => {
     }
   };
 
-  const deleteOffer = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) return;
+  const handleDeleteClick = (id: string, name: string) => {
+    setSelectedOffer({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteOffer = async () => {
+    if (!selectedOffer) return;
 
     try {
       const { error } = await supabase
         .from('promotional_offers')
         .delete()
-        .eq('id', id);
+        .eq('id', selectedOffer.id);
 
       if (error) throw error;
       toast.success('تم حذف العرض');
@@ -193,7 +201,7 @@ export const PromotionalOffersManager = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => deleteOffer(offer.id)}
+                          onClick={() => handleDeleteClick(offer.id, offer.name)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -207,10 +215,19 @@ export const PromotionalOffersManager = () => {
         </CardContent>
       </Card>
 
-      <AddPromotionalOfferModal 
+      <AddPromotionalOfferModal
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onSuccess={fetchOffers}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={deleteOffer}
+        title="حذف العرض الترويجي"
+        description="هل أنت متأكد من حذف هذا العرض؟ لا يمكن التراجع عن هذا الإجراء."
+        itemName={selectedOffer?.name}
       />
     </>
   );

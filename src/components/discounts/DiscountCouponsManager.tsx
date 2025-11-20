@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AddCouponModal } from "./AddCouponModal";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 
 interface Coupon {
   id: string;
@@ -30,6 +31,8 @@ export const DiscountCouponsManager = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState<{ id: string; code: string } | null>(null);
 
   useEffect(() => {
     fetchCoupons();
@@ -72,14 +75,19 @@ export const DiscountCouponsManager = () => {
     }
   };
 
-  const deleteCoupon = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الكوبون؟')) return;
+  const handleDeleteClick = (id: string, code: string) => {
+    setSelectedCoupon({ id, code });
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteCoupon = async () => {
+    if (!selectedCoupon) return;
 
     try {
       const { error } = await supabase
         .from('discount_coupons')
         .delete()
-        .eq('id', id);
+        .eq('id', selectedCoupon.id);
 
       if (error) throw error;
       toast.success('تم حذف الكوبون');
@@ -178,7 +186,7 @@ export const DiscountCouponsManager = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => deleteCoupon(coupon.id)}
+                          onClick={() => handleDeleteClick(coupon.id, coupon.code)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -192,10 +200,19 @@ export const DiscountCouponsManager = () => {
         </CardContent>
       </Card>
 
-      <AddCouponModal 
+      <AddCouponModal
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
         onSuccess={fetchCoupons}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={deleteCoupon}
+        title="حذف الكوبون"
+        description="هل أنت متأكد من حذف هذا الكوبون؟ لا يمكن التراجع عن هذا الإجراء."
+        itemName={selectedCoupon?.code}
       />
     </>
   );

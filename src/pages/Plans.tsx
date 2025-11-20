@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 
 interface Package {
   id: string;
@@ -33,6 +34,8 @@ const Plans = () => {
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin, loading: roleLoading } = useUserRole();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -124,14 +127,19 @@ const Plans = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذه الباقة؟')) return;
+  const handleDeleteClick = (id: string, name: string) => {
+    setPackageToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!packageToDelete) return;
 
     try {
       const { error } = await supabase
         .from('packages')
         .delete()
-        .eq('id', id);
+        .eq('id', packageToDelete.id);
 
       if (error) throw error;
 
@@ -321,7 +329,7 @@ const Plans = () => {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDelete(pkg.id)}
+                        onClick={() => handleDeleteClick(pkg.id, pkg.name)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -345,6 +353,15 @@ const Plans = () => {
           </div>
         </main>
       </div>
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title="حذف الباقة"
+        description="هل أنت متأكد من حذف هذه الباقة؟ لا يمكن التراجع عن هذا الإجراء."
+        itemName={packageToDelete?.name}
+      />
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
