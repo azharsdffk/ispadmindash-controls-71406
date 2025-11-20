@@ -112,11 +112,64 @@ const DataImport = () => {
     }
   };
 
+  const handleSASFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      handleSASImportWithContent(content, file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleSASImportWithContent = async (content: string, filename: string) => {
+    setLoading(true);
+    setProgress(0);
+    try {
+      setProgress(30);
+      const { data, error } = await supabase.functions.invoke('import-subscribers', {
+        body: {
+          source: 'file',
+          content,
+          filename,
+        },
+      });
+
+      setProgress(100);
+      if (error) throw error;
+
+      if (data.failed > 0) {
+        const errorSample = data.errors?.slice(0, 3).join(', ') || 'حدثت أخطاء';
+        toast({
+          title: "تم الاستيراد مع أخطاء",
+          description: `${data.imported} نجح، ${data.failed} فشل. ${errorSample}`,
+        });
+      } else {
+        toast({
+          title: "تم بنجاح",
+          description: `تم استيراد ${data.imported} مشترك بنجاح من الملف`,
+        });
+      }
+    } catch (error: any) {
+      console.error('File import error:', error);
+      toast({
+        title: "خطأ في الاستيراد",
+        description: error.message || 'حدث خطأ أثناء استيراد الملف',
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      setProgress(0);
+    }
+  };
+
   const handleSASImport = async () => {
     if (!sasUrl) {
       toast({
         title: "خطأ",
-        description: "الرجاء إدخال رابط الصفحة",
+        description: "الرجاء إدخال رابط API للبيانات",
         variant: "destructive",
       });
       return;
@@ -289,20 +342,40 @@ const DataImport = () => {
                       </AlertDescription>
                     </Alert>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="sas-url">رابط صفحة SAS</Label>
-                      <Input
-                        id="sas-url"
-                        type="url"
-                        placeholder="https://sas.example.com/subscribers"
-                        value={sasUrl}
-                        onChange={(e) => setSasUrl(e.target.value)}
-                        disabled={loading}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        ملاحظة: إذا كانت الصفحة تتطلب تسجيل دخول أو تستخدم JavaScript لتحميل البيانات، 
-                        قد تحتاج لتصدير البيانات كملف CSV واستيرادها بدلاً من استخدام الرابط المباشر.
-                      </p>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="sas-url">رابط API للبيانات (JSON)</Label>
+                        <Input
+                          id="sas-url"
+                          type="url"
+                          placeholder="https://api.sas.com/subscribers.json"
+                          value={sasUrl}
+                          onChange={(e) => setSasUrl(e.target.value)}
+                          disabled={loading}
+                          dir="ltr"
+                        />
+                        <Alert className="mt-2">
+                          <AlertDescription className="text-xs">
+                            💡 استخدم رابط API مباشر للبيانات بصيغة JSON
+                            <br />
+                            ⚠️ روابط الصفحات العادية مثل https://reseller.scn-ftth.com لا تعمل لأن البيانات تُحمل ديناميكياً بـ JavaScript
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+                      
+                      <div className="border-t pt-4 space-y-2">
+                        <Label htmlFor="sas-file">أو ارفع ملف CSV</Label>
+                        <Input
+                          id="sas-file"
+                          type="file"
+                          accept=".csv,.xlsx"
+                          onChange={handleSASFileUpload}
+                          disabled={loading}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          صدّر البيانات من صفحة SAS كملف CSV ثم ارفعه هنا
+                        </p>
+                      </div>
                     </div>
 
                     {loading && progress > 0 && (
