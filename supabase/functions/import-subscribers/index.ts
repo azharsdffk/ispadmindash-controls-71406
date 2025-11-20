@@ -69,52 +69,85 @@ async function scrapeSASData(url: string): Promise<any[]> {
   console.log('🔍 Fetching SAS page:', url);
   
   try {
-    const response = await fetch(url);
+    // Try to fetch with headers that mimic a browser
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
+      }
+    });
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.statusText}`);
     }
     
     const html = await response.text();
+    console.log('📄 HTML length:', html.length);
+    
     const subscribers: any[] = [];
     
-    // Parse HTML to extract subscriber data
-    // This is a basic implementation - adjust selectors based on actual SAS page structure
+    // Try multiple patterns for table extraction
+    // Pattern 1: Standard table rows
     const tableRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
     
-    let match;
-    let isFirstRow = true;
+    let matches = html.match(tableRegex);
+    console.log('📊 Found table rows:', matches?.length || 0);
     
-    while ((match = tableRegex.exec(html)) !== null) {
-      if (isFirstRow) {
-        isFirstRow = false;
-        continue; // Skip header row
+    if (matches && matches.length > 1) {
+      // Skip first row (headers)
+      for (let i = 1; i < matches.length; i++) {
+        const row = matches[i];
+        const cells: string[] = [];
+        let cellMatch;
+        const cellRegexCopy = new RegExp(cellRegex.source, cellRegex.flags);
+        
+        while ((cellMatch = cellRegexCopy.exec(row)) !== null) {
+          const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
+          cells.push(cellContent);
+        }
+        
+        console.log(`Row ${i} cells:`, cells.length, cells);
+        
+        if (cells.length >= 2) { // At least name and phone
+          subscribers.push({
+            name: sanitizeCSVValue(cells[0] || ''),
+            phone: sanitizeCSVValue(cells[1] || ''),
+            email: sanitizeCSVValue(cells[2] || ''),
+            address: sanitizeCSVValue(cells[3] || ''),
+            plan: sanitizeCSVValue(cells[4] || ''),
+            balance: parseFloat(cells[5]) || 0,
+          });
+        }
       }
+    }
+    
+    // If no table found, try JSON data in script tags
+    if (subscribers.length === 0) {
+      console.log('⚠️ No table data found, checking for JSON...');
+      const jsonRegex = /(?:subscribers|data)\s*[:=]\s*(\[[\s\S]*?\])/gi;
+      const jsonMatch = jsonRegex.exec(html);
       
-      const row = match[1];
-      const cells: string[] = [];
-      let cellMatch;
-      
-      while ((cellMatch = cellRegex.exec(row)) !== null) {
-        const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
-        cells.push(cellContent);
-      }
-      
-      if (cells.length >= 3) {
-        subscribers.push({
-          name: sanitizeCSVValue(cells[0] || ''),
-          phone: sanitizeCSVValue(cells[1] || ''),
-          email: sanitizeCSVValue(cells[2] || ''),
-          address: sanitizeCSVValue(cells[3] || ''),
-          plan: sanitizeCSVValue(cells[4] || ''),
-          balance: parseFloat(cells[5]) || 0,
-        });
+      if (jsonMatch) {
+        try {
+          const jsonData = JSON.parse(jsonMatch[1]);
+          console.log('📦 Found JSON data:', jsonData.length, 'items');
+          return jsonData;
+        } catch (e) {
+          console.log('❌ Failed to parse JSON:', e);
+        }
       }
     }
     
     console.log(`✅ Scraped ${subscribers.length} subscribers from SAS`);
+    
+    if (subscribers.length === 0) {
+      throw new Error('لم يتم العثور على بيانات مشتركين في الصفحة. تأكد من الرابط أو استخدم تصدير CSV.');
+    }
+    
     return subscribers;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ SAS scraping error:', error);
     throw error;
   }
@@ -125,51 +158,84 @@ async function scrapeNationalProjectData(url: string): Promise<any[]> {
   console.log('🔍 Fetching National Project page:', url);
   
   try {
-    const response = await fetch(url);
+    // Try to fetch with headers that mimic a browser
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
+      }
+    });
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.statusText}`);
     }
     
     const html = await response.text();
+    console.log('📄 HTML length:', html.length);
+    
     const subscribers: any[] = [];
     
-    // Parse HTML to extract subscriber data
+    // Try multiple patterns for table extraction
     const tableRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
     
-    let match;
-    let isFirstRow = true;
+    let matches = html.match(tableRegex);
+    console.log('📊 Found table rows:', matches?.length || 0);
     
-    while ((match = tableRegex.exec(html)) !== null) {
-      if (isFirstRow) {
-        isFirstRow = false;
-        continue; // Skip header row
+    if (matches && matches.length > 1) {
+      // Skip first row (headers)
+      for (let i = 1; i < matches.length; i++) {
+        const row = matches[i];
+        const cells: string[] = [];
+        let cellMatch;
+        const cellRegexCopy = new RegExp(cellRegex.source, cellRegex.flags);
+        
+        while ((cellMatch = cellRegexCopy.exec(row)) !== null) {
+          const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
+          cells.push(cellContent);
+        }
+        
+        console.log(`Row ${i} cells:`, cells.length, cells);
+        
+        if (cells.length >= 2) { // At least name and phone
+          subscribers.push({
+            name: sanitizeCSVValue(cells[0] || ''),
+            phone: sanitizeCSVValue(cells[1] || ''),
+            email: sanitizeCSVValue(cells[2] || ''),
+            address: sanitizeCSVValue(cells[3] || ''),
+            plan: sanitizeCSVValue(cells[4] || ''),
+            balance: parseFloat(cells[5]) || 0,
+          });
+        }
       }
+    }
+    
+    // If no table found, try JSON data
+    if (subscribers.length === 0) {
+      console.log('⚠️ No table data found, checking for JSON...');
+      const jsonRegex = /(?:subscribers|data)\s*[:=]\s*(\[[\s\S]*?\])/gi;
+      const jsonMatch = jsonRegex.exec(html);
       
-      const row = match[1];
-      const cells: string[] = [];
-      let cellMatch;
-      
-      while ((cellMatch = cellRegex.exec(row)) !== null) {
-        const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
-        cells.push(cellContent);
-      }
-      
-      if (cells.length >= 3) {
-        subscribers.push({
-          name: sanitizeCSVValue(cells[0] || ''),
-          phone: sanitizeCSVValue(cells[1] || ''),
-          email: sanitizeCSVValue(cells[2] || ''),
-          address: sanitizeCSVValue(cells[3] || ''),
-          plan: sanitizeCSVValue(cells[4] || ''),
-          balance: parseFloat(cells[5]) || 0,
-        });
+      if (jsonMatch) {
+        try {
+          const jsonData = JSON.parse(jsonMatch[1]);
+          console.log('📦 Found JSON data:', jsonData.length, 'items');
+          return jsonData;
+        } catch (e) {
+          console.log('❌ Failed to parse JSON:', e);
+        }
       }
     }
     
     console.log(`✅ Scraped ${subscribers.length} subscribers from National Project`);
+    
+    if (subscribers.length === 0) {
+      throw new Error('لم يتم العثور على بيانات مشتركين في الصفحة. تأكد من الرابط أو استخدم تصدير CSV.');
+    }
+    
     return subscribers;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ National Project scraping error:', error);
     throw error;
   }
