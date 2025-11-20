@@ -458,6 +458,7 @@ export const TicketDetailsModal = ({
               {ticket.subscribers.latitude && ticket.subscribers.longitude && (
                 <div className="mt-4 flex gap-3">
                   <Button
+                    type="button"
                     onClick={openInWaze}
                     variant="outline"
                     className="flex-1"
@@ -466,6 +467,7 @@ export const TicketDetailsModal = ({
                     فتح في Waze
                   </Button>
                   <Button
+                    type="button"
                     onClick={openInGoogleMaps}
                     variant="outline"
                     className="flex-1"
@@ -526,6 +528,7 @@ export const TicketDetailsModal = ({
                 dir="rtl"
               />
               <Button
+                type="button"
                 onClick={handleSaveReport}
                 disabled={updating}
                 className="w-full"
@@ -541,6 +544,7 @@ export const TicketDetailsModal = ({
               <Label className="text-base font-bold">تحديث حالة التذكرة</Label>
               <div className="grid grid-cols-2 gap-3">
                 <Button
+                  type="button"
                   onClick={() => handleUpdateStatus('in_progress')}
                   disabled={updating || ticket.status === 'in_progress'}
                   variant="outline"
@@ -550,6 +554,7 @@ export const TicketDetailsModal = ({
                   قيد التنفيذ
                 </Button>
                 <Button
+                  type="button"
                   onClick={() => handleUpdateStatus('resolved')}
                   disabled={updating || ticket.status === 'resolved'}
                   variant="outline"

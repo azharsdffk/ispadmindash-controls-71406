@@ -333,6 +333,7 @@ export const IssueInvoiceModal = ({ open, onOpenChange, onSuccess }: IssueInvoic
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-right font-normal",
