@@ -147,7 +147,7 @@ export const ContractDetailsModal = ({ open, onOpenChange, contract, onUpdate }:
                       <SelectItem value="pending">قيد الانتظار</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button onClick={updateStatus} disabled={updating || status === contract.status}>
+                  <Button type="button" onClick={updateStatus} disabled={updating || status === contract.status}>
                     {updating ? "جاري التحديث..." : "تحديث"}
                   </Button>
                 </div>
@@ -156,7 +156,7 @@ export const ContractDetailsModal = ({ open, onOpenChange, contract, onUpdate }:
           )}
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               إغلاق
             </Button>
           </div>

@@ -199,13 +199,13 @@ export const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
         </Tabs>
 
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             إلغاء
           </Button>
-          <Button variant="destructive" onClick={handleReset}>
+          <Button type="button" variant="destructive" onClick={handleReset}>
             إعادة تعيين
           </Button>
-          <Button onClick={handleSave}>
+          <Button type="button" onClick={handleSave}>
             حفظ التغييرات
           </Button>
         </div>

@@ -95,6 +95,7 @@ export const ScheduleTechnicianModal = ({ open, onOpenChange }: ScheduleTechnici
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-right font-normal",

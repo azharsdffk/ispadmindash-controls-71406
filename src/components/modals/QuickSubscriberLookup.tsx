@@ -104,6 +104,7 @@ export const QuickSubscriberLookup = ({
               />
             </div>
             <Button 
+              type="button"
               onClick={handleSearch} 
               disabled={isLoading}
               className="mt-auto"
@@ -157,7 +158,7 @@ export const QuickSubscriberLookup = ({
                     </div>
                   </div>
 
-                  <Button onClick={handleSelect} className="w-full">
+                  <Button type="button" onClick={handleSelect} className="w-full">
                     اختيار هذا المشترك
                   </Button>
                 </div>
