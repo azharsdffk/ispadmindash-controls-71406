@@ -19,8 +19,7 @@ const DataImport = () => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [nationalProjectUrl, setNationalProjectUrl] = useState("");
-  const [nationalProjectKey, setNationalProjectKey] = useState("");
-  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [sasUrl, setSasUrl] = useState("");
   const [serviceId, setServiceId] = useState("");
   const { toast } = useToast();
 
@@ -64,7 +63,7 @@ const DataImport = () => {
     if (!nationalProjectUrl) {
       toast({
         title: "خطأ",
-        description: "الرجاء إدخال رابط API",
+        description: "الرجاء إدخال رابط الصفحة",
         variant: "destructive",
       });
       return;
@@ -100,7 +99,6 @@ const DataImport = () => {
       }
       
       setNationalProjectUrl('');
-      setNationalProjectKey('');
     } catch (error: any) {
       console.error('Import error:', error);
       toast({
@@ -115,10 +113,10 @@ const DataImport = () => {
   };
 
   const handleSASImport = async () => {
-    if (!csvFile) {
+    if (!sasUrl) {
       toast({
         title: "خطأ",
-        description: "الرجاء اختيار ملف CSV",
+        description: "الرجاء إدخال رابط الصفحة",
         variant: "destructive",
       });
       return;
@@ -127,15 +125,12 @@ const DataImport = () => {
     setLoading(true);
     setProgress(0);
     try {
-      setProgress(20);
-      const content = await csvFile.text();
-      setProgress(40);
+      setProgress(30);
       
       const { data, error } = await supabase.functions.invoke('import-subscribers', {
         body: {
           source: 'sas',
-          content: content,
-          filename: csvFile.name,
+          url: sasUrl,
         },
       });
 
@@ -152,13 +147,11 @@ const DataImport = () => {
       } else {
         toast({
           title: "تم بنجاح",
-          description: `تم استيراد ${data.imported} مشترك من ملف ${csvFile.name}`,
+          description: `تم استيراد ${data.imported} مشترك بنجاح من SAS`,
         });
       }
       
-      setCsvFile(null);
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      setSasUrl('');
     } catch (error: any) {
       console.error('Import error:', error);
       toast({
@@ -236,38 +229,26 @@ const DataImport = () => {
               <TabsContent value="national-project">
                 <Card>
                   <CardHeader>
-                    <CardTitle>الاتصال بالمشروع الوطني</CardTitle>
+                    <CardTitle>استيراد من المشروع الوطني</CardTitle>
                     <CardDescription>
-                      قم بإدخال بيانات API للاتصال بالمشروع الوطني
+                      أدخل رابط صفحة المشروع الوطني لسحب بيانات المشتركين تلقائياً
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Alert>
                       <AlertDescription>
-                        سيتم جلب البيانات مباشرة من خوادم المشروع الوطني
+                        سيتم سحب جميع بيانات المشتركين من الصفحة المدخلة تلقائياً
                       </AlertDescription>
                     </Alert>
 
                     <div className="space-y-2">
-                      <Label htmlFor="api-url">رابط API</Label>
+                      <Label htmlFor="national-url">رابط صفحة المشروع الوطني</Label>
                       <Input
-                        id="api-url"
+                        id="national-url"
                         type="url"
-                        placeholder="https://api.nationalproject.example/subscribers"
+                        placeholder="https://nationalproject.example.com/subscribers"
                         value={nationalProjectUrl}
                         onChange={(e) => setNationalProjectUrl(e.target.value)}
-                        disabled={loading}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="api-key">API Key (اختياري)</Label>
-                      <Input
-                        id="api-key"
-                        type="password"
-                        placeholder="أدخل مفتاح API"
-                        value={nationalProjectKey}
-                        onChange={(e) => setNationalProjectKey(e.target.value)}
                         disabled={loading}
                       />
                     </div>
@@ -283,7 +264,7 @@ const DataImport = () => {
                       className="w-full"
                     >
                       {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                      استيراد من المشروع الوطني
+                      سحب البيانات من المشروع الوطني
                     </Button>
                   </CardContent>
                 </Card>
@@ -292,59 +273,43 @@ const DataImport = () => {
               <TabsContent value="sas">
                 <Card>
                   <CardHeader>
-                    <CardTitle>استيراد من ملف CSV</CardTitle>
+                    <CardTitle>استيراد من SAS</CardTitle>
                     <CardDescription>
-                      قم برفع ملف CSV يحتوي على بيانات المشتركين من نظام SAS
+                      أدخل رابط صفحة SAS لسحب بيانات المشتركين تلقائياً
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Alert>
                       <AlertDescription>
-                        تأكد من أن الملف يحتوي على الأعمدة: ID, Full Name, Mobile, Email, Address, Service Plan, Balance
+                        سيتم سحب جميع بيانات المشتركين من الصفحة المدخلة تلقائياً
                       </AlertDescription>
                     </Alert>
 
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center space-y-4">
-                      <FileSpreadsheet className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <div>
-                        <h3 className="font-semibold text-lg mb-2">اختر ملف CSV</h3>
-                        {csvFile && (
-                          <p className="text-sm text-primary mt-2">
-                            الملف المحدد: {csvFile.name}
-                          </p>
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        accept=".csv"
-                        className="hidden"
-                        id="csv-upload"
-                        onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                    <div className="space-y-2">
+                      <Label htmlFor="sas-url">رابط صفحة SAS</Label>
+                      <Input
+                        id="sas-url"
+                        type="url"
+                        placeholder="https://sas.example.com/subscribers"
+                        value={sasUrl}
+                        onChange={(e) => setSasUrl(e.target.value)}
                         disabled={loading}
                       />
-                      <div className="flex gap-2 justify-center">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('csv-upload')?.click()}
-                          disabled={loading}
-                        >
-                          اختر ملف CSV
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={handleSASImport}
-                          disabled={loading || !csvFile}
-                        >
-                          {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                          استيراد
-                        </Button>
-                      </div>
                     </div>
 
                     {loading && progress > 0 && (
                       <Progress value={progress} />
                     )}
+
+                    <Button
+                      type="button"
+                      onClick={handleSASImport}
+                      disabled={loading || !sasUrl}
+                      className="w-full"
+                    >
+                      {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                      سحب البيانات من SAS
+                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>
