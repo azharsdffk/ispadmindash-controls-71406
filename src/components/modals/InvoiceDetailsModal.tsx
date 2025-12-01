@@ -39,6 +39,10 @@ interface InvoiceDetailsModalProps {
       updated_at?: string;
       created_by?: string;
     };
+    creator?: {
+      full_name: string;
+      phone?: string;
+    };
   } | null;
 }
 
@@ -223,11 +227,26 @@ export const InvoiceDetailsModal = ({ open, onOpenChange, invoice }: InvoiceDeta
             </div>
           )}
 
+          {/* Creator Info */}
+          {invoice.creator && (
+            <div className="bg-primary/10 rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold flex items-center gap-2 text-sm">
+                <User className="h-4 w-4" />
+                أنشئت بواسطة
+              </h3>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="font-medium">{invoice.creator.full_name}</span>
+                {invoice.creator.phone && (
+                  <span className="text-muted-foreground">{invoice.creator.phone}</span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* IDs */}
           <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-xs text-muted-foreground">
             <p>معرف الفاتورة: {invoice.id}</p>
             <p>معرف المشترك: {invoice.subscriber_id}</p>
-            {invoice.created_by && <p>أنشئت بواسطة: {invoice.created_by}</p>}
           </div>
         </div>
       </DialogContent>
