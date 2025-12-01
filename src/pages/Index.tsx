@@ -10,6 +10,7 @@ import { MaintenanceTicketModal } from "@/components/modals/MaintenanceTicketMod
 import { ReceiptModal } from "@/components/modals/ReceiptModal";
 import { VoucherModal } from "@/components/modals/VoucherModal";
 import { ScheduleTechnicianModal } from "@/components/modals/ScheduleTechnicianModal";
+import { SubscribersListModal } from "@/components/modals/SubscribersListModal";
 import { AIChatbot } from "@/components/ai/AIChatbot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +44,7 @@ const Index = () => {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
+  const [subscribersListOpen, setSubscribersListOpen] = useState(false);
 
   // توجيه الفني تلقائياً إلى صفحته الخاصة
   useEffect(() => {
@@ -136,7 +138,10 @@ const Index = () => {
 
             {/* Stats Cards - محسّنة */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
+              <Card 
+                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary cursor-pointer"
+                onClick={() => setSubscribersListOpen(true)}
+              >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">إجمالي المشتركين</CardTitle>
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -400,6 +405,7 @@ const Index = () => {
       <ReceiptModal open={receiptOpen} onOpenChange={setReceiptOpen} />
       <VoucherModal open={voucherOpen} onOpenChange={setVoucherOpen} />
       <ScheduleTechnicianModal open={scheduleTechOpen} onOpenChange={setScheduleTechOpen} />
+      <SubscribersListModal open={subscribersListOpen} onOpenChange={setSubscribersListOpen} />
       <AIChatbot />
       </div>
     </SidebarProvider>
