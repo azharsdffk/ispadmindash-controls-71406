@@ -217,9 +217,9 @@ const Index = () => {
 
             {/* Action Buttons - معاد تنظيمها */}
             <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+              <CardHeader className="bg-gradient-to-r from-blue-500/10 to-transparent">
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
+                  <Zap className="h-5 w-5 text-blue-600" />
                   الإجراءات السريعة
                 </CardTitle>
                 <CardDescription>العمليات الأساسية والأكثر استخداماً</CardDescription>
@@ -228,14 +228,13 @@ const Index = () => {
                 {/* العمليات الأساسية */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                    <Users className="h-4 w-4 text-blue-600" />
                     العمليات الأساسية
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Button
                       onClick={() => setAddSubscriberOpen(true)}
-                      variant="default"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                       title="إضافة مشترك جديد"
                     >
                       <UserPlus className="h-6 w-6" />
@@ -244,8 +243,7 @@ const Index = () => {
 
                     <Button
                       onClick={() => setIssueInvoiceOpen(true)}
-                      variant="default"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                       title="إصدار فاتورة جديدة"
                     >
                       <FileText className="h-6 w-6" />
@@ -254,8 +252,7 @@ const Index = () => {
 
                     <Button
                       onClick={() => setMaintenanceTicketOpen(true)}
-                      variant="default"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                       title="فتح تذكرة صيانة"
                     >
                       <Wrench className="h-6 w-6" />
@@ -264,8 +261,7 @@ const Index = () => {
 
                     <Button
                       onClick={() => setScheduleTechOpen(true)}
-                      variant="secondary"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white"
                       title="جدولة فني"
                     >
                       <Calendar className="h-6 w-6" />
@@ -277,13 +273,12 @@ const Index = () => {
                 {/* السندات المالية */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+                    <DollarSign className="h-4 w-4 text-blue-600" />
                     السندات المالية
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <Button
-                      variant="default"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                       title="إصدار سند قبض"
                       onClick={() => setReceiptOpen(true)}
                     >
@@ -292,8 +287,7 @@ const Index = () => {
                     </Button>
 
                     <Button
-                      variant="default"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                       title="إصدار سند صرف"
                       onClick={() => setVoucherOpen(true)}
                     >
@@ -302,8 +296,7 @@ const Index = () => {
                     </Button>
 
                     <Button
-                      variant="secondary"
-                      className="h-auto py-4 flex-col gap-2"
+                      className="h-auto py-4 flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white"
                       title="تطبيق خصم"
                       onClick={handleDiscount}
                     >
@@ -316,13 +309,13 @@ const Index = () => {
                 {/* أدوات إضافية */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <Calculator className="h-4 w-4" />
+                    <Calculator className="h-4 w-4 text-blue-600" />
                     أدوات إضافية
                   </h3>
                   <div className="grid grid-cols-3 gap-3">
                     <Button
                       variant="outline"
-                      className="h-auto py-4 flex-col gap-2 hover:bg-accent"
+                      className="h-auto py-4 flex-col gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
                       title="تحديث البيانات (Ctrl+R)"
                       onClick={handleRefresh}
                     >
@@ -332,7 +325,7 @@ const Index = () => {
 
                     <Button
                       variant="outline"
-                      className="h-auto py-4 flex-col gap-2 hover:bg-accent"
+                      className="h-auto py-4 flex-col gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
                       title="طباعة (Ctrl+P)"
                       onClick={handlePrint}
                     >
@@ -342,7 +335,7 @@ const Index = () => {
 
                     <Button
                       variant="outline"
-                      className="h-auto py-4 flex-col gap-2 hover:bg-accent"
+                      className="h-auto py-4 flex-col gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
                       title="رجوع"
                       onClick={handleBack}
                     >
