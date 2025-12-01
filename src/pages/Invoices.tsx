@@ -48,6 +48,10 @@ type Invoice = {
     updated_at?: string;
     created_by?: string;
   };
+  creator?: {
+    full_name: string;
+    phone?: string;
+  };
 };
 
 const Invoices = () => {
@@ -96,7 +100,32 @@ const Invoices = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvoices(data || []);
+      
+      // Fetch creator profiles separately
+      const creatorIds = [...new Set(data?.map(inv => inv.created_by).filter(Boolean))];
+      let creatorsMap: Record<string, { full_name: string; phone?: string }> = {};
+      
+      if (creatorIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, phone')
+          .in('id', creatorIds);
+        
+        if (profilesData) {
+          creatorsMap = profilesData.reduce((acc, profile) => {
+            acc[profile.id] = { full_name: profile.full_name, phone: profile.phone || undefined };
+            return acc;
+          }, {} as Record<string, { full_name: string; phone?: string }>);
+        }
+      }
+      
+      // Attach creator info to invoices
+      const invoicesWithCreators = data?.map(inv => ({
+        ...inv,
+        creator: inv.created_by ? creatorsMap[inv.created_by] : undefined
+      })) || [];
+      
+      setInvoices(invoicesWithCreators);
     } catch (error: any) {
       toast.error("فشل تحميل الفواتير: " + error.message);
     } finally {
