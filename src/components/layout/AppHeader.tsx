@@ -21,11 +21,11 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
     <header className="glass border-b border-white/20 sticky top-0 z-50">
       <div className="flex items-center justify-between h-16 px-6 animate-fade-in">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center hover:scale-110 transition-transform duration-300 glow animate-float">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/30">
             <span className="text-2xl font-bold text-white">ISP</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold gradient-text">نظام إدارة الإنترنت</h1>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">نظام إدارة الإنترنت</h1>
             <p className="text-xs text-muted-foreground">Internet Service Provider Management</p>
           </div>
         </div>
