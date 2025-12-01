@@ -186,7 +186,7 @@ const Maintenance = () => {
                             className="hover:text-primary transition-colors font-medium"
                             onClick={(e) => {
                               e.stopPropagation();
-                              ticket.subscribers && openSubscriberDetails(ticket.subscribers);
+                              openTicketDetails(ticket.id);
                             }}
                           >
                             {ticket.subscribers?.name}
