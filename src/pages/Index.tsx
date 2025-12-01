@@ -11,6 +11,9 @@ import { ReceiptModal } from "@/components/modals/ReceiptModal";
 import { VoucherModal } from "@/components/modals/VoucherModal";
 import { ScheduleTechnicianModal } from "@/components/modals/ScheduleTechnicianModal";
 import { SubscribersListModal } from "@/components/modals/SubscribersListModal";
+import { PendingInvoicesModal } from "@/components/modals/PendingInvoicesModal";
+import { MaintenanceTicketsListModal } from "@/components/modals/MaintenanceTicketsListModal";
+import { MonthlyRevenueModal } from "@/components/modals/MonthlyRevenueModal";
 import { AIChatbot } from "@/components/ai/AIChatbot";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +48,9 @@ const Index = () => {
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [scheduleTechOpen, setScheduleTechOpen] = useState(false);
   const [subscribersListOpen, setSubscribersListOpen] = useState(false);
+  const [pendingInvoicesOpen, setPendingInvoicesOpen] = useState(false);
+  const [maintenanceTicketsOpen, setMaintenanceTicketsOpen] = useState(false);
+  const [monthlyRevenueOpen, setMonthlyRevenueOpen] = useState(false);
 
   // توجيه الفني تلقائياً إلى صفحته الخاصة
   useEffect(() => {
@@ -157,7 +163,10 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-warning">
+              <Card 
+                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-warning cursor-pointer"
+                onClick={() => setPendingInvoicesOpen(true)}
+              >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">الفواتير المعلقة</CardTitle>
                   <div className="p-2 bg-warning/10 rounded-lg">
@@ -170,7 +179,10 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-destructive">
+              <Card 
+                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-destructive cursor-pointer"
+                onClick={() => setMaintenanceTicketsOpen(true)}
+              >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">تذاكر الصيانة</CardTitle>
                   <div className="p-2 bg-destructive/10 rounded-lg">
@@ -186,7 +198,10 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-success">
+              <Card 
+                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-success cursor-pointer"
+                onClick={() => setMonthlyRevenueOpen(true)}
+              >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                   <CardTitle className="text-sm font-medium">الإيرادات الشهرية</CardTitle>
                   <div className="p-2 bg-success/10 rounded-lg">
@@ -406,6 +421,9 @@ const Index = () => {
       <VoucherModal open={voucherOpen} onOpenChange={setVoucherOpen} />
       <ScheduleTechnicianModal open={scheduleTechOpen} onOpenChange={setScheduleTechOpen} />
       <SubscribersListModal open={subscribersListOpen} onOpenChange={setSubscribersListOpen} />
+      <PendingInvoicesModal open={pendingInvoicesOpen} onOpenChange={setPendingInvoicesOpen} />
+      <MaintenanceTicketsListModal open={maintenanceTicketsOpen} onOpenChange={setMaintenanceTicketsOpen} />
+      <MonthlyRevenueModal open={monthlyRevenueOpen} onOpenChange={setMonthlyRevenueOpen} />
       <AIChatbot />
       </div>
     </SidebarProvider>
