@@ -8,6 +8,7 @@ import { DollarSign, Plus, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ReceiptModal } from "@/components/modals/ReceiptModal";
 import { VoucherModal } from "@/components/modals/VoucherModal";
+import { VoucherDetailsModal } from "@/components/modals/VoucherDetailsModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +18,8 @@ const Vouchers = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState<any>(null);
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -49,6 +52,11 @@ const Vouchers = () => {
     setReceiptOpen(false);
     setVoucherOpen(false);
     loadVouchers();
+  };
+
+  const handleVoucherClick = (voucher: any) => {
+    setSelectedVoucher(voucher);
+    setDetailsOpen(true);
   };
 
   return (
@@ -103,8 +111,12 @@ const Vouchers = () => {
                     </TableHeader>
                     <TableBody>
                       {vouchers.map((voucher) => (
-                        <TableRow key={voucher.id}>
-                          <TableCell className="font-medium">{voucher.voucher_number}</TableCell>
+                        <TableRow 
+                          key={voucher.id} 
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => handleVoucherClick(voucher)}
+                        >
+                          <TableCell className="font-medium text-primary">{voucher.voucher_number}</TableCell>
                           <TableCell>
                             <Badge variant={voucher.voucher_type === "income" ? "default" : "destructive"}>
                               {voucher.voucher_type === "income" ? "قبض" : "صرف"}
@@ -131,6 +143,7 @@ const Vouchers = () => {
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       <ReceiptModal open={receiptOpen} onOpenChange={(open) => !open && handleModalClose()} />
       <VoucherModal open={voucherOpen} onOpenChange={(open) => !open && handleModalClose()} />
+      <VoucherDetailsModal open={detailsOpen} onOpenChange={setDetailsOpen} voucher={selectedVoucher} />
     </div>
   );
 };
