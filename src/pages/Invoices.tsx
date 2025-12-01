@@ -10,6 +10,7 @@ import { IssueInvoiceModal } from "@/components/modals/IssueInvoiceModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { RecordPaymentModal } from "@/components/modals/RecordPaymentModal";
 import { SubscriberDetailsModal } from "@/components/modals/SubscriberDetailsModal";
+import { InvoiceDetailsModal } from "@/components/modals/InvoiceDetailsModal";
 import { ZainCashPayment } from "@/components/payments/ZainCashPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,10 +21,15 @@ type Invoice = {
   invoice_number: string;
   subscriber_id: string;
   amount: number;
+  discount?: number;
+  net_amount?: number;
   currency: Currency;
   status: string;
   issue_date: string;
   due_date: string;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
   subscribers?: {
     id: string;
     name: string;
@@ -50,10 +56,17 @@ const Invoices = () => {
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [zainCashPaymentOpen, setZainCashPaymentOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [invoiceDetailsOpen, setInvoiceDetailsOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoiceForDetails, setSelectedInvoiceForDetails] = useState<Invoice | null>(null);
   const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const openInvoiceDetails = (invoice: Invoice) => {
+    setSelectedInvoiceForDetails(invoice);
+    setInvoiceDetailsOpen(true);
+  };
 
   const fetchInvoices = async () => {
     try {
@@ -158,7 +171,12 @@ const Invoices = () => {
                     <TableBody>
                       {invoices.map((invoice) => (
                         <TableRow key={invoice.id}>
-                          <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                          <TableCell 
+                            className="font-medium cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => openInvoiceDetails(invoice)}
+                          >
+                            {invoice.invoice_number}
+                          </TableCell>
                           <TableCell 
                             className="cursor-pointer hover:text-primary transition-colors font-medium"
                             onClick={() => invoice.subscribers && openSubscriberDetails(invoice.subscribers)}
@@ -171,7 +189,7 @@ const Invoices = () => {
                           <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" onClick={() => openInvoiceDetails(invoice)}>
                                 <Eye className="h-4 w-4" />
                               </Button>
                               {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
@@ -239,6 +257,11 @@ const Invoices = () => {
         open={detailsModalOpen}
         onOpenChange={setDetailsModalOpen}
         subscriber={selectedSubscriber}
+      />
+      <InvoiceDetailsModal
+        open={invoiceDetailsOpen}
+        onOpenChange={setInvoiceDetailsOpen}
+        invoice={selectedInvoiceForDetails}
       />
     </div>
   );
