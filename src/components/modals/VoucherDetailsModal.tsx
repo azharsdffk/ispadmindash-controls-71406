@@ -1,7 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, Currency } from "@/lib/currency";
-import { FileText, Calendar, DollarSign, User, Building, StickyNote } from "lucide-react";
+import { FileText, Calendar, DollarSign, User, Building, StickyNote, UserCircle, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VoucherDetailsModalProps {
   open: boolean;
@@ -21,6 +23,26 @@ interface VoucherDetailsModalProps {
 }
 
 export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDetailsModalProps) => {
+  const [creatorInfo, setCreatorInfo] = useState<{ full_name: string; phone: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchCreator = async () => {
+      if (voucher?.created_by) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .eq("id", voucher.created_by)
+          .single();
+        setCreatorInfo(data);
+      } else {
+        setCreatorInfo(null);
+      }
+    };
+    if (open && voucher) {
+      fetchCreator();
+    }
+  }, [open, voucher]);
+
   if (!voucher) return null;
 
   return (
@@ -86,6 +108,23 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
                 <p className="text-sm text-muted-foreground">الوصف</p>
                 <p className="font-medium">{voucher.description}</p>
               </div>
+            </div>
+          )}
+
+          {/* Creator Info */}
+          {creatorInfo && (
+            <div className="p-3 border rounded-lg bg-muted/30 space-y-2">
+              <p className="text-sm font-semibold text-muted-foreground">منشئ السند</p>
+              <div className="flex items-center gap-3">
+                <UserCircle className="h-5 w-5 text-primary" />
+                <span className="font-medium">{creatorInfo.full_name}</span>
+              </div>
+              {creatorInfo.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-primary" />
+                  <span className="font-medium" dir="ltr">{creatorInfo.phone}</span>
+                </div>
+              )}
             </div>
           )}
 
