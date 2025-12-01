@@ -155,10 +155,9 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">1,234</div>
-                  <p className="text-xs text-success flex items-center gap-1 mt-2">
-                    <TrendingUp className="h-3 w-3" />
-                    +12% من الشهر الماضي
+                  <div className="text-3xl font-bold text-foreground">0</div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    لا يوجد مشتركين
                   </p>
                 </CardContent>
               </Card>
@@ -174,8 +173,8 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">234</div>
-                  <p className="text-xs text-muted-foreground mt-2">بقيمة 125,000 دينار عراقي</p>
+                  <div className="text-3xl font-bold text-foreground">0</div>
+                  <p className="text-xs text-muted-foreground mt-2">بقيمة 0 دينار عراقي</p>
                 </CardContent>
               </Card>
 
@@ -190,10 +189,9 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">45</div>
-                  <p className="text-xs text-warning flex items-center gap-1 mt-2">
-                    <AlertCircle className="h-3 w-3" />
-                    12 تذكرة عاجلة
+                  <div className="text-3xl font-bold text-foreground">0</div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    لا توجد تذاكر
                   </p>
                 </CardContent>
               </Card>
@@ -209,10 +207,9 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">450,000</div>
-                  <p className="text-xs text-success flex items-center gap-1 mt-2">
-                    <TrendingUp className="h-3 w-3" />
-                    +8% من الشهر الماضي
+                  <div className="text-3xl font-bold text-foreground">0</div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    لا توجد إيرادات
                   </p>
                 </CardContent>
               </Card>
