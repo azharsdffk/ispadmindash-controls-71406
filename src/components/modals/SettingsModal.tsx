@@ -250,40 +250,157 @@ export const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
               </Button>
             </TabsContent>
 
-            <TabsContent value="system" className="space-y-4 px-1">
-              <div className="space-y-2">
-                <Label htmlFor="logo">شعار النظام</Label>
-                <Input id="logo" type="file" accept="image/*" />
+            <TabsContent value="system" className="space-y-6 px-1">
+              {/* معلومات الشركة */}
+              <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-transparent border border-primary/10">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <Building className="h-4 w-4 text-primary" />
+                  معلومات الشركة
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="company-name">اسم الشركة</Label>
+                    <Input id="company-name" placeholder="اسم شركتك" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-phone">هاتف الشركة</Label>
+                    <Input id="company-phone" placeholder="07xxxxxxxxx" />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="company-address">عنوان الشركة</Label>
+                    <Input id="company-address" placeholder="عنوان الشركة الكامل" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-email">البريد الإلكتروني</Label>
+                    <Input id="company-email" type="email" placeholder="info@company.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-website">الموقع الإلكتروني</Label>
+                    <Input id="company-website" placeholder="www.company.com" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="logo">شعار النظام</Label>
+                  <Input id="logo" type="file" accept="image/*" className="cursor-pointer" />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="dark-mode">الوضع الداكن</Label>
-                <Switch
-                  id="dark-mode"
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
-                />
+
+              {/* المظهر والعرض */}
+              <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-violet-500/5 to-transparent border border-violet-500/10">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <Monitor className="h-4 w-4 text-violet-500" />
+                  المظهر والعرض
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg border">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="h-4 w-4" />
+                      <Label htmlFor="dark-mode">الوضع الداكن</Label>
+                    </div>
+                    <Switch
+                      id="dark-mode"
+                      checked={darkMode}
+                      onCheckedChange={setDarkMode}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="theme-color">لون النظام الأساسي</Label>
+                    <div className="flex gap-2">
+                      <Input id="theme-color" type="color" defaultValue="#1e40af" className="w-16 h-10 p-1 cursor-pointer" />
+                      <Input defaultValue="#1e40af" className="flex-1" readOnly />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="font-size">حجم الخط</Label>
+                    <select
+                      id="font-size"
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="small">صغير</option>
+                      <option value="medium">متوسط</option>
+                      <option value="large">كبير</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="language">اللغة الافتراضية</Label>
+                    <select
+                      id="language"
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="ar">العربية</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="theme-color">لون النظام الأساسي</Label>
-                <Input id="theme-color" type="color" defaultValue="#1e40af" />
+
+              {/* إعدادات الطباعة */}
+              <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-emerald-500/5 to-transparent border border-emerald-500/10">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-emerald-500" />
+                  إعدادات الطباعة
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="print-format">تنسيق الطباعة</Label>
+                    <select
+                      id="print-format"
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="a4">A4</option>
+                      <option value="a5">A5</option>
+                      <option value="thermal">حراري (80mm)</option>
+                      <option value="thermal-58">حراري (58mm)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="print-copies">عدد النسخ الافتراضي</Label>
+                    <Input id="print-copies" type="number" defaultValue="1" min="1" max="5" />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg border">
+                    <Label htmlFor="print-logo">طباعة الشعار</Label>
+                    <Switch id="print-logo" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg border">
+                    <Label htmlFor="print-footer">طباعة التذييل</Label>
+                    <Switch id="print-footer" defaultChecked />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invoice-footer">نص تذييل الفاتورة</Label>
+                  <textarea
+                    id="invoice-footer"
+                    className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background text-sm"
+                    placeholder="شكراً لتعاملكم معنا..."
+                    defaultValue="شكراً لتعاملكم معنا - للاستفسار يرجى الاتصال على الرقم أعلاه"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="print-format">تنسيق الطباعة</Label>
-                <select
-                  id="print-format"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="a4">A4</option>
-                  <option value="thermal">حراري</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="company-name">اسم الشركة</Label>
-                <Input id="company-name" placeholder="اسم شركتك" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="company-address">عنوان الشركة</Label>
-                <Input id="company-address" placeholder="عنوان الشركة الكامل" />
+
+              {/* إعدادات متقدمة */}
+              <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-orange-500/5 to-transparent border border-orange-500/10">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-orange-500" />
+                  إعدادات متقدمة
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg border">
+                    <Label htmlFor="auto-backup">النسخ الاحتياطي التلقائي</Label>
+                    <Switch id="auto-backup" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg border">
+                    <Label htmlFor="audit-log">تسجيل العمليات</Label>
+                    <Switch id="audit-log" defaultChecked />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="session-timeout">مهلة الجلسة (دقيقة)</Label>
+                    <Input id="session-timeout" type="number" defaultValue="30" min="5" max="120" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="max-login-attempts">محاولات تسجيل الدخول القصوى</Label>
+                    <Input id="max-login-attempts" type="number" defaultValue="5" min="3" max="10" />
+                  </div>
+                </div>
               </div>
             </TabsContent>
 
