@@ -181,49 +181,52 @@ const EmployeeTracking = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
+              <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    إجمالي الموظفين
+                  <CardTitle className="text-sm font-medium flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                    <Users className="h-5 w-5" />
+                    إجمالي التتبع
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold">{locations.length}</p>
+                  <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{locations.length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">موظف مسجل في النظام</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Navigation className="h-4 w-4 text-success" />
+                  <CardTitle className="text-sm font-medium flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                    <Navigation className="h-5 w-5" />
                     نشط الآن
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold text-success">
+                  <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
                     {locations.filter(loc => {
                       const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
                       return diffMins < 15;
                     }).length}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">موظف نشط خلال 15 دقيقة</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-warning" />
+                  <CardTitle className="text-sm font-medium flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                    <Clock className="h-5 w-5" />
                     غير نشط
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold text-warning">
+                  <p className="text-4xl font-bold text-orange-600 dark:text-orange-400">
                     {locations.filter(loc => {
                       const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
                       return diffMins >= 60;
                     }).length}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">موظف غير نشط لأكثر من ساعة</p>
                 </CardContent>
               </Card>
             </div>
