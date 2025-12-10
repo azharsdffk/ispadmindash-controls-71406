@@ -5,10 +5,12 @@ import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, Users, Navigation, AlertCircle, Clock } from "lucide-react";
+import { MapPin, Users, Navigation, AlertCircle, Clock, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useUserRole } from "@/hooks/useUserRole";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EmployeeLocation {
   id: string;
@@ -28,6 +30,9 @@ const EmployeeTracking = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [locations, setLocations] = useState<EmployeeLocation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllModal, setShowAllModal] = useState(false);
+  const [showActiveModal, setShowActiveModal] = useState(false);
+  const [showInactiveModal, setShowInactiveModal] = useState(false);
   const { isAdmin, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
@@ -181,7 +186,10 @@ const EmployeeTracking = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background">
+              <Card 
+                className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setShowAllModal(true)}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2 text-blue-700 dark:text-blue-400">
                     <Users className="h-5 w-5" />
@@ -194,7 +202,10 @@ const EmployeeTracking = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background">
+              <Card 
+                className="border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setShowActiveModal(true)}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
                     <Navigation className="h-5 w-5" />
@@ -212,7 +223,10 @@ const EmployeeTracking = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+              <Card 
+                className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setShowInactiveModal(true)}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2 text-orange-700 dark:text-orange-400">
                     <Clock className="h-5 w-5" />
@@ -333,6 +347,137 @@ const EmployeeTracking = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      {/* All Employees Modal */}
+      <Dialog open={showAllModal} onOpenChange={setShowAllModal}>
+        <DialogContent className="max-w-2xl" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-blue-600">
+              <Users className="h-5 w-5" />
+              إجمالي التتبع ({locations.length})
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 p-1">
+              {locations.map((location) => (
+                <Card key={location.id} className="border-r-4 border-r-blue-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
+                        <p className="text-sm text-muted-foreground">{location.employee?.position || '-'}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          آخر تحديث: {getTimeAgo(location.recorded_at)}
+                        </p>
+                      </div>
+                      <Badge variant={getStatusColor(location.recorded_at) as any}>
+                        {getStatusColor(location.recorded_at) === 'success' ? 'نشط' : getStatusColor(location.recorded_at) === 'warning' ? 'متوسط' : 'غير نشط'}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {locations.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">لا توجد بيانات</p>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Active Employees Modal */}
+      <Dialog open={showActiveModal} onOpenChange={setShowActiveModal}>
+        <DialogContent className="max-w-2xl" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-emerald-600">
+              <Navigation className="h-5 w-5" />
+              الموظفين النشطين الآن
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 p-1">
+              {locations.filter(loc => {
+                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
+                return diffMins < 15;
+              }).map((location) => (
+                <Card key={location.id} className="border-r-4 border-r-emerald-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
+                        <p className="text-sm text-muted-foreground">{location.employee?.position || '-'}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          آخر تحديث: {getTimeAgo(location.recorded_at)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => openInMaps(location.latitude, location.longitude)}
+                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm flex items-center gap-1"
+                      >
+                        <Navigation className="h-3 w-3" />
+                        عرض الموقع
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {locations.filter(loc => {
+                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
+                return diffMins < 15;
+              }).length === 0 && (
+                <p className="text-center text-muted-foreground py-8">لا يوجد موظفين نشطين حالياً</p>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Inactive Employees Modal */}
+      <Dialog open={showInactiveModal} onOpenChange={setShowInactiveModal}>
+        <DialogContent className="max-w-2xl" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-orange-600">
+              <Clock className="h-5 w-5" />
+              الموظفين غير النشطين
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 p-1">
+              {locations.filter(loc => {
+                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
+                return diffMins >= 60;
+              }).map((location) => (
+                <Card key={location.id} className="border-r-4 border-r-orange-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
+                        <p className="text-sm text-muted-foreground">{location.employee?.position || '-'}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          آخر تحديث: {getTimeAgo(location.recorded_at)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => openInMaps(location.latitude, location.longitude)}
+                        className="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm flex items-center gap-1"
+                      >
+                        <MapPin className="h-3 w-3" />
+                        آخر موقع
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {locations.filter(loc => {
+                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
+                return diffMins >= 60;
+              }).length === 0 && (
+                <p className="text-center text-muted-foreground py-8">جميع الموظفين نشطين</p>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
