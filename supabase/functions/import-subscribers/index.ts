@@ -64,22 +64,26 @@ function validateCoordinates(lat?: number, lng?: number): boolean {
   return true;
 }
 
-// Scrape data from SAS page
-async function scrapeSASData(url: string): Promise<any[]> {
-  console.log('🔍 Fetching SAS page:', url);
+// Advanced scraping function for SAS and National Project pages
+async function scrapeWebPage(url: string, source: string): Promise<any[]> {
+  console.log(`🔍 Fetching ${source} page:`, url);
   
   try {
     // Try to fetch with headers that mimic a browser
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Cache-Control': 'max-age=0',
       }
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.statusText}`);
+      throw new Error(`فشل الاتصال بالصفحة: ${response.status} ${response.statusText}`);
     }
     
     const html = await response.text();
@@ -87,158 +91,299 @@ async function scrapeSASData(url: string): Promise<any[]> {
     
     const subscribers: any[] = [];
     
-    // Try multiple patterns for table extraction
-    // Pattern 1: Standard table rows
-    const tableRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
-    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    // Pattern 1: Try to find JSON data in various formats
+    const jsonPatterns = [
+      /(?:var\s+)?(?:subscribers|data|users|customers|records|items|list)\s*[:=]\s*(\[[\s\S]*?\]);?/gi,
+      /"(?:subscribers|data|users|customers|records)"\s*:\s*(\[[\s\S]*?\])/gi,
+      /JSON\.parse\s*\(\s*'(\[[\s\S]*?\])'\s*\)/gi,
+      /window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\});?/gi,
+      /window\.__DATA__\s*=\s*(\{[\s\S]*?\});?/gi,
+    ];
     
-    let matches = html.match(tableRegex);
-    console.log('📊 Found table rows:', matches?.length || 0);
-    
-    if (matches && matches.length > 1) {
-      // Skip first row (headers)
-      for (let i = 1; i < matches.length; i++) {
-        const row = matches[i];
-        const cells: string[] = [];
-        let cellMatch;
-        const cellRegexCopy = new RegExp(cellRegex.source, cellRegex.flags);
-        
-        while ((cellMatch = cellRegexCopy.exec(row)) !== null) {
-          const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
-          cells.push(cellContent);
-        }
-        
-        console.log(`Row ${i} cells:`, cells.length, cells);
-        
-        if (cells.length >= 2) { // At least name and phone
-          subscribers.push({
-            name: sanitizeCSVValue(cells[0] || ''),
-            phone: sanitizeCSVValue(cells[1] || ''),
-            email: sanitizeCSVValue(cells[2] || ''),
-            address: sanitizeCSVValue(cells[3] || ''),
-            plan: sanitizeCSVValue(cells[4] || ''),
-            balance: parseFloat(cells[5]) || 0,
-          });
-        }
-      }
-    }
-    
-    // If no table found, try JSON data in script tags
-    if (subscribers.length === 0) {
-      console.log('⚠️ No table data found, checking for JSON...');
-      const jsonRegex = /(?:subscribers|data)\s*[:=]\s*(\[[\s\S]*?\])/gi;
-      const jsonMatch = jsonRegex.exec(html);
-      
-      if (jsonMatch) {
+    for (const pattern of jsonPatterns) {
+      const matches = html.matchAll(pattern);
+      for (const match of matches) {
         try {
-          const jsonData = JSON.parse(jsonMatch[1]);
-          console.log('📦 Found JSON data:', jsonData.length, 'items');
-          return jsonData;
+          let jsonStr = match[1];
+          // Clean up the JSON string
+          jsonStr = jsonStr.replace(/'/g, '"').replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+          const jsonData = JSON.parse(jsonStr);
+          
+          let dataArray = Array.isArray(jsonData) ? jsonData : 
+                         jsonData.subscribers || jsonData.data || jsonData.users || 
+                         jsonData.customers || jsonData.records || jsonData.items || [];
+          
+          if (Array.isArray(dataArray) && dataArray.length > 0) {
+            console.log(`📦 Found JSON data with ${dataArray.length} items`);
+            
+            for (const item of dataArray) {
+              const subscriber = extractSubscriberFromObject(item);
+              if (subscriber.name && subscriber.phone) {
+                subscribers.push(subscriber);
+              }
+            }
+            
+            if (subscribers.length > 0) {
+              console.log(`✅ Extracted ${subscribers.length} subscribers from JSON`);
+              return subscribers;
+            }
+          }
         } catch (e) {
-          console.log('❌ Failed to parse JSON:', e);
+          // Continue to next pattern
         }
       }
     }
     
-    console.log(`✅ Scraped ${subscribers.length} subscribers from SAS`);
+    // Pattern 2: Extract from HTML tables with various structures
+    const tablePatterns = [
+      /<table[^>]*class="[^"]*(?:data|subscribers|users|grid|list)[^"]*"[^>]*>([\s\S]*?)<\/table>/gi,
+      /<table[^>]*id="[^"]*(?:data|subscribers|users|grid|list)[^"]*"[^>]*>([\s\S]*?)<\/table>/gi,
+      /<table[^>]*>([\s\S]*?)<\/table>/gi,
+    ];
     
-    if (subscribers.length === 0) {
-      throw new Error('لم يتم العثور على بيانات مشتركين في الصفحة. تأكد من الرابط أو استخدم تصدير CSV.');
+    for (const tablePattern of tablePatterns) {
+      const tableMatches = html.match(tablePattern);
+      if (tableMatches) {
+        for (const tableHtml of tableMatches) {
+          const extracted = extractFromTable(tableHtml);
+          if (extracted.length > 0) {
+            console.log(`✅ Extracted ${extracted.length} subscribers from table`);
+            subscribers.push(...extracted);
+          }
+        }
+        if (subscribers.length > 0) break;
+      }
     }
     
-    return subscribers;
+    // Pattern 3: Try to find data in div/list structures
+    if (subscribers.length === 0) {
+      const listPatterns = [
+        /<div[^>]*class="[^"]*(?:subscriber|user|customer|card|item|row)[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
+        /<li[^>]*class="[^"]*(?:subscriber|user|customer|item)[^"]*"[^>]*>([\s\S]*?)<\/li>/gi,
+      ];
+      
+      for (const listPattern of listPatterns) {
+        const items = html.matchAll(listPattern);
+        for (const item of items) {
+          const subscriber = extractFromHtmlContent(item[1]);
+          if (subscriber.name && subscriber.phone) {
+            subscribers.push(subscriber);
+          }
+        }
+        if (subscribers.length > 0) break;
+      }
+    }
+    
+    // Pattern 4: Generic extraction from any visible content
+    if (subscribers.length === 0) {
+      // Try to find phone numbers and associated names
+      const phoneRegex = /(?:07[3-9]\d{8}|\+9647[3-9]\d{8})/g;
+      const phones = html.match(phoneRegex) || [];
+      
+      if (phones.length > 0) {
+        console.log(`📱 Found ${phones.length} phone numbers in page`);
+        
+        // Try to extract context around each phone
+        for (const phone of phones) {
+          const phoneIndex = html.indexOf(phone);
+          const context = html.substring(Math.max(0, phoneIndex - 200), phoneIndex + phone.length + 50);
+          
+          // Look for a name near the phone
+          const nameMatch = context.match(/(?:الاسم|name|اسم)[:\s]*([^\n<>]{3,50})/i) ||
+                           context.match(/>([^<]{3,50})</);
+          
+          if (nameMatch) {
+            const name = nameMatch[1].replace(/<[^>]+>/g, '').trim();
+            if (name && !name.match(/^\d+$/)) {
+              subscribers.push({
+                name: sanitizeCSVValue(name),
+                phone: sanitizeCSVValue(phone),
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    console.log(`✅ Total scraped: ${subscribers.length} subscribers from ${source}`);
+    
+    if (subscribers.length === 0) {
+      throw new Error('لم يتم العثور على بيانات مشتركين في الصفحة. تأكد من أن الرابط صحيح ويحتوي على جدول بيانات المشتركين.');
+    }
+    
+    // Remove duplicates based on phone
+    const uniqueSubscribers = Array.from(
+      new Map(subscribers.map(s => [s.phone, s])).values()
+    );
+    
+    return uniqueSubscribers;
   } catch (error: any) {
-    console.error('❌ SAS scraping error:', error);
+    console.error(`❌ ${source} scraping error:`, error);
     throw error;
   }
 }
 
+// Extract subscriber data from a generic object
+function extractSubscriberFromObject(obj: any): any {
+  const subscriber: any = {};
+  
+  // Name field variations
+  subscriber.name = obj.name || obj.full_name || obj.fullName || obj.subscriber_name || 
+                   obj.اسم || obj.الاسم || obj.اسم_المشترك || '';
+  
+  // Phone field variations  
+  subscriber.phone = obj.phone || obj.mobile || obj.phone_number || obj.phoneNumber ||
+                    obj.هاتف || obj.رقم_الهاتف || obj.موبايل || obj.telephone || '';
+  
+  // Email field variations
+  subscriber.email = obj.email || obj.email_address || obj.بريد || obj.البريد_الالكتروني || '';
+  
+  // Address field variations
+  subscriber.address = obj.address || obj.عنوان || obj.العنوان || obj.location || obj.الموقع || '';
+  
+  // Plan field variations
+  subscriber.plan = obj.plan || obj.package || obj.subscription || obj.باقة || obj.الباقة || '';
+  
+  // Balance field variations
+  subscriber.balance = parseFloat(obj.balance || obj.رصيد || obj.الرصيد || '0') || 0;
+  
+  // Clean values
+  subscriber.name = sanitizeCSVValue(String(subscriber.name || '').trim());
+  subscriber.phone = sanitizeCSVValue(String(subscriber.phone || '').trim());
+  subscriber.email = sanitizeCSVValue(String(subscriber.email || '').trim());
+  subscriber.address = sanitizeCSVValue(String(subscriber.address || '').trim());
+  subscriber.plan = sanitizeCSVValue(String(subscriber.plan || '').trim());
+  
+  return subscriber;
+}
+
+// Extract subscribers from HTML table
+function extractFromTable(tableHtml: string): any[] {
+  const subscribers: any[] = [];
+  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  const cellRegex = /<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi;
+  
+  const rows = tableHtml.match(rowRegex) || [];
+  
+  // First row might be headers
+  let headers: string[] = [];
+  if (rows.length > 0) {
+    const headerCells: string[] = [];
+    let cellMatch;
+    const firstRowRegex = new RegExp(cellRegex.source, cellRegex.flags);
+    const firstRow = rows[0] as string;
+    while ((cellMatch = firstRowRegex.exec(firstRow)) !== null) {
+      headerCells.push(cellMatch[1].replace(/<[^>]+>/g, '').trim().toLowerCase());
+    }
+    
+    // Check if first row looks like headers
+    const headerKeywords = ['name', 'phone', 'email', 'اسم', 'هاتف', 'بريد', 'عنوان', 'موبايل'];
+    if (headerCells.some(h => headerKeywords.some(k => h.includes(k)))) {
+      headers = headerCells;
+    }
+  }
+  
+  const startIndex = headers.length > 0 ? 1 : 0;
+  
+  for (let i = startIndex; i < rows.length; i++) {
+    const cells: string[] = [];
+    let cellMatch;
+    const cellRegexCopy = new RegExp(cellRegex.source, cellRegex.flags);
+    
+    while ((cellMatch = cellRegexCopy.exec(rows[i])) !== null) {
+      const content = cellMatch[1].replace(/<[^>]+>/g, '').trim();
+      cells.push(content);
+    }
+    
+    if (cells.length >= 2) {
+      const subscriber: any = {};
+      
+      if (headers.length > 0) {
+        // Map by headers
+        headers.forEach((header, index) => {
+          const value = cells[index] || '';
+          if (header.includes('name') || header.includes('اسم')) {
+            subscriber.name = value;
+          } else if (header.includes('phone') || header.includes('mobile') || header.includes('هاتف') || header.includes('موبايل')) {
+            subscriber.phone = value;
+          } else if (header.includes('email') || header.includes('بريد')) {
+            subscriber.email = value;
+          } else if (header.includes('address') || header.includes('عنوان')) {
+            subscriber.address = value;
+          } else if (header.includes('plan') || header.includes('باقة') || header.includes('package')) {
+            subscriber.plan = value;
+          } else if (header.includes('balance') || header.includes('رصيد')) {
+            subscriber.balance = parseFloat(value) || 0;
+          }
+        });
+      } else {
+        // Guess based on content
+        for (const cell of cells) {
+          if (/^(\+964|0)?7[3-9]\d{8}$/.test(cell.replace(/\s/g, ''))) {
+            subscriber.phone = cell;
+          } else if (cell.includes('@')) {
+            subscriber.email = cell;
+          } else if (!subscriber.name && cell.length > 2 && !cell.match(/^\d+$/)) {
+            subscriber.name = cell;
+          }
+        }
+      }
+      
+      if (subscriber.name && subscriber.phone) {
+        subscriber.name = sanitizeCSVValue(subscriber.name);
+        subscriber.phone = sanitizeCSVValue(subscriber.phone);
+        subscriber.email = sanitizeCSVValue(subscriber.email || '');
+        subscriber.address = sanitizeCSVValue(subscriber.address || '');
+        subscriber.plan = sanitizeCSVValue(subscriber.plan || '');
+        subscribers.push(subscriber);
+      }
+    }
+  }
+  
+  return subscribers;
+}
+
+// Extract subscriber from HTML content block
+function extractFromHtmlContent(html: string): any {
+  const subscriber: any = {};
+  
+  // Try to find phone
+  const phoneMatch = html.match(/(?:07[3-9]\d{8}|\+9647[3-9]\d{8})/);
+  if (phoneMatch) {
+    subscriber.phone = phoneMatch[0];
+  }
+  
+  // Try to find email
+  const emailMatch = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  if (emailMatch) {
+    subscriber.email = emailMatch[0];
+  }
+  
+  // Try to find name
+  const namePatterns = [
+    /(?:الاسم|name|اسم)[:\s]*([^\n<>]{3,50})/i,
+    /<[^>]*class="[^"]*name[^"]*"[^>]*>([^<]+)</i,
+  ];
+  
+  for (const pattern of namePatterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      subscriber.name = match[1].trim();
+      break;
+    }
+  }
+  
+  return subscriber;
+}
+
+// Scrape data from SAS page
+async function scrapeSASData(url: string): Promise<any[]> {
+  return scrapeWebPage(url, 'SAS');
+}
+
 // Scrape data from National Project page
 async function scrapeNationalProjectData(url: string): Promise<any[]> {
-  console.log('🔍 Fetching National Project page:', url);
-  
-  try {
-    // Try to fetch with headers that mimic a browser
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.statusText}`);
-    }
-    
-    const html = await response.text();
-    console.log('📄 HTML length:', html.length);
-    
-    const subscribers: any[] = [];
-    
-    // Try multiple patterns for table extraction
-    const tableRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
-    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
-    
-    let matches = html.match(tableRegex);
-    console.log('📊 Found table rows:', matches?.length || 0);
-    
-    if (matches && matches.length > 1) {
-      // Skip first row (headers)
-      for (let i = 1; i < matches.length; i++) {
-        const row = matches[i];
-        const cells: string[] = [];
-        let cellMatch;
-        const cellRegexCopy = new RegExp(cellRegex.source, cellRegex.flags);
-        
-        while ((cellMatch = cellRegexCopy.exec(row)) !== null) {
-          const cellContent = cellMatch[1].replace(/<[^>]+>/g, '').trim();
-          cells.push(cellContent);
-        }
-        
-        console.log(`Row ${i} cells:`, cells.length, cells);
-        
-        if (cells.length >= 2) { // At least name and phone
-          subscribers.push({
-            name: sanitizeCSVValue(cells[0] || ''),
-            phone: sanitizeCSVValue(cells[1] || ''),
-            email: sanitizeCSVValue(cells[2] || ''),
-            address: sanitizeCSVValue(cells[3] || ''),
-            plan: sanitizeCSVValue(cells[4] || ''),
-            balance: parseFloat(cells[5]) || 0,
-          });
-        }
-      }
-    }
-    
-    // If no table found, try JSON data
-    if (subscribers.length === 0) {
-      console.log('⚠️ No table data found, checking for JSON...');
-      const jsonRegex = /(?:subscribers|data)\s*[:=]\s*(\[[\s\S]*?\])/gi;
-      const jsonMatch = jsonRegex.exec(html);
-      
-      if (jsonMatch) {
-        try {
-          const jsonData = JSON.parse(jsonMatch[1]);
-          console.log('📦 Found JSON data:', jsonData.length, 'items');
-          return jsonData;
-        } catch (e) {
-          console.log('❌ Failed to parse JSON:', e);
-        }
-      }
-    }
-    
-    console.log(`✅ Scraped ${subscribers.length} subscribers from National Project`);
-    
-    if (subscribers.length === 0) {
-      throw new Error('لم يتم العثور على بيانات مشتركين في الصفحة. تأكد من الرابط أو استخدم تصدير CSV.');
-    }
-    
-    return subscribers;
-  } catch (error: any) {
-    console.error('❌ National Project scraping error:', error);
-    throw error;
-  }
+  return scrapeWebPage(url, 'National Project');
 }
 
 serve(async (req) => {
