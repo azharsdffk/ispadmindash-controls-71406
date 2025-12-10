@@ -29,14 +29,44 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
     address: "",
     username: "",
     plan: "",
-    latitude: "",
-    longitude: "",
+    locationLink: "",
     addressNotes: "",
     statusComment: "",
     issueType: "",
     issueDescription: "",
     estimatedRepairCost: "",
   });
+
+  // استخراج الإحداثيات من رابط خرائط جوجل
+  const parseLocationFromLink = (link: string): { lat: number | null; lng: number | null } => {
+    if (!link) return { lat: null, lng: null };
+    
+    // نمط 1: @33.3152,44.3661
+    let match = link.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (match) {
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+    }
+    
+    // نمط 2: ?q=33.3152,44.3661
+    match = link.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (match) {
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+    }
+    
+    // نمط 3: /place/33.3152,44.3661
+    match = link.match(/\/place\/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (match) {
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+    }
+    
+    // نمط 4: إحداثيات مباشرة 33.3152,44.3661
+    match = link.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+    if (match) {
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+    }
+    
+    return { lat: null, lng: null };
+  };
   
   const [packages, setPackages] = useState<Array<{ id: string; name: string; speed_mbps: number }>>([]);
 
@@ -60,6 +90,8 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      const { lat, lng } = parseLocationFromLink(formData.locationLink);
+      
       const { data: newSubscriber, error } = await supabase.from('subscribers').insert({
         name: sanitizeInput(formData.name),
         phone: sanitizeInput(formData.phone),
@@ -70,8 +102,8 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         address_notes: formData.addressNotes ? sanitizeInput(formData.addressNotes) : null,
         plan: formData.plan || null,
         status_comment: formData.statusComment ? sanitizeInput(formData.statusComment) : null,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        latitude: lat,
+        longitude: lng,
         created_by: user?.id,
       }).select().single();
 
@@ -91,8 +123,7 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         address: "",
         username: "",
         plan: "", 
-        latitude: "", 
-        longitude: "", 
+        locationLink: "", 
         addressNotes: "",
         statusComment: "",
         issueType: "",
@@ -225,31 +256,21 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="latitude" className="font-medium">خط العرض (Latitude)</Label>
-                  <Input
-                    id="latitude"
-                    type="number"
-                    step="any"
-                    value={formData.latitude}
-                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                    placeholder="33.3152"
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="longitude" className="font-medium">خط الطول (Longitude)</Label>
-                  <Input
-                    id="longitude"
-                    type="number"
-                    step="any"
-                    value={formData.longitude}
-                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                    placeholder="44.3661"
-                    className="h-11"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="locationLink" className="font-medium">رابط الموقع (Google Maps)</Label>
+                <Input
+                  id="locationLink"
+                  value={formData.locationLink}
+                  onChange={(e) => setFormData({ ...formData, locationLink: e.target.value })}
+                  placeholder="الصق رابط الموقع من خرائط جوجل أو الإحداثيات مباشرة"
+                  className="h-11"
+                  dir="ltr"
+                />
+                {formData.locationLink && parseLocationFromLink(formData.locationLink).lat && (
+                  <p className="text-xs text-green-600">
+                    ✓ تم استخراج الإحداثيات: {parseLocationFromLink(formData.locationLink).lat}, {parseLocationFromLink(formData.locationLink).lng}
+                  </p>
+                )}
               </div>
             </div>
           </div>
