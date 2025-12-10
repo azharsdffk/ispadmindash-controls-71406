@@ -6,10 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
-import { validatePassword } from '@/utils/passwordStrength';
-import { signupSchema, loginSchema, emailSchema, sanitizeInput } from '@/utils/inputValidation';
+import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
+import { signupSchema, loginSchema, sanitizeInput } from '@/utils/inputValidation';
 
 const Auth = () => {
   const { signIn, signUp } = useAuth();
@@ -32,20 +31,7 @@ const Auth = () => {
       // Sanitize inputs
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase());
       
-      if (isForgotPassword) {
-        // Validate email
-        const validatedEmail = emailSchema.parse(sanitizedEmail);
-        
-        const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
-          redirectTo: `${window.location.origin}/auth`,
-        });
-        if (error) {
-          toast.error('فشل إرسال رابط إعادة التعيين: ' + error.message);
-        } else {
-          toast.success('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
-          setIsForgotPassword(false);
-        }
-      } else if (isLogin) {
+      if (isLogin) {
         // Validate login data
         const validatedData = loginSchema.parse({
           email: sanitizedEmail,
@@ -100,6 +86,14 @@ const Auth = () => {
     }
   };
 
+  if (isForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5" dir="rtl">
+        <PasswordRecovery onBack={() => setIsForgotPassword(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5" dir="rtl">
       <Card className="w-full max-w-md shadow-2xl border-0 bg-card/95 backdrop-blur">
@@ -114,20 +108,18 @@ const Auth = () => {
           </div>
           <div>
             <CardTitle className="text-3xl font-bold gradient-text">
-              {isForgotPassword ? 'إعادة تعيين كلمة المرور' : isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
+              {isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
             </CardTitle>
             <CardDescription className="text-base mt-2">
-              {isForgotPassword
-                ? 'أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين'
-                : isLogin
-                  ? 'أدخل بيانات الدخول الخاصة بك'
-                  : 'أدخل بياناتك لإنشاء حساب'}
+              {isLogin
+                ? 'أدخل بيانات الدخول الخاصة بك'
+                : 'أدخل بياناتك لإنشاء حساب'}
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && !isForgotPassword && (
+            {!isLogin && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="fullName">الاسم الكامل *</Label>
@@ -163,9 +155,8 @@ const Auth = () => {
                 placeholder="example@email.com"
               />
             </div>
-            {!isForgotPassword && (
-              <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password">كلمة المرور *</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -185,23 +176,20 @@ const Auth = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {!isLogin && formData.password && (
-                  <PasswordStrengthIndicator password={formData.password} />
-                )}
-              </div>
-            )}
+              {!isLogin && formData.password && (
+                <PasswordStrengthIndicator password={formData.password} />
+              )}
+            </div>
             <Button type="submit" className="w-full h-12 text-base gradient-bg hover:opacity-90 transition-opacity" disabled={loading}>
               {loading
                 ? 'جارٍ التحميل...'
-                : isForgotPassword
-                  ? 'إرسال رابط إعادة التعيين'
-                  : isLogin
-                    ? 'تسجيل الدخول'
-                    : 'إنشاء حساب'}
+                : isLogin
+                  ? 'تسجيل الدخول'
+                  : 'إنشاء حساب'}
             </Button>
           </form>
           <div className="mt-6 text-center space-y-2 pt-4 border-t">
-            {isLogin && !isForgotPassword && (
+            {isLogin && (
               <Button
                 type="button"
                 variant="link"
@@ -211,33 +199,19 @@ const Auth = () => {
                 نسيت كلمة المرور؟
               </Button>
             )}
-            {isForgotPassword ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}
+              </p>
               <Button
                 type="button"
-                variant="link"
-                onClick={() => {
-                  setIsForgotPassword(false);
-                  setIsLogin(true);
-                }}
-                className="text-sm text-primary hover:text-primary/80"
+                variant="outline"
+                onClick={() => setIsLogin(!isLogin)}
+                className="w-full"
               >
-                العودة إلى تسجيل الدخول
+                {isLogin ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}
               </Button>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  {isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="w-full"
-                >
-                  {isLogin ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}
-                </Button>
-              </div>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>
