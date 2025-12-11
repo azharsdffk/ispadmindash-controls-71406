@@ -133,10 +133,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } catch (sessionError) {
         console.error('Error creating session record:', sessionError);
-        // لا نريد إيقاف تسجيل الدخول إذا فشل تسجيل الجلسة
       }
       
-      navigate('/');
+      // جلب دور المستخدم وتوجيهه للوحة المناسبة
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id);
+      
+      const userRolesList = userRoles?.map(r => r.role) || [];
+      
+      // توجيه حسب الدور
+      if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
+        navigate('/accountant');
+      } else if (userRolesList.includes('technician') && !userRolesList.includes('admin')) {
+        navigate('/technician');
+      } else if (userRolesList.includes('client') && !userRolesList.includes('admin')) {
+        navigate('/portal');
+      } else {
+        navigate('/');
+      }
     }
     return { error };
   };

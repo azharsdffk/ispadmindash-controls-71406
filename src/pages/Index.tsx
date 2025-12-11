@@ -52,12 +52,16 @@ const Index = () => {
   const [maintenanceTicketsOpen, setMaintenanceTicketsOpen] = useState(false);
   const [monthlyRevenueOpen, setMonthlyRevenueOpen] = useState(false);
 
-  // توجيه الفني تلقائياً إلى صفحته الخاصة
+  // توجيه المستخدمين تلقائياً إلى لوحاتهم الخاصة
   useEffect(() => {
-    if (!loading && isTechnician) {
-      navigate('/technician');
+    if (!loading) {
+      if (isTechnician && !isAdmin) {
+        navigate('/technician');
+      } else if (isAccountant && !isAdmin) {
+        navigate('/accountant');
+      }
     }
-  }, [isTechnician, loading, navigate]);
+  }, [isTechnician, isAccountant, isAdmin, loading, navigate]);
 
   // Keyboard shortcuts
   useEffect(() => {
