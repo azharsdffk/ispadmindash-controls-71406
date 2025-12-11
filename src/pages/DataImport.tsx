@@ -79,31 +79,39 @@ const DataImport = () => {
       setProgress(20);
       toast({
         title: "جاري السحب...",
-        description: "يتم تحليل الصفحة واستخراج بيانات المشتركين",
+        description: source === 'sas' 
+          ? "يتم سحب البيانات من SAS باستخدام Firecrawl..." 
+          : "يتم تحليل الصفحة واستخراج بيانات المشتركين",
       });
       
       setProgress(40);
       
-      const { data, error } = await supabase.functions.invoke('import-subscribers', {
-        body: {
-          source,
-          url: url.trim(),
-        },
-      });
+      // Use Firecrawl for SAS (SPA), regular import for national project
+      const functionName = source === 'sas' ? 'firecrawl-scrape' : 'import-subscribers';
+      const body = source === 'sas' 
+        ? { url: url.trim() }
+        : { source, url: url.trim() };
+      
+      const { data, error } = await supabase.functions.invoke(functionName, { body });
 
       setProgress(100);
       
       if (error) throw error;
       
-      setImportResult({ imported: data.imported, failed: data.failed });
+      if (!data.success && data.error) {
+        throw new Error(data.error);
+      }
       
-      if (data.imported > 0) {
+      const result = data.data || data;
+      setImportResult({ imported: result.imported, failed: result.failed });
+      
+      if (result.imported > 0) {
         toast({
           title: "تم السحب بنجاح! ✅",
-          description: `تم استيراد ${data.imported} مشترك${data.failed > 0 ? ` (${data.failed} فشل)` : ''}`,
+          description: `تم استيراد ${result.imported} مشترك${result.failed > 0 ? ` (${result.failed} فشل)` : ''}`,
         });
-      } else if (data.failed > 0) {
-        const errorSample = data.errors?.slice(0, 2).join(', ') || 'حدثت أخطاء';
+      } else if (result.failed > 0) {
+        const errorSample = result.errors?.slice(0, 2).join(', ') || 'حدثت أخطاء';
         toast({
           title: "فشل الاستيراد",
           description: errorSample,
