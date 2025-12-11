@@ -1,1 +1,4 @@
 project_id = "sxmkrmidebylykaefmsl"
+
+[functions.firecrawl-scrape]
+verify_jwt = false
