@@ -35,7 +35,7 @@ const menuGroups = {
     { icon: Shield, label: "الأمان والجلسات", path: "/security", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
     { icon: Download, label: "استيراد البيانات", path: "/import", permission: "import_data", roles: ['admin'] },
     { icon: Bell, label: "الإشعارات", path: "/notifications", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
-    { icon: Settings, label: "الإعدادات", path: "/settings", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
+    { icon: Settings, label: "الإعدادات", path: "/settings", permission: null, roles: ['admin'] },
   ],
 };
 
