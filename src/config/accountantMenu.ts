@@ -8,7 +8,6 @@ import {
   PieChart,
   FileSpreadsheet,
   BookOpen,
-  Settings,
   Shield,
   Users,
   Package
@@ -102,13 +101,5 @@ export const accountantMenuItems = [
     path: '/accountant/permissions',
     description: 'إدارة الصلاحيات',
     permission: 'manage_accounts'
-  },
-  {
-    id: 'settings',
-    title: 'الإعدادات',
-    icon: Settings,
-    path: '/settings',
-    description: 'إعدادات النظام',
-    permission: null
   },
 ];
