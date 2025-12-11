@@ -14,9 +14,20 @@ import { SubscribersTable } from '@/components/admin/SubscribersTable';
 import { FinancialManagement } from '@/components/admin/FinancialManagement';
 import { ReportsAnalytics } from '@/components/admin/ReportsAnalytics';
 import { ActivityLog } from '@/components/admin/ActivityLog';
-import { LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Zap, TrendingUp } from 'lucide-react';
+import { 
+  LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Zap, TrendingUp,
+  Calculator, FileText, Layers, Target, Wallet, User, MapPin
+} from 'lucide-react';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Badge } from '@/components/ui/badge';
+import { AccountingEntries } from '@/components/accountant/AccountingEntries';
+import { GeneralLedger } from '@/components/accountant/GeneralLedger';
+import { BalanceSheet } from '@/components/accountant/BalanceSheet';
+import { IncomeStatement } from '@/components/accountant/IncomeStatement';
+import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
+import { AdvancedReports } from '@/components/accountant/AdvancedReports';
+import { AdminCustomerPortal } from '@/components/admin/AdminCustomerPortal';
+import { AdminTechnicianView } from '@/components/admin/AdminTechnicianView';
 
 const AdminDashboard = () => {
   const { isAdmin, loading } = useUserRole();
@@ -86,34 +97,46 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-7 w-full bg-muted/50 p-1 rounded-lg">
+            <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full bg-muted/50 p-1 rounded-lg">
               <TabsTrigger value="overview" className="gap-2">
                 <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden md:inline">الرئيسية</span>
+                <span className="hidden lg:inline">الرئيسية</span>
               </TabsTrigger>
               <TabsTrigger value="tickets" className="gap-2">
                 <Wrench className="h-4 w-4" />
-                <span className="hidden md:inline">التذاكر</span>
+                <span className="hidden lg:inline">التذاكر</span>
               </TabsTrigger>
               <TabsTrigger value="technicians" className="gap-2">
-                <Users className="h-4 w-4" />
-                <span className="hidden md:inline">الفنيين</span>
+                <MapPin className="h-4 w-4" />
+                <span className="hidden lg:inline">الفنيين</span>
               </TabsTrigger>
               <TabsTrigger value="subscribers" className="gap-2">
                 <Users className="h-4 w-4" />
-                <span className="hidden md:inline">المشتركين</span>
+                <span className="hidden lg:inline">المشتركين</span>
+              </TabsTrigger>
+              <TabsTrigger value="customers" className="gap-2">
+                <User className="h-4 w-4" />
+                <span className="hidden lg:inline">بوابة العميل</span>
               </TabsTrigger>
               <TabsTrigger value="finance" className="gap-2">
                 <DollarSign className="h-4 w-4" />
-                <span className="hidden md:inline">المالية</span>
+                <span className="hidden lg:inline">المالية</span>
+              </TabsTrigger>
+              <TabsTrigger value="accounting" className="gap-2">
+                <Calculator className="h-4 w-4" />
+                <span className="hidden lg:inline">المحاسبة</span>
               </TabsTrigger>
               <TabsTrigger value="reports" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
-                <span className="hidden md:inline">التقارير</span>
+                <span className="hidden lg:inline">التقارير</span>
+              </TabsTrigger>
+              <TabsTrigger value="statements" className="gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden lg:inline">القوائم المالية</span>
               </TabsTrigger>
               <TabsTrigger value="activity" className="gap-2">
                 <Activity className="h-4 w-4" />
-                <span className="hidden md:inline">السجل</span>
+                <span className="hidden lg:inline">السجل</span>
               </TabsTrigger>
             </TabsList>
 
@@ -130,19 +153,79 @@ const AdminDashboard = () => {
             </TabsContent>
 
             <TabsContent value="technicians">
-              <TechniciansTable />
+              <AdminTechnicianView />
             </TabsContent>
 
             <TabsContent value="subscribers">
               <SubscribersTable />
             </TabsContent>
 
+            <TabsContent value="customers">
+              <AdminCustomerPortal />
+            </TabsContent>
+
             <TabsContent value="finance">
               <FinancialManagement />
             </TabsContent>
 
+            <TabsContent value="accounting" className="space-y-6">
+              <Tabs defaultValue="entries" className="space-y-4">
+                <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full">
+                  <TabsTrigger value="entries" className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    القيود المحاسبية
+                  </TabsTrigger>
+                  <TabsTrigger value="ledger" className="gap-2">
+                    <Layers className="h-4 w-4" />
+                    دفتر الأستاذ
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className="gap-2">
+                    <Target className="h-4 w-4" />
+                    التقارير المتقدمة
+                  </TabsTrigger>
+                  <TabsTrigger value="cashflow" className="gap-2">
+                    <Wallet className="h-4 w-4" />
+                    التدفقات النقدية
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="entries">
+                  <AccountingEntries />
+                </TabsContent>
+                <TabsContent value="ledger">
+                  <GeneralLedger />
+                </TabsContent>
+                <TabsContent value="advanced">
+                  <AdvancedReports />
+                </TabsContent>
+                <TabsContent value="cashflow">
+                  <CashFlowStatement />
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+
             <TabsContent value="reports">
               <ReportsAnalytics />
+            </TabsContent>
+
+            <TabsContent value="statements" className="space-y-6">
+              <Tabs defaultValue="balance" className="space-y-4">
+                <TabsList className="grid grid-cols-2 w-full max-w-md">
+                  <TabsTrigger value="balance" className="gap-2">
+                    <Target className="h-4 w-4" />
+                    الميزانية العمومية
+                  </TabsTrigger>
+                  <TabsTrigger value="income" className="gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    قائمة الدخل
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="balance">
+                  <BalanceSheet />
+                </TabsContent>
+                <TabsContent value="income">
+                  <IncomeStatement />
+                </TabsContent>
+              </Tabs>
             </TabsContent>
 
             <TabsContent value="activity">
