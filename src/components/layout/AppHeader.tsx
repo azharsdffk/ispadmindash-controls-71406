@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface AppHeaderProps {
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
@@ -33,15 +33,17 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
         <div className="flex items-center gap-3">
           <NotificationBell />
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-primary/10 hover:scale-110 transition-all"
-            onClick={onOpenSettings}
-            title="الإعدادات (Alt+S)"
-          >
-            <Settings className="h-5 w-5 text-primary" />
-          </Button>
+          {onOpenSettings && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-primary/10 hover:scale-110 transition-all"
+              onClick={onOpenSettings}
+              title="الإعدادات (Alt+S)"
+            >
+              <Settings className="h-5 w-5 text-primary" />
+            </Button>
+          )}
 
           <DropdownMenu dir="rtl">
             <DropdownMenuTrigger asChild>
@@ -64,7 +66,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>الملف الشخصي</DropdownMenuItem>
-              <DropdownMenuItem onClick={onOpenSettings}>الإعدادات</DropdownMenuItem>
+              {onOpenSettings && <DropdownMenuItem onClick={onOpenSettings}>الإعدادات</DropdownMenuItem>}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-destructive">
                 <LogOut className="ml-2 h-4 w-4" />

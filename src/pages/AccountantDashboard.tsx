@@ -28,7 +28,7 @@ import {
   DollarSign,
   LayoutGrid
 } from 'lucide-react';
-import { SettingsModal } from '@/components/modals/SettingsModal';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountingEntries } from '@/components/accountant/AccountingEntries';
 import { GeneralLedger } from '@/components/accountant/GeneralLedger';
@@ -46,7 +46,7 @@ import { RevenueExpenseCharts } from '@/components/accountant/RevenueExpenseChar
 export default function AccountantDashboard() {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { layout, loading: layoutLoading, updateIconOrder, updateViewMode } = useDashboardLayout();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('menu');
   const [stats, setStats] = useState({
@@ -215,7 +215,7 @@ export default function AccountantDashboard() {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+          <AppHeader />
         
           <main className="flex-1 overflow-y-auto bg-background">
             <div className="container mx-auto p-6 space-y-6">
@@ -557,7 +557,7 @@ export default function AccountantDashboard() {
           </main>
         </div>
         
-        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+        
       </div>
     </SidebarProvider>
   );
