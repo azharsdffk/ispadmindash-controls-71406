@@ -58,7 +58,7 @@ export const AppSidebar = () => {
   }
 
   const renderMenuItem = (item: any) => {
-    const basicPaths = ['/', '/settings', '/notifications', '/security'];
+    const basicPaths = ['/', '/notifications', '/security'];
     const isBasicPath = basicPaths.includes(item.path);
     const hasRequiredRole = item.roles && (isBasicPath || item.roles.some((role: AppRole) => roles.includes(role)));
     
