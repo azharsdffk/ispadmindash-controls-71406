@@ -46,15 +46,16 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            {/* لوحة المحاسب - مستقلة بيوزر خاص */}
             <Route path="/accountant" element={
-              <PermissionProtectedRoute permission={['view_reports', 'manage_accounts']}>
+              <ProtectedRoute allowedRoles={['accountant']}>
                 <AccountantDashboard />
-              </PermissionProtectedRoute>
+              </ProtectedRoute>
             } />
             <Route path="/accountant/permissions" element={
-              <PermissionProtectedRoute permission="view_reports">
+              <ProtectedRoute allowedRoles={['accountant']}>
                 <AccountantPermissions />
-              </PermissionProtectedRoute>
+              </ProtectedRoute>
             } />
             {/* صفحات المحاسب والمدير */}
             <Route path="/dashboard" element={
