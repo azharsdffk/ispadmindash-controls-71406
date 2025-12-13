@@ -121,29 +121,55 @@ const Index = () => {
           
           <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Quick Access to Accountant Dashboard - For Admins Only */}
+            {/* Quick Access Cards - For Admins Only */}
             {isAdmin && (
-              <Card 
-                className="glass-effect hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950"
-                onClick={() => navigate('/accountant')}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-lg">
-                        <Calculator className="h-8 w-8 text-white" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Admin Dashboard Link */}
+                <Card 
+                  className="glass-effect hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-950 dark:to-blue-950"
+                  onClick={() => navigate('/admin')}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-slate-700 to-blue-700 shadow-lg">
+                          <Users className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">لوحة الأدمن الشاملة</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            إدارة الفنيين، العملاء، المحاسبة، والتقارير المتقدمة
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold">لوحة المحاسب المتقدمة</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          الوصول إلى النظام المحاسبي الاحترافي - التقارير، القيود، دفتر الأستاذ، والرسوم البيانية
-                        </p>
-                      </div>
+                      <ArrowLeft className="h-6 w-6 text-primary animate-pulse" />
                     </div>
-                    <ArrowLeft className="h-6 w-6 text-primary animate-pulse" />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+
+                {/* Accountant Dashboard Link */}
+                <Card 
+                  className="glass-effect hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950"
+                  onClick={() => navigate('/accountant')}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-lg">
+                          <Calculator className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">لوحة المحاسب المتقدمة</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            النظام المحاسبي - التقارير، القيود، دفتر الأستاذ
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowLeft className="h-6 w-6 text-primary animate-pulse" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             {/* Stats Cards - محسّنة */}
