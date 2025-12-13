@@ -48,43 +48,44 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background flex w-full" dir="rtl">
+      <div className="min-h-screen bg-slate-900 flex w-full" dir="rtl">
         <AppSidebar />
         
         <div className="flex-1 flex flex-col overflow-hidden">
           <ProfessionalHeader onOpenSettings={() => setSettingsOpen(true)} />
         
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950">
         
         {/* Hero Header Section */}
-        <div className="relative overflow-hidden border-b">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent"></div>
+        <div className="relative overflow-hidden border-b border-blue-800/30">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-slate-800/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent"></div>
           <div className="container mx-auto px-6 py-6 relative">
             <div className="flex items-center justify-between">
               <div className="space-y-2 animate-fade-in">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
                     <LayoutDashboard className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gradient-primary">
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                       لوحة المدير العام
                     </h1>
-                    <p className="text-muted-foreground text-sm mt-1">
+                    <p className="text-blue-200/70 text-sm mt-1">
                       إدارة شاملة لجميع عمليات النظام
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2 animate-slide-up">
-                  <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20">
+                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30">
                     <Zap className="h-3 w-3 ml-1" />
                     نظام نشط
                   </Badge>
-                  <Badge className="bg-info/10 text-info border-info/20 hover:bg-info/20">
+                  <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30">
                     <TrendingUp className="h-3 w-3 ml-1" />
                     تحديث مباشر
                   </Badge>
-                  <Badge className="bg-warning/10 text-warning border-warning/20 hover:bg-warning/20">
+                  <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30">
                     <Activity className="h-3 w-3 ml-1" />
                     {new Date().toLocaleDateString('ar-EG')}
                   </Badge>
@@ -97,44 +98,44 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full bg-muted/50 p-1 rounded-lg">
-              <TabsTrigger value="overview" className="gap-2">
+            <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full bg-slate-800/50 border border-blue-800/30 p-1 rounded-lg backdrop-blur-sm">
+              <TabsTrigger value="overview" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden lg:inline">الرئيسية</span>
               </TabsTrigger>
-              <TabsTrigger value="tickets" className="gap-2">
+              <TabsTrigger value="tickets" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <Wrench className="h-4 w-4" />
                 <span className="hidden lg:inline">التذاكر</span>
               </TabsTrigger>
-              <TabsTrigger value="technicians" className="gap-2">
+              <TabsTrigger value="technicians" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <MapPin className="h-4 w-4" />
                 <span className="hidden lg:inline">الفنيين</span>
               </TabsTrigger>
-              <TabsTrigger value="subscribers" className="gap-2">
+              <TabsTrigger value="subscribers" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <Users className="h-4 w-4" />
                 <span className="hidden lg:inline">المشتركين</span>
               </TabsTrigger>
-              <TabsTrigger value="customers" className="gap-2">
+              <TabsTrigger value="customers" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <User className="h-4 w-4" />
                 <span className="hidden lg:inline">بوابة العميل</span>
               </TabsTrigger>
-              <TabsTrigger value="finance" className="gap-2">
+              <TabsTrigger value="finance" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <DollarSign className="h-4 w-4" />
                 <span className="hidden lg:inline">المالية</span>
               </TabsTrigger>
-              <TabsTrigger value="accounting" className="gap-2">
+              <TabsTrigger value="accounting" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <Calculator className="h-4 w-4" />
                 <span className="hidden lg:inline">المحاسبة</span>
               </TabsTrigger>
-              <TabsTrigger value="reports" className="gap-2">
+              <TabsTrigger value="reports" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden lg:inline">التقارير</span>
               </TabsTrigger>
-              <TabsTrigger value="statements" className="gap-2">
+              <TabsTrigger value="statements" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <FileText className="h-4 w-4" />
                 <span className="hidden lg:inline">القوائم المالية</span>
               </TabsTrigger>
-              <TabsTrigger value="activity" className="gap-2">
+              <TabsTrigger value="activity" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <Activity className="h-4 w-4" />
                 <span className="hidden lg:inline">السجل</span>
               </TabsTrigger>
