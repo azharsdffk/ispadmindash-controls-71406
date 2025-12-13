@@ -28,6 +28,7 @@ import PermissionsManagement from "./pages/PermissionsManagement";
 import AccountantPermissions from "./pages/AccountantPermissions";
 import UserAccountsManagement from "./pages/UserAccountsManagement";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import Contracts from "./pages/Contracts";
 import Discounts from "./pages/Discounts";
 import SecuritySettings from "./pages/SecuritySettings";
@@ -46,6 +47,12 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            {/* لوحة الأدمن الشاملة */}
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             {/* لوحة المحاسب - مستقلة بيوزر خاص */}
             <Route path="/accountant" element={
               <ProtectedRoute allowedRoles={['accountant']}>
