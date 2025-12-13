@@ -126,7 +126,7 @@ export const NotificationBell = () => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end" dir="rtl">
+      <PopoverContent className="w-80 p-0 z-[9999] bg-background border shadow-lg" align="end" dir="rtl" sideOffset={8}>
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">الإشعارات</h3>
           {unreadCount > 0 && (
