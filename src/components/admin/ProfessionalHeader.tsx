@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bell, Settings, Moon, Sun, User } from 'lucide-react';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -57,12 +58,7 @@ export const ProfessionalHeader = ({ onOpenSettings }: { onOpenSettings: () => v
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="rounded-full relative">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-destructive text-white text-xs">
-              3
-            </Badge>
-          </Button>
+          <NotificationBell />
 
           {/* Settings */}
           <Button
