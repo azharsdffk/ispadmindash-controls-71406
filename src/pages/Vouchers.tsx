@@ -225,22 +225,9 @@ const Vouchers = () => {
       <div className="print-professional-footer print-only">
         <div className="print-footer-line"></div>
         <div className="print-footer-content">
-          <div className="print-footer-right">
-            <span>نظام إدارة المشتركين</span>
-            <span>•</span>
-            <span>Financial Management System</span>
-          </div>
           <div className="print-footer-center">
             <span>صفحة <span className="print-page-number"></span></span>
           </div>
-          <div className="print-footer-left">
-            <span>{new Date().toLocaleDateString('ar-IQ')}</span>
-            <span>-</span>
-            <span>{new Date().toLocaleTimeString('ar-IQ')}</span>
-          </div>
-        </div>
-        <div className="print-footer-watermark">
-          تم إنشاء هذا التقرير آلياً - جميع الحقوق محفوظة
         </div>
       </div>
 
