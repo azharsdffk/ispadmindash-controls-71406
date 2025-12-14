@@ -6,7 +6,7 @@ import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, Plus, Edit, Trash2, AlertTriangle, TrendingDown, TrendingUp, Search, Eye } from "lucide-react";
+import { Package, Plus, Edit, Trash2, AlertTriangle, TrendingDown, TrendingUp, Search, Eye, History } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -18,6 +18,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { formatCurrency } from "@/lib/currency";
 import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 import { InventoryDetailsModal } from "@/components/modals/InventoryDetailsModal";
+import { InventoryMovementsModal } from "@/components/inventory/InventoryMovementsModal";
 
 interface InventoryItem {
   id: string;
@@ -47,10 +48,17 @@ const Inventory = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string } | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [viewItem, setViewItem] = useState<InventoryItem | null>(null);
+  const [movementsOpen, setMovementsOpen] = useState(false);
+  const [movementsItem, setMovementsItem] = useState<InventoryItem | null>(null);
 
   const openDetailsModal = (item: InventoryItem) => {
     setViewItem(item);
     setDetailsOpen(true);
+  };
+
+  const openMovementsModal = (item: InventoryItem) => {
+    setMovementsItem(item);
+    setMovementsOpen(true);
   };
 
   const [formData, setFormData] = useState({
@@ -508,6 +516,14 @@ const Inventory = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                onClick={() => openMovementsModal(item)}
+                                title="سجل الحركات"
+                              >
+                                <History className="h-4 w-4 text-blue-400" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => openEditDialog(item)}
                                 title="تعديل"
                               >
@@ -592,6 +608,13 @@ const Inventory = () => {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         item={viewItem}
+      />
+
+      <InventoryMovementsModal
+        open={movementsOpen}
+        onOpenChange={setMovementsOpen}
+        item={movementsItem}
+        onMovementAdded={fetchInventory}
       />
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
