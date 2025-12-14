@@ -32,9 +32,9 @@ const Employees = () => {
                     <MapPin className="ml-2 h-4 w-4" />
                     {showLocationTracker ? "إخفاء الخريطة" : "عرض المواقع"}
                   </Button>
-                  <Button onClick={() => setAddEmployeeOpen(true)}>
-                    <UserPlus className="ml-2 h-4 w-4" />
-                    إضافة موظف
+                  <Button onClick={() => setAddEmployeeOpen(true)} className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    <span>إضافة موظف</span>
                   </Button>
                 </div>
               </div>
