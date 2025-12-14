@@ -63,14 +63,81 @@ const Vouchers = () => {
     window.print();
   };
 
+  // حساب الإحصائيات
+  const totalIncome = vouchers.filter(v => v.voucher_type === 'income').reduce((sum, v) => sum + Number(v.amount), 0);
+  const totalExpense = vouchers.filter(v => v.voucher_type === 'expense').reduce((sum, v) => sum + Number(v.amount), 0);
+  const netBalance = totalIncome - totalExpense;
+
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
       
-      {/* ترويسة الطباعة */}
-      <div className="print-header print-only">
-        <h1>السندات المالية</h1>
-        <p>تقرير بتاريخ: {new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      {/* ======= قسم الطباعة الاحترافي ======= */}
+      <div className="print-only">
+        {/* الترويسة المميزة */}
+        <div className="print-professional-header">
+          <div className="print-logo-section">
+            <div className="print-logo">
+              <svg viewBox="0 0 100 100" className="print-logo-icon">
+                <circle cx="50" cy="50" r="45" fill="#1e40af" />
+                <text x="50" y="60" textAnchor="middle" fill="white" fontSize="32" fontWeight="bold">$</text>
+              </svg>
+            </div>
+            <div className="print-company-info">
+              <h1 className="print-company-name">نظام إدارة المشتركين</h1>
+              <p className="print-company-subtitle">Financial Management System</p>
+            </div>
+          </div>
+          <div className="print-report-info">
+            <div className="print-report-title">تقرير السندات المالية</div>
+            <div className="print-report-date">
+              <span>تاريخ التقرير:</span>
+              <strong>{new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+            </div>
+            <div className="print-report-time">
+              <span>وقت الطباعة:</span>
+              <strong>{new Date().toLocaleTimeString('ar-IQ')}</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* ملخص الإحصائيات */}
+        <div className="print-summary-section">
+          <div className="print-summary-card print-income">
+            <div className="print-summary-icon">↓</div>
+            <div className="print-summary-content">
+              <span className="print-summary-label">إجمالي القبض</span>
+              <span className="print-summary-value">{formatCurrency(totalIncome, "IQD")}</span>
+            </div>
+          </div>
+          <div className="print-summary-card print-expense">
+            <div className="print-summary-icon">↑</div>
+            <div className="print-summary-content">
+              <span className="print-summary-label">إجمالي الصرف</span>
+              <span className="print-summary-value">{formatCurrency(totalExpense, "IQD")}</span>
+            </div>
+          </div>
+          <div className="print-summary-card print-balance">
+            <div className="print-summary-icon">=</div>
+            <div className="print-summary-content">
+              <span className="print-summary-label">صافي الرصيد</span>
+              <span className="print-summary-value">{formatCurrency(netBalance, "IQD")}</span>
+            </div>
+          </div>
+          <div className="print-summary-card print-count">
+            <div className="print-summary-icon">#</div>
+            <div className="print-summary-content">
+              <span className="print-summary-label">عدد السندات</span>
+              <span className="print-summary-value">{vouchers.length}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* عنوان الجدول */}
+        <div className="print-table-header">
+          <h2>تفاصيل السندات المالية</h2>
+          <div className="print-table-line"></div>
+        </div>
       </div>
       
       <div className="flex flex-1 w-full">
@@ -78,7 +145,7 @@ const Vouchers = () => {
         
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between no-print">
               <div className="flex items-center gap-3">
                 <DollarSign className="h-8 w-8 text-primary" />
                 <h1 className="text-3xl font-bold">السندات المالية</h1>
@@ -99,8 +166,8 @@ const Vouchers = () => {
               </div>
             </div>
 
-            <Card>
-              <CardHeader>
+            <Card className="print-main-table">
+              <CardHeader className="no-print">
                 <CardTitle>قائمة السندات المالية</CardTitle>
               </CardHeader>
               <CardContent>
@@ -113,7 +180,7 @@ const Vouchers = () => {
                     لا توجد سندات مالية
                   </div>
                 ) : (
-                  <Table>
+                  <Table className="print-table">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-right">رقم السند</TableHead>
@@ -124,15 +191,15 @@ const Vouchers = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {vouchers.map((voucher) => (
+                      {vouchers.map((voucher, index) => (
                         <TableRow 
                           key={voucher.id} 
-                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          className={`cursor-pointer hover:bg-muted/50 transition-colors ${index % 2 === 0 ? 'print-row-even' : 'print-row-odd'}`}
                           onClick={() => handleVoucherClick(voucher)}
                         >
                           <TableCell className="font-medium text-primary">{voucher.voucher_number}</TableCell>
                           <TableCell>
-                            <Badge variant={voucher.voucher_type === "income" ? "default" : "destructive"}>
+                            <Badge variant={voucher.voucher_type === "income" ? "default" : "destructive"} className="print-badge">
                               {voucher.voucher_type === "income" ? "قبض" : "صرف"}
                             </Badge>
                           </TableCell>
@@ -154,9 +221,27 @@ const Vouchers = () => {
         </main>
       </div>
 
-      {/* تذييل الطباعة */}
-      <div className="print-footer print-only">
-        <p>تم إنشاء هذا التقرير بواسطة نظام إدارة المشتركين | {new Date().toLocaleDateString('ar-IQ')} - {new Date().toLocaleTimeString('ar-IQ')}</p>
+      {/* تذييل الطباعة الاحترافي */}
+      <div className="print-professional-footer print-only">
+        <div className="print-footer-line"></div>
+        <div className="print-footer-content">
+          <div className="print-footer-right">
+            <span>نظام إدارة المشتركين</span>
+            <span>•</span>
+            <span>Financial Management System</span>
+          </div>
+          <div className="print-footer-center">
+            <span>صفحة <span className="print-page-number"></span></span>
+          </div>
+          <div className="print-footer-left">
+            <span>{new Date().toLocaleDateString('ar-IQ')}</span>
+            <span>-</span>
+            <span>{new Date().toLocaleTimeString('ar-IQ')}</span>
+          </div>
+        </div>
+        <div className="print-footer-watermark">
+          تم إنشاء هذا التقرير آلياً - جميع الحقوق محفوظة
+        </div>
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
