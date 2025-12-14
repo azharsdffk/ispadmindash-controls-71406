@@ -224,7 +224,7 @@ export const AddEmployeeModal = ({ open, onOpenChange }: AddEmployeeModalProps) 
               <SelectTrigger>
                 <SelectValue placeholder="اختر الصلاحية" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-[9999]">
                 <SelectItem value="admin">مدير</SelectItem>
                 <SelectItem value="accountant">محاسب</SelectItem>
                 <SelectItem value="technician">فني</SelectItem>
