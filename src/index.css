@@ -276,18 +276,23 @@
   /* إعدادات الصفحة */
   @page {
     size: A4;
-    margin: 15mm 10mm;
+    margin: 12mm 10mm 20mm 10mm;
+  }
+
+  @page :first {
+    margin-top: 10mm;
   }
 
   /* إعدادات الجسم */
   body {
     background: white !important;
-    color: black !important;
-    font-size: 12pt !important;
-    line-height: 1.6 !important;
+    color: #1f2937 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
     direction: rtl !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    font-family: 'Cairo', 'Arial', sans-serif !important;
   }
 
   /* الحاوية الرئيسية */
@@ -299,92 +304,267 @@
     margin: 0 !important;
   }
 
-  /* البطاقات */
-  .card,
-  [class*="Card"] {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    border: 1px solid #e5e7eb !important;
-    box-shadow: none !important;
-    margin-bottom: 10mm !important;
+  /* ===== الترويسة الاحترافية ===== */
+  .print-professional-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    padding: 15px 20px !important;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;
+    border-radius: 8px !important;
+    margin-bottom: 20px !important;
+    color: white !important;
+  }
+
+  .print-logo-section {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+
+  .print-logo {
+    width: 60px !important;
+    height: 60px !important;
+    background: white !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .print-logo-icon {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  .print-company-name {
+    font-size: 22pt !important;
+    font-weight: bold !important;
+    margin: 0 !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .print-company-subtitle {
+    font-size: 10pt !important;
+    opacity: 0.9 !important;
+    margin: 2px 0 0 0 !important;
+    letter-spacing: 1px !important;
+  }
+
+  .print-report-info {
+    text-align: left !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    padding: 10px 15px !important;
+    border-radius: 6px !important;
+  }
+
+  .print-report-title {
+    font-size: 14pt !important;
+    font-weight: bold !important;
+    margin-bottom: 8px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding-bottom: 5px !important;
+  }
+
+  .print-report-date,
+  .print-report-time {
+    font-size: 9pt !important;
+    margin: 3px 0 !important;
+  }
+
+  .print-report-date span,
+  .print-report-time span {
+    opacity: 0.8 !important;
+    margin-left: 5px !important;
+  }
+
+  /* ===== قسم الملخص ===== */
+  .print-summary-section {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .print-summary-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 15px !important;
+    border-radius: 8px !important;
+    border: 2px solid !important;
+  }
+
+  .print-summary-card.print-income {
+    background: #ecfdf5 !important;
+    border-color: #10b981 !important;
+  }
+
+  .print-summary-card.print-expense {
+    background: #fef2f2 !important;
+    border-color: #ef4444 !important;
+  }
+
+  .print-summary-card.print-balance {
+    background: #eff6ff !important;
+    border-color: #3b82f6 !important;
+  }
+
+  .print-summary-card.print-count {
+    background: #faf5ff !important;
+    border-color: #8b5cf6 !important;
+  }
+
+  .print-summary-icon {
+    font-size: 20pt !important;
+    font-weight: bold !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
     background: white !important;
   }
 
-  /* الجداول */
-  table {
+  .print-income .print-summary-icon { color: #10b981 !important; }
+  .print-expense .print-summary-icon { color: #ef4444 !important; }
+  .print-balance .print-summary-icon { color: #3b82f6 !important; }
+  .print-count .print-summary-icon { color: #8b5cf6 !important; }
+
+  .print-summary-content {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .print-summary-label {
+    font-size: 8pt !important;
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+  }
+
+  .print-summary-value {
+    font-size: 11pt !important;
+    font-weight: bold !important;
+    color: #1f2937 !important;
+  }
+
+  /* ===== عنوان الجدول ===== */
+  .print-table-header {
+    margin-bottom: 12px !important;
+  }
+
+  .print-table-header h2 {
+    font-size: 14pt !important;
+    color: #1e40af !important;
+    margin: 0 0 5px 0 !important;
+    font-weight: bold !important;
+  }
+
+  .print-table-line {
+    height: 3px !important;
+    background: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, transparent 100%) !important;
+    border-radius: 2px !important;
+  }
+
+  /* ===== الجدول ===== */
+  .print-main-table {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .print-table {
     width: 100% !important;
     border-collapse: collapse !important;
     font-size: 10pt !important;
   }
 
-  th, td {
-    border: 1px solid #d1d5db !important;
-    padding: 8px 12px !important;
+  .print-table th {
+    background: #1e40af !important;
+    color: white !important;
+    padding: 10px 12px !important;
     text-align: right !important;
-  }
-
-  th {
-    background-color: #f3f4f6 !important;
     font-weight: bold !important;
+    border: none !important;
   }
 
-  /* العناوين */
-  h1, h2, h3, h4 {
-    color: #1f2937 !important;
-    page-break-after: avoid !important;
+  .print-table th:first-child {
+    border-radius: 0 6px 0 0 !important;
   }
 
-  /* الروابط */
-  a {
-    color: #1f2937 !important;
-    text-decoration: none !important;
+  .print-table th:last-child {
+    border-radius: 6px 0 0 0 !important;
   }
 
-  /* الشارات */
-  .badge,
-  [class*="Badge"] {
-    border: 1px solid currentColor !important;
-    background: transparent !important;
+  .print-table td {
+    padding: 10px 12px !important;
+    text-align: right !important;
+    border-bottom: 1px solid #e5e7eb !important;
   }
 
-  /* إظهار عنصر الطباعة المخصص */
-  .print-only {
-    display: block !important;
+  .print-row-even {
+    background: #f9fafb !important;
   }
 
-  /* ترويسة الطباعة */
-  .print-header {
-    display: block !important;
-    text-align: center !important;
-    border-bottom: 2px solid #1e40af !important;
-    padding-bottom: 15px !important;
-    margin-bottom: 20px !important;
+  .print-row-odd {
+    background: white !important;
   }
 
-  .print-header h1 {
-    font-size: 24pt !important;
-    color: #1e40af !important;
-    margin: 0 !important;
+  .print-badge {
+    padding: 3px 10px !important;
+    border-radius: 12px !important;
+    font-size: 9pt !important;
+    font-weight: 600 !important;
   }
 
-  .print-header p {
-    font-size: 10pt !important;
-    color: #6b7280 !important;
-    margin: 5px 0 0 0 !important;
-  }
-
-  /* تذييل الطباعة */
-  .print-footer {
-    display: block !important;
+  /* ===== التذييل الاحترافي ===== */
+  .print-professional-footer {
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    text-align: center !important;
-    font-size: 9pt !important;
+    padding: 8px 15px !important;
+    background: white !important;
+  }
+
+  .print-footer-line {
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent 0%, #1e40af 50%, transparent 100%) !important;
+    margin-bottom: 8px !important;
+  }
+
+  .print-footer-content {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 8pt !important;
     color: #6b7280 !important;
-    border-top: 1px solid #e5e7eb !important;
-    padding-top: 10px !important;
+  }
+
+  .print-footer-right,
+  .print-footer-left {
+    display: flex !important;
+    gap: 5px !important;
+  }
+
+  .print-footer-center {
+    font-weight: 600 !important;
+    color: #1e40af !important;
+  }
+
+  .print-footer-watermark {
+    text-align: center !important;
+    font-size: 7pt !important;
+    color: #9ca3af !important;
+    margin-top: 5px !important;
+    font-style: italic !important;
+  }
+
+  /* إظهار عناصر الطباعة */
+  .print-only {
+    display: block !important;
   }
 
   /* إخفاء الخلفيات والظلال */
@@ -393,11 +573,10 @@
     text-shadow: none !important;
   }
 
-  /* الإحصائيات */
-  .stats-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10mm !important;
+  .card,
+  [class*="Card"] {
+    border: none !important;
+    box-shadow: none !important;
   }
 
   /* قطع الصفحة */
@@ -417,6 +596,10 @@
 }
 
 .print-header,
-.print-footer {
+.print-footer,
+.print-professional-header,
+.print-professional-footer,
+.print-summary-section,
+.print-table-header {
   display: none;
 }
