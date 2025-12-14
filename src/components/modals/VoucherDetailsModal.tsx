@@ -63,51 +63,29 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
               @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
               
               @page {
-                size: A4;
-                margin: 15mm;
+                size: A5;
+                margin: 8mm;
               }
               
               * { margin: 0; padding: 0; box-sizing: border-box; }
               
-              html, body {
-                width: 210mm;
-                min-height: 297mm;
-              }
-              
               body { 
                 font-family: 'Tajawal', 'Segoe UI', sans-serif; 
-                padding: 0;
+                padding: 10px;
                 background: white;
               }
               
               .voucher-wrapper {
-                width: 100%;
-                max-width: 210mm;
-                min-height: 297mm;
+                max-width: 148mm;
                 margin: 0 auto;
-                padding: 10mm;
-                display: flex;
-                flex-direction: column;
               }
               
               .voucher-container { 
                 background: white;
-                border-radius: 20px;
+                border-radius: 12px;
                 overflow: hidden;
-                box-shadow: 
-                  0 25px 50px -12px rgba(0, 0, 0, 0.25),
-                  0 0 0 1px rgba(0, 0, 0, 0.05);
+                border: 2px solid ${primaryColor};
                 position: relative;
-              }
-              
-              .voucher-container::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 8px;
-                background: linear-gradient(90deg, ${gradientStart}, ${gradientEnd}, ${gradientStart});
               }
               
               .watermark {
@@ -115,148 +93,95 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%) rotate(-30deg);
-                font-size: 120px;
+                font-size: 60px;
                 font-weight: 800;
                 color: ${primaryLight};
                 opacity: 0.3;
                 pointer-events: none;
-                white-space: nowrap;
                 z-index: 0;
               }
               
               .voucher-header { 
                 background: linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%);
                 color: white; 
-                padding: 30px 40px;
+                padding: 15px 20px;
                 text-align: center;
                 position: relative;
-                overflow: hidden;
-              }
-              
-              .voucher-header::before {
-                content: '';
-                position: absolute;
-                top: -50%;
-                right: -50%;
-                width: 100%;
-                height: 200%;
-                background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-              }
-              
-              .voucher-header::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 6px;
-                background: repeating-linear-gradient(
-                  90deg,
-                  transparent,
-                  transparent 10px,
-                  rgba(255,255,255,0.3) 10px,
-                  rgba(255,255,255,0.3) 20px
-                );
               }
               
               .header-icon {
-                width: 70px;
-                height: 70px;
+                width: 40px;
+                height: 40px;
                 background: rgba(255,255,255,0.2);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 0 auto 15px;
-                backdrop-filter: blur(10px);
-                border: 3px solid rgba(255,255,255,0.3);
+                margin: 0 auto 8px;
+                border: 2px solid rgba(255,255,255,0.3);
               }
               
               .header-icon svg {
-                width: 35px;
-                height: 35px;
+                width: 20px;
+                height: 20px;
                 fill: white;
               }
               
               .voucher-header h1 { 
-                font-size: 32px; 
-                font-weight: 800;
-                margin-bottom: 8px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                letter-spacing: 1px;
+                font-size: 20px; 
+                font-weight: 700;
+                margin-bottom: 4px;
               }
               
               .voucher-number { 
-                font-size: 18px; 
-                opacity: 0.95;
+                font-size: 13px; 
+                opacity: 0.9;
                 background: rgba(255,255,255,0.15);
-                padding: 8px 24px;
-                border-radius: 30px;
+                padding: 4px 12px;
+                border-radius: 15px;
                 display: inline-block;
-                backdrop-filter: blur(5px);
-                border: 1px solid rgba(255,255,255,0.2);
               }
               
               .voucher-body { 
-                padding: 35px 40px;
+                padding: 15px 20px;
                 position: relative;
                 z-index: 1;
               }
               
               .amount-section { 
-                background: linear-gradient(135deg, ${primaryLight} 0%, white 100%);
-                padding: 30px;
-                border-radius: 16px;
-                margin: 0 0 30px;
+                background: ${primaryLight};
+                padding: 12px;
+                border-radius: 8px;
+                margin: 0 0 15px;
                 text-align: center;
-                border: 2px solid ${primaryColor}20;
-                position: relative;
-                overflow: hidden;
-              }
-              
-              .amount-section::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 4px;
-                background: linear-gradient(90deg, ${gradientStart}, ${gradientEnd});
+                border: 1px solid ${primaryColor}30;
               }
               
               .amount-label { 
                 color: #6b7280; 
-                font-size: 16px;
+                font-size: 12px;
                 font-weight: 500;
-                margin-bottom: 10px;
+                margin-bottom: 4px;
               }
               
               .amount-value { 
-                font-size: 42px; 
+                font-size: 24px; 
                 font-weight: 800;
                 color: ${primaryColor};
-                letter-spacing: 1px;
-              }
-              
-              .amount-currency {
-                font-size: 18px;
-                color: #6b7280;
-                margin-top: 5px;
               }
               
               .info-grid {
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
-                margin-bottom: 30px;
+                gap: 8px;
+                margin-bottom: 12px;
               }
               
               .info-card {
-                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                padding: 18px 20px;
-                border-radius: 12px;
+                background: #f8fafc;
+                padding: 8px 10px;
+                border-radius: 6px;
                 border: 1px solid #e2e8f0;
-                transition: all 0.3s ease;
               }
               
               .info-card.full-width {
@@ -265,83 +190,77 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
               
               .info-card-label {
                 color: #64748b;
-                font-size: 13px;
+                font-size: 10px;
                 font-weight: 500;
-                margin-bottom: 6px;
+                margin-bottom: 2px;
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 4px;
               }
               
               .info-card-label svg {
-                width: 16px;
-                height: 16px;
+                width: 12px;
+                height: 12px;
                 fill: ${primaryColor};
               }
               
               .info-card-value {
                 color: #1e293b;
-                font-size: 16px;
+                font-size: 12px;
                 font-weight: 600;
-              }
-              
-              .divider {
-                height: 2px;
-                background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
-                margin: 25px 0;
               }
               
               .signature-section { 
                 display: flex; 
                 justify-content: space-between;
-                margin-top: 40px;
-                padding-top: 30px;
-                border-top: 2px dashed #e2e8f0;
+                margin-top: 15px;
+                padding-top: 10px;
+                border-top: 1px dashed #e2e8f0;
               }
               
               .signature-box { 
                 text-align: center; 
-                width: 42%;
+                width: 45%;
               }
               
               .signature-line { 
-                border-top: 2px solid ${primaryColor};
-                margin-top: 60px;
-                padding-top: 12px;
+                border-top: 1px solid ${primaryColor};
+                margin-top: 30px;
+                padding-top: 6px;
                 color: #64748b;
                 font-weight: 600;
-                font-size: 14px;
+                font-size: 11px;
               }
               
               .voucher-footer { 
-                background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+                background: #1e293b;
                 color: white;
-                padding: 20px 40px;
+                padding: 8px 15px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                font-size: 13px;
+                font-size: 10px;
               }
               
               .footer-brand {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 6px;
               }
               
               .footer-brand-icon {
-                width: 30px;
-                height: 30px;
-                background: linear-gradient(135deg, #3b82f6, #2563eb);
-                border-radius: 8px;
+                width: 18px;
+                height: 18px;
+                background: #3b82f6;
+                border-radius: 4px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
               }
               
               .footer-brand-icon svg {
-                width: 18px;
-                height: 18px;
+                width: 12px;
+                height: 12px;
                 fill: white;
               }
               
@@ -349,22 +268,10 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
                 opacity: 0.8;
               }
               
-              .qr-placeholder {
-                width: 60px;
-                height: 60px;
-                background: white;
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #64748b;
-                font-size: 10px;
-              }
-              
               @media print {
-                html, body {
-                  width: 210mm;
-                  height: 297mm;
+                @page {
+                  size: A5;
+                  margin: 5mm;
                 }
                 body { 
                   background: white !important;
@@ -374,12 +281,6 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
                 }
                 .voucher-wrapper {
                   padding: 0;
-                  min-height: auto;
-                }
-                .voucher-container {
-                  box-shadow: none !important;
-                  border: 2px solid ${primaryColor};
-                  border-radius: 12px;
                 }
               }
             </style>
