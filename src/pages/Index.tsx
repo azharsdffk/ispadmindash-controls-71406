@@ -119,6 +119,12 @@ const Index = () => {
         <div className="flex-1 flex flex-col">
           <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
           
+          {/* ترويسة الطباعة */}
+          <div className="print-header print-only">
+            <h1>نظام إدارة المشتركين</h1>
+            <p>تقرير بتاريخ: {new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          </div>
+          
           <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Quick Access Cards - For Admins Only */}
@@ -445,6 +451,11 @@ const Index = () => {
       <MaintenanceTicketsListModal open={maintenanceTicketsOpen} onOpenChange={setMaintenanceTicketsOpen} />
       <MonthlyRevenueModal open={monthlyRevenueOpen} onOpenChange={setMonthlyRevenueOpen} />
       <AIChatbot />
+      
+      {/* تذييل الطباعة */}
+      <div className="print-footer print-only">
+        <p>تم إنشاء هذا التقرير بواسطة نظام إدارة المشتركين | {new Date().toLocaleDateString('ar-IQ')} - {new Date().toLocaleTimeString('ar-IQ')}</p>
+      </div>
       </div>
     </SidebarProvider>
   );
