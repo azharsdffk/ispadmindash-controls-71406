@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Plus, Loader2 } from "lucide-react";
+import { DollarSign, Plus, Loader2, Printer } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ReceiptModal } from "@/components/modals/ReceiptModal";
 import { VoucherModal } from "@/components/modals/VoucherModal";
@@ -59,9 +59,19 @@ const Vouchers = () => {
     setDetailsOpen(true);
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+      
+      {/* ترويسة الطباعة */}
+      <div className="print-header print-only">
+        <h1>السندات المالية</h1>
+        <p>تقرير بتاريخ: {new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
       
       <div className="flex flex-1 w-full">
         <AppSidebar />
@@ -74,6 +84,10 @@ const Vouchers = () => {
                 <h1 className="text-3xl font-bold">السندات المالية</h1>
               </div>
               <div className="flex gap-2">
+                <Button onClick={handlePrint} variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                  <Printer className="h-5 w-5 ml-2" />
+                  طباعة
+                </Button>
                 <Button onClick={() => setReceiptOpen(true)} className="bg-success hover:bg-success/90">
                   <Plus className="h-5 w-5 ml-2" />
                   سند قبض
@@ -138,6 +152,11 @@ const Vouchers = () => {
             </Card>
           </div>
         </main>
+      </div>
+
+      {/* تذييل الطباعة */}
+      <div className="print-footer print-only">
+        <p>تم إنشاء هذا التقرير بواسطة نظام إدارة المشتركين | {new Date().toLocaleDateString('ar-IQ')} - {new Date().toLocaleTimeString('ar-IQ')}</p>
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
