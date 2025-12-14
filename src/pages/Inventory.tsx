@@ -6,7 +6,7 @@ import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, Plus, Edit, Trash2, AlertTriangle, TrendingDown, TrendingUp, Search } from "lucide-react";
+import { Package, Plus, Edit, Trash2, AlertTriangle, TrendingDown, TrendingUp, Search, Eye } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useUserRole } from "@/hooks/useUserRole";
 import { formatCurrency } from "@/lib/currency";
 import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
+import { InventoryDetailsModal } from "@/components/modals/InventoryDetailsModal";
 
 interface InventoryItem {
   id: string;
@@ -44,6 +45,13 @@ const Inventory = () => {
   const { isAdmin, loading: roleLoading } = useUserRole();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [viewItem, setViewItem] = useState<InventoryItem | null>(null);
+
+  const openDetailsModal = (item: InventoryItem) => {
+    setViewItem(item);
+    setDetailsOpen(true);
+  };
 
   const [formData, setFormData] = useState({
     item_name: '',
@@ -488,11 +496,20 @@ const Inventory = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openDetailsModal(item)}
+                                title="عرض التفاصيل"
+                              >
+                                <Eye className="h-4 w-4 text-primary" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => openEditDialog(item)}
+                                title="تعديل"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -500,6 +517,7 @@ const Inventory = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteClick(item.id, item.item_name)}
+                                title="حذف"
                               >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
@@ -568,6 +586,12 @@ const Inventory = () => {
         title="حذف صنف من المخزون"
         description="هل أنت متأكد من حذف هذا الصنف؟ لا يمكن التراجع عن هذا الإجراء."
         itemName={itemToDelete?.name}
+      />
+
+      <InventoryDetailsModal
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        item={viewItem}
       />
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
