@@ -62,19 +62,32 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
             <style>
               @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
               
+              @page {
+                size: A4;
+                margin: 15mm;
+              }
+              
               * { margin: 0; padding: 0; box-sizing: border-box; }
+              
+              html, body {
+                width: 210mm;
+                min-height: 297mm;
+              }
               
               body { 
                 font-family: 'Tajawal', 'Segoe UI', sans-serif; 
-                padding: 20px; 
-                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-                min-height: 100vh;
+                padding: 0;
+                background: white;
               }
               
               .voucher-wrapper {
-                max-width: 700px;
+                width: 100%;
+                max-width: 210mm;
+                min-height: 297mm;
                 margin: 0 auto;
-                perspective: 1000px;
+                padding: 10mm;
+                display: flex;
+                flex-direction: column;
               }
               
               .voucher-container { 
@@ -349,15 +362,24 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
               }
               
               @media print {
+                html, body {
+                  width: 210mm;
+                  height: 297mm;
+                }
                 body { 
-                  background: white;
-                  padding: 0;
+                  background: white !important;
+                  padding: 0 !important;
                   -webkit-print-color-adjust: exact !important;
                   print-color-adjust: exact !important;
                 }
+                .voucher-wrapper {
+                  padding: 0;
+                  min-height: auto;
+                }
                 .voucher-container {
-                  box-shadow: none;
+                  box-shadow: none !important;
                   border: 2px solid ${primaryColor};
+                  border-radius: 12px;
                 }
               }
             </style>
