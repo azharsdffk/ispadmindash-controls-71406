@@ -388,6 +388,42 @@ export type Database = {
           },
         ]
       }
+      employee_location_access_logs: {
+        Row: {
+          access_timestamp: string | null
+          accessed_user_id: string | null
+          accessor_id: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          query_type: string
+          records_count: number | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_timestamp?: string | null
+          accessed_user_id?: string | null
+          accessor_id: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          query_type?: string
+          records_count?: number | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_timestamp?: string | null
+          accessed_user_id?: string | null
+          accessor_id?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          query_type?: string
+          records_count?: number | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       employee_locations: {
         Row: {
           accuracy: number | null
@@ -2142,6 +2178,7 @@ export type Database = {
       }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       cleanup_old_data: { Args: never; Returns: undefined }
+      cleanup_old_location_data: { Args: never; Returns: undefined }
       generate_complaint_number: { Args: never; Returns: string }
       generate_contract_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
@@ -2161,6 +2198,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_employee_location_access: {
+        Args: {
+          p_accessed_user_id?: string
+          p_accessor_id: string
+          p_ip_address?: unknown
+          p_metadata?: Json
+          p_query_type?: string
+          p_records_count?: number
+          p_user_agent?: string
+        }
+        Returns: string
       }
       log_login_attempt: {
         Args: {

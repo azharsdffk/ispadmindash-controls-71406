@@ -42,6 +42,27 @@ const EmployeeTracking = () => {
     }
   }, [roleLoading, isAdmin]);
 
+  const logLocationAccess = async (queryType: string, recordsCount: number, accessedUserIds: string[] = []) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Log access for each accessed user, or general access if viewing all
+      for (const accessedUserId of accessedUserIds.length > 0 ? accessedUserIds : [null]) {
+        await supabase.rpc('log_employee_location_access', {
+          p_accessor_id: user.id,
+          p_accessed_user_id: accessedUserId,
+          p_query_type: queryType,
+          p_records_count: recordsCount,
+          p_user_agent: navigator.userAgent,
+          p_metadata: { timestamp: new Date().toISOString() }
+        });
+      }
+    } catch (error) {
+      console.error('Error logging location access:', error);
+    }
+  };
+
   const fetchEmployeeLocations = async () => {
     try {
       setLoading(true);
@@ -57,6 +78,7 @@ const EmployeeTracking = () => {
       }
 
       const locationsWithEmployees: EmployeeLocation[] = [];
+      const accessedUserIds: string[] = [];
 
       for (const employee of employeeData) {
         const { data: locationData } = await supabase
@@ -76,10 +98,16 @@ const EmployeeTracking = () => {
               phone: employee.phone,
             },
           });
+          accessedUserIds.push(employee.user_id);
         }
       }
 
       setLocations(locationsWithEmployees);
+      
+      // Log this access for audit trail
+      if (locationsWithEmployees.length > 0) {
+        await logLocationAccess('bulk_view', locationsWithEmployees.length, accessedUserIds);
+      }
     } catch (error) {
       console.error('Error fetching employee locations:', error);
       toast.error('فشل تحميل مواقع الموظفين');
@@ -135,7 +163,11 @@ const EmployeeTracking = () => {
     return 'destructive';
   };
 
-  const openInMaps = (lat: number, lng: number) => {
+  const openInMaps = async (lat: number, lng: number, userId?: string) => {
+    // Log individual location view for audit
+    if (userId) {
+      await logLocationAccess('map_view', 1, [userId]);
+    }
     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
   };
 
@@ -328,7 +360,7 @@ const EmployeeTracking = () => {
                             </div>
                             
                             <button
-                              onClick={() => openInMaps(location.latitude, location.longitude)}
+                              onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
                               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
                             >
                               <Navigation className="h-4 w-4" />
@@ -411,7 +443,7 @@ const EmployeeTracking = () => {
                         </p>
                       </div>
                       <button
-                        onClick={() => openInMaps(location.latitude, location.longitude)}
+                        onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
                         className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm flex items-center gap-1"
                       >
                         <Navigation className="h-3 w-3" />
@@ -458,7 +490,7 @@ const EmployeeTracking = () => {
                         </p>
                       </div>
                       <button
-                        onClick={() => openInMaps(location.latitude, location.longitude)}
+                        onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
                         className="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm flex items-center gap-1"
                       >
                         <MapPin className="h-3 w-3" />
