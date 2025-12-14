@@ -92,7 +92,7 @@ const Index = () => {
   };
 
   const handlePrint = () => {
-    toast.info("جاري فتح معاينة الطباعة...");
+    window.print();
   };
 
   const handleBack = () => {
