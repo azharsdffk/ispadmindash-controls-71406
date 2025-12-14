@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatCurrency, Currency } from "@/lib/currency";
-import { FileText, Calendar, DollarSign, User, Building, StickyNote, UserCircle, Phone } from "lucide-react";
+import { FileText, Calendar, DollarSign, User, Building, StickyNote, UserCircle, Phone, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -43,15 +44,95 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
     }
   }, [open, voucher]);
 
+  const handlePrint = () => {
+    const printContent = document.getElementById('voucher-print-content');
+    if (printContent) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html dir="rtl">
+            <head>
+              <title>سند ${voucher.voucher_type === 'income' ? 'قبض' : 'صرف'} - ${voucher.voucher_number}</title>
+              <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; background: #fff; }
+                .voucher-container { max-width: 600px; margin: 0 auto; border: 2px solid #1e3a5f; border-radius: 12px; overflow: hidden; }
+                .voucher-header { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); color: white; padding: 24px; text-align: center; }
+                .voucher-header h1 { font-size: 24px; margin-bottom: 8px; }
+                .voucher-header .number { font-size: 18px; opacity: 0.9; }
+                .voucher-type { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-top: 12px; }
+                .voucher-type.income { background: #22c55e; }
+                .voucher-type.expense { background: #ef4444; }
+                .voucher-body { padding: 24px; }
+                .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #e5e7eb; }
+                .info-row:last-child { border-bottom: none; }
+                .info-label { color: #6b7280; font-size: 14px; }
+                .info-value { font-weight: 600; color: #1f2937; }
+                .amount-section { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 16px 0; text-align: center; }
+                .amount-section .label { color: #6b7280; font-size: 14px; margin-bottom: 8px; }
+                .amount-section .value { font-size: 28px; font-weight: bold; color: #1e3a5f; }
+                .voucher-footer { background: #f8fafc; padding: 16px 24px; text-align: center; font-size: 12px; color: #6b7280; }
+                .signature-section { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
+                .signature-box { text-align: center; width: 45%; }
+                .signature-line { border-top: 1px solid #1e3a5f; margin-top: 50px; padding-top: 8px; }
+              </style>
+            </head>
+            <body>
+              <div class="voucher-container">
+                <div class="voucher-header">
+                  <h1>${voucher.voucher_type === 'income' ? 'سند قبض' : 'سند صرف'}</h1>
+                  <div class="number">رقم السند: ${voucher.voucher_number}</div>
+                </div>
+                <div class="voucher-body">
+                  <div class="amount-section">
+                    <div class="label">المبلغ</div>
+                    <div class="value">${formatCurrency(Number(voucher.amount), voucher.currency || "IQD")}</div>
+                  </div>
+                  ${voucher.account ? `<div class="info-row"><span class="info-label">الحساب</span><span class="info-value">${voucher.account}</span></div>` : ''}
+                  ${voucher.expense_type ? `<div class="info-row"><span class="info-label">نوع المصروف</span><span class="info-value">${voucher.expense_type}</span></div>` : ''}
+                  ${voucher.description ? `<div class="info-row"><span class="info-label">الوصف</span><span class="info-value">${voucher.description}</span></div>` : ''}
+                  ${creatorInfo ? `<div class="info-row"><span class="info-label">منشئ السند</span><span class="info-value">${creatorInfo.full_name}${creatorInfo.phone ? ' - ' + creatorInfo.phone : ''}</span></div>` : ''}
+                  <div class="info-row">
+                    <span class="info-label">التاريخ</span>
+                    <span class="info-value">${new Date(voucher.created_at).toLocaleDateString("ar-IQ", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                  </div>
+                  <div class="signature-section">
+                    <div class="signature-box">
+                      <div class="signature-line">المستلم</div>
+                    </div>
+                    <div class="signature-box">
+                      <div class="signature-line">المسلم</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="voucher-footer">
+                  تم الطباعة بتاريخ: ${new Date().toLocaleDateString("ar-IQ")} - ${new Date().toLocaleTimeString("ar-IQ")}
+                </div>
+              </div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
   if (!voucher) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            تفاصيل السند
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              تفاصيل السند
+            </div>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="flex items-center gap-2">
+              <Printer className="h-4 w-4" />
+              طباعة
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
