@@ -24,9 +24,27 @@ interface ScheduleTechnicianModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const issueTypes = [
+  "ضعف بالخدمة",
+  "تبديل جهاز الـ ONT",
+  "تبديل جهاز الراوتر",
+  "قطع في الكابل الرئيسي",
+  "ربط أجهزة جديدة",
+  "ربط راوتر ثاني في البيت نفسه",
+  "فيشة مكسورة خارجية",
+  "فيشة مكسورة من الداخل",
+  "الأجهزة لا تعمل بسبب تغير فولتية الكهرباء",
+  "ربط يوبي إس جديد",
+  "استلام مبلغ من المشترك",
+  "الكابل الضوئي نازل على باب المشترك",
+  "مشترك جديد",
+  "مشترك عودة"
+];
+
 export const ScheduleTechnicianModal = ({ open, onOpenChange }: ScheduleTechnicianModalProps) => {
   const [ticketId, setTicketId] = useState("");
   const [technicianId, setTechnicianId] = useState("");
+  const [issueType, setIssueType] = useState("");
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,7 +52,7 @@ export const ScheduleTechnicianModal = ({ open, onOpenChange }: ScheduleTechnici
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!ticketId || !technicianId || !date || !time) {
+    if (!ticketId || !technicianId || !issueType || !date || !time) {
       toast.error("الرجاء ملء جميع الحقول المطلوبة");
       return;
     }
@@ -47,6 +65,7 @@ export const ScheduleTechnicianModal = ({ open, onOpenChange }: ScheduleTechnici
       setLoading(false);
       setTicketId("");
       setTechnicianId("");
+      setIssueType("");
       setDate(undefined);
       setTime("");
     }, 1000);
@@ -67,10 +86,26 @@ export const ScheduleTechnicianModal = ({ open, onOpenChange }: ScheduleTechnici
               <SelectTrigger id="ticket">
                 <SelectValue placeholder="اختر التذكرة" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="1">#001 - انقطاع إنترنت</SelectItem>
                 <SelectItem value="2">#002 - بطء في السرعة</SelectItem>
                 <SelectItem value="3">#003 - مشكلة في الراوتر</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="issueType">نوع الخدمة *</Label>
+            <Select value={issueType} onValueChange={setIssueType}>
+              <SelectTrigger id="issueType">
+                <SelectValue placeholder="اختر نوع الخدمة" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50 max-h-60">
+                {issueTypes.map((type, index) => (
+                  <SelectItem key={index} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -81,7 +116,7 @@ export const ScheduleTechnicianModal = ({ open, onOpenChange }: ScheduleTechnici
               <SelectTrigger id="technician">
                 <SelectValue placeholder="اختر الفني" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="1">محمد أحمد - متاح</SelectItem>
                 <SelectItem value="2">خالد عمر - متاح</SelectItem>
                 <SelectItem value="3">سعيد حسن - مشغول</SelectItem>
