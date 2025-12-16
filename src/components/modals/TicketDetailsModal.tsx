@@ -99,7 +99,7 @@ export const TicketDetailsModal = ({
   const [customIssue, setCustomIssue] = useState('');
   const [updating, setUpdating] = useState(false);
   const [technicians, setTechnicians] = useState<Technician[]>([]);
-  const [selectedTechnician, setSelectedTechnician] = useState<string>('');
+  const [selectedTechnician, setSelectedTechnician] = useState<string>('none');
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -188,7 +188,7 @@ export const TicketDetailsModal = ({
       
       setTicket(data);
       setReportText(data.notes || '');
-      setSelectedTechnician(data.technician_id || '');
+      setSelectedTechnician(data.technician_id || 'none');
       
       // Set scheduled date and time
       if (data.scheduled_date) {
@@ -278,11 +278,11 @@ export const TicketDetailsModal = ({
     setUpdating(true);
     try {
       const updateData: any = { 
-        technician_id: selectedTechnician || null 
+        technician_id: selectedTechnician === 'none' ? null : selectedTechnician || null 
       };
       
       // If assigning technician and ticket is open, set to in_progress
-      if (selectedTechnician && ticket.status === 'open') {
+      if (selectedTechnician && selectedTechnician !== 'none' && ticket.status === 'open') {
         updateData.status = 'in_progress';
       }
 
@@ -351,7 +351,7 @@ export const TicketDetailsModal = ({
       if (error) throw error;
       toast.success('✅ تم تصفير التذكرة بنجاح');
       setReportText('');
-      setSelectedTechnician('');
+      setSelectedTechnician('none');
       setScheduledDate('');
       setScheduledTime('');
       fetchTicketDetails();
@@ -722,7 +722,7 @@ export const TicketDetailsModal = ({
                     <SelectValue placeholder="اختر الفني" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover z-50">
-                    <SelectItem value="">بدون فني</SelectItem>
+                    <SelectItem value="none">بدون فني</SelectItem>
                     {technicians.map((tech) => (
                       <SelectItem key={tech.id} value={tech.id}>
                         {tech.name} {tech.available ? '(متاح)' : '(مشغول)'}
