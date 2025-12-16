@@ -264,7 +264,7 @@ export default function SecuritySettings() {
                   </div>
                   <div>
                     <p className="text-xl font-bold text-foreground">
-                      {settings.two_factor_enabled ? 'مفعّل' : 'قريباً'}
+                      {settings.two_factor_enabled ? 'مفعّل' : 'معطّل'}
                     </p>
                     <p className="text-xs text-muted-foreground">المصادقة الثنائية</p>
                   </div>
@@ -299,18 +299,24 @@ export default function SecuritySettings() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border opacity-60">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
                 <div className="flex items-center gap-2">
                   <Fingerprint className="h-4 w-4 text-warning" />
                   <div>
                     <Label htmlFor="2fa" className="text-foreground text-sm flex items-center gap-1">
                       المصادقة الثنائية
-                      <Badge variant="outline" className="text-[10px] border-warning/30 text-warning px-1 py-0">قريباً</Badge>
+                      {settings.two_factor_enabled && (
+                        <Badge variant="outline" className="text-[10px] border-success/30 text-success px-1 py-0">مفعّل</Badge>
+                      )}
                     </Label>
-                    <p className="text-xs text-muted-foreground">طبقة أمان إضافية</p>
+                    <p className="text-xs text-muted-foreground">طبقة أمان إضافية عند تسجيل الدخول</p>
                   </div>
                 </div>
-                <Switch id="2fa" disabled checked={settings.two_factor_enabled} />
+                <Switch
+                  id="2fa"
+                  checked={settings.two_factor_enabled}
+                  onCheckedChange={(checked) => updateSecuritySettings('two_factor_enabled', checked)}
+                />
               </div>
             </CardContent>
           </Card>
