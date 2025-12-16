@@ -6,11 +6,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   MapPin,
@@ -23,7 +34,11 @@ import {
   Navigation,
   CheckCircle2,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  Trash2,
+  RotateCcw,
+  UserCog,
+  CalendarClock
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -46,6 +61,7 @@ interface TicketDetails {
   notes: string | null;
   issue_type: string | null;
   subscriber_id: string;
+  technician_id: string | null;
   subscribers: {
     id: string;
     name: string;
@@ -63,6 +79,13 @@ interface TicketDetails {
   };
 }
 
+interface Technician {
+  id: string;
+  name: string;
+  phone: string;
+  available: boolean;
+}
+
 export const TicketDetailsModal = ({
   ticketId,
   open,
@@ -75,6 +98,12 @@ export const TicketDetailsModal = ({
   const [issueType, setIssueType] = useState('');
   const [customIssue, setCustomIssue] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [selectedTechnician, setSelectedTechnician] = useState<string>('');
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const issueTypeOptions = [
     'ضعف في الخدمة',
@@ -94,8 +123,23 @@ export const TicketDetailsModal = ({
   useEffect(() => {
     if (open && ticketId) {
       fetchTicketDetails();
+      fetchTechnicians();
     }
   }, [open, ticketId]);
+
+  const fetchTechnicians = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('technicians')
+        .select('id, name, phone, available')
+        .order('name');
+
+      if (error) throw error;
+      setTechnicians(data || []);
+    } catch (error) {
+      console.error('خطأ في جلب الفنيين:', error);
+    }
+  };
 
   const fetchTicketDetails = async () => {
     if (!ticketId) {
@@ -118,6 +162,7 @@ export const TicketDetailsModal = ({
           notes,
           issue_type,
           subscriber_id,
+          technician_id,
           subscribers (
             id,
             name,
@@ -143,6 +188,17 @@ export const TicketDetailsModal = ({
       
       setTicket(data);
       setReportText(data.notes || '');
+      setSelectedTechnician(data.technician_id || '');
+      
+      // Set scheduled date and time
+      if (data.scheduled_date) {
+        const date = new Date(data.scheduled_date);
+        setScheduledDate(date.toISOString().split('T')[0]);
+        setScheduledTime(date.toTimeString().slice(0, 5));
+      } else {
+        setScheduledDate('');
+        setScheduledTime('');
+      }
       
       // Set issue type
       if (data.issue_type) {
@@ -213,6 +269,121 @@ export const TicketDetailsModal = ({
       toast.error('فشل حفظ التقرير');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleAssignTechnician = async () => {
+    if (!ticket) return;
+
+    setUpdating(true);
+    try {
+      const updateData: any = { 
+        technician_id: selectedTechnician || null 
+      };
+      
+      // If assigning technician and ticket is open, set to in_progress
+      if (selectedTechnician && ticket.status === 'open') {
+        updateData.status = 'in_progress';
+      }
+
+      const { error } = await supabase
+        .from('maintenance_tickets')
+        .update(updateData)
+        .eq('id', ticket.id);
+
+      if (error) throw error;
+      toast.success('✅ تم تعيين الفني بنجاح');
+      fetchTicketDetails();
+      onTicketUpdated?.();
+    } catch (error) {
+      console.error('خطأ في تعيين الفني:', error);
+      toast.error('فشل تعيين الفني');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleReschedule = async () => {
+    if (!ticket || !scheduledDate) {
+      toast.error('يرجى تحديد التاريخ');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const dateTime = scheduledTime 
+        ? `${scheduledDate}T${scheduledTime}:00`
+        : `${scheduledDate}T09:00:00`;
+
+      const { error } = await supabase
+        .from('maintenance_tickets')
+        .update({ scheduled_date: dateTime })
+        .eq('id', ticket.id);
+
+      if (error) throw error;
+      toast.success('✅ تم جدولة التذكرة بنجاح');
+      fetchTicketDetails();
+      onTicketUpdated?.();
+    } catch (error) {
+      console.error('خطأ في جدولة التذكرة:', error);
+      toast.error('فشل جدولة التذكرة');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleResetTicket = async () => {
+    if (!ticket) return;
+
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('maintenance_tickets')
+        .update({ 
+          status: 'open',
+          technician_id: null,
+          scheduled_date: null,
+          resolved_at: null,
+          notes: null
+        })
+        .eq('id', ticket.id);
+
+      if (error) throw error;
+      toast.success('✅ تم تصفير التذكرة بنجاح');
+      setReportText('');
+      setSelectedTechnician('');
+      setScheduledDate('');
+      setScheduledTime('');
+      fetchTicketDetails();
+      onTicketUpdated?.();
+    } catch (error) {
+      console.error('خطأ في تصفير التذكرة:', error);
+      toast.error('فشل تصفير التذكرة');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticket) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('maintenance_tickets')
+        .delete()
+        .eq('id', ticket.id);
+
+      if (error) throw error;
+      toast.success('✅ تم حذف التذكرة بنجاح');
+      setShowDeleteDialog(false);
+      onOpenChange(false);
+      onTicketUpdated?.();
+    } catch (error) {
+      console.error('خطأ في حذف التذكرة:', error);
+      toast.error('فشل حذف التذكرة');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -539,6 +710,71 @@ export const TicketDetailsModal = ({
 
             <Separator />
 
+            {/* تعيين فني */}
+            <div className="space-y-3">
+              <Label className="text-base font-bold flex items-center gap-2">
+                <UserCog className="h-5 w-5 text-primary" />
+                تعيين فني
+              </Label>
+              <div className="flex gap-2">
+                <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+                  <SelectTrigger className="flex-1 bg-background">
+                    <SelectValue placeholder="اختر الفني" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    <SelectItem value="">بدون فني</SelectItem>
+                    {technicians.map((tech) => (
+                      <SelectItem key={tech.id} value={tech.id}>
+                        {tech.name} {tech.available ? '(متاح)' : '(مشغول)'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  onClick={handleAssignTechnician}
+                  disabled={updating}
+                  variant="default"
+                >
+                  تعيين
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* جدولة التذكرة */}
+            <div className="space-y-3">
+              <Label className="text-base font-bold flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-primary" />
+                جدولة موعد الصيانة
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="flex-1 bg-background"
+                />
+                <Input
+                  type="time"
+                  value={scheduledTime}
+                  onChange={(e) => setScheduledTime(e.target.value)}
+                  className="w-32 bg-background"
+                />
+                <Button
+                  type="button"
+                  onClick={handleReschedule}
+                  disabled={updating || !scheduledDate}
+                  variant="default"
+                >
+                  جدولة
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
             {/* إجراءات التذكرة */}
             <div className="space-y-3">
               <Label className="text-base font-bold">تحديث حالة التذكرة</Label>
@@ -565,6 +801,35 @@ export const TicketDetailsModal = ({
                 </Button>
               </div>
             </div>
+
+            <Separator />
+
+            {/* إجراءات إضافية */}
+            <div className="space-y-3">
+              <Label className="text-base font-bold">إجراءات إضافية</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  onClick={handleResetTicket}
+                  disabled={updating}
+                  variant="outline"
+                  className="border-orange-500 text-orange-700 hover:bg-orange-50"
+                >
+                  <RotateCcw className="h-4 w-4 ml-2" />
+                  تصفير التذكرة
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={updating}
+                  variant="outline"
+                  className="border-destructive text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4 ml-2" />
+                  حذف التذكرة
+                </Button>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
@@ -572,6 +837,29 @@ export const TicketDetailsModal = ({
           </div>
         )}
       </DialogContent>
+
+      {/* حوار تأكيد الحذف */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد حذف التذكرة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف التذكرة رقم {ticket?.ticket_number}؟ 
+              لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel disabled={deleting}>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTicket}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'جاري الحذف...' : 'حذف'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
