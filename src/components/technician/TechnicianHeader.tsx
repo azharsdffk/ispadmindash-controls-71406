@@ -1,6 +1,8 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Phone, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Phone, Activity, User, QrCode } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface TechnicianHeaderProps {
   fullName: string;
@@ -19,6 +21,8 @@ export const TechnicianHeader = ({
   completedTicketsCount,
   scheduledTicketsCount,
 }: TechnicianHeaderProps) => {
+  const navigate = useNavigate();
+
   return (
     <Card className="glass-card shadow-glow border-primary/20">
       <CardContent className="pt-6">
@@ -45,6 +49,15 @@ export const TechnicianHeader = ({
                 </p>
               </div>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 gap-2"
+              onClick={() => navigate('/technician/profile')}
+            >
+              <QrCode className="h-4 w-4" />
+              الملف الشخصي الذكي
+            </Button>
           </div>
           
           <div className="flex gap-4">

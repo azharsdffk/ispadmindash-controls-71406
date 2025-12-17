@@ -28,6 +28,7 @@ import PermissionsManagement from "./pages/PermissionsManagement";
 import AccountantPermissions from "./pages/AccountantPermissions";
 import UserAccountsManagement from "./pages/UserAccountsManagement";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
+import TechnicianProfile from "./pages/TechnicianProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import Contracts from "./pages/Contracts";
 import Discounts from "./pages/Discounts";
@@ -114,6 +115,11 @@ const App = () => (
             <Route path="/technician" element={
               <ProtectedRoute allowedRoles={['technician']}>
                 <TechnicianDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/technician/profile" element={
+              <ProtectedRoute allowedRoles={['technician']}>
+                <TechnicianProfile />
               </ProtectedRoute>
             } />
             <Route path="/reports" element={
