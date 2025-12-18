@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -28,9 +29,16 @@ import {
   Phone,
   Mail,
   Calendar,
+  Star,
+  Trophy,
+  FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import WorkOrderDetailCard from "@/components/technician/WorkOrderDetailCard";
+import DiagnosisChecklist from "@/components/technician/DiagnosisChecklist";
+import TechnicianStatsCard from "@/components/technician/TechnicianStatsCard";
+import WorkReportModal from "@/components/technician/WorkReportModal";
 
 interface TechnicianInfo {
   id: string;
@@ -132,6 +140,10 @@ const TechnicianProfile = () => {
   const [selectedIssue, setSelectedIssue] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoType, setPhotoType] = useState<"before" | "after">("before");
+  const [showDiagnosisDialog, setShowDiagnosisDialog] = useState(false);
+  const [diagnosisIssueType, setDiagnosisIssueType] = useState<string | null>(null);
+  const [showWorkReportModal, setShowWorkReportModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<WorkOrder | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -295,6 +307,21 @@ const TechnicianProfile = () => {
     } catch (error) {
       console.error("Error ending work:", error);
       toast.error("حدث خطأ في إنهاء العمل");
+    }
+  };
+
+  const openDiagnosisDialog = (issueType: string) => {
+    setDiagnosisIssueType(issueType);
+    setShowDiagnosisDialog(true);
+  };
+
+  const openWorkReportModal = () => {
+    if (activeWorkLog) {
+      const order = workOrders.find(o => o.id === activeWorkLog.ticket_id);
+      if (order) {
+        setSelectedOrder(order);
+        setShowWorkReportModal(true);
+      }
     }
   };
 
@@ -490,14 +517,23 @@ const TechnicianProfile = () => {
                           صورة بعد
                         </Button>
                       </div>
-                      <Button
-                        onClick={() => handleEndWork(activeWorkLog.id)}
-                        variant="destructive"
-                        className="w-full"
-                      >
-                        <Square className="w-4 h-4 ml-2" />
-                        إنهاء العمل
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={openWorkReportModal}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        >
+                          <FileText className="w-4 h-4 ml-1" />
+                          تقرير الإنهاء
+                        </Button>
+                        <Button
+                          onClick={() => handleEndWork(activeWorkLog.id)}
+                          variant="destructive"
+                          className="flex-1"
+                        >
+                          <Square className="w-4 h-4 ml-2" />
+                          إنهاء سريع
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <p className="text-slate-400 text-center">
@@ -510,18 +546,22 @@ const TechnicianProfile = () => {
 
             {/* Main Tabs */}
             <Tabs defaultValue="orders" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 bg-slate-800/50">
+              <TabsList className="grid w-full grid-cols-6 bg-slate-800/50">
                 <TabsTrigger value="orders" className="data-[state=active]:bg-blue-600">
                   <Wrench className="w-4 h-4 ml-1" />
-                  طلبات العمل
+                  الطلبات
+                </TabsTrigger>
+                <TabsTrigger value="stats" className="data-[state=active]:bg-blue-600">
+                  <Trophy className="w-4 h-4 ml-1" />
+                  الإحصائيات
                 </TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:bg-blue-600">
                   <History className="w-4 h-4 ml-1" />
-                  سجل الأعمال
+                  السجل
                 </TabsTrigger>
                 <TabsTrigger value="suggestions" className="data-[state=active]:bg-blue-600">
                   <Lightbulb className="w-4 h-4 ml-1" />
-                  المساعد الذكي
+                  المساعد
                 </TabsTrigger>
                 <TabsTrigger value="photos" className="data-[state=active]:bg-blue-600">
                   <Camera className="w-4 h-4 ml-1" />
@@ -590,6 +630,11 @@ const TechnicianProfile = () => {
                     </Card>
                   ))
                 )}
+              </TabsContent>
+
+              {/* Stats Tab */}
+              <TabsContent value="stats" className="space-y-4 mt-4">
+                {user && <TechnicianStatsCard technicianId={user.id} />}
               </TabsContent>
 
               {/* Work History Tab */}
@@ -796,6 +841,38 @@ const TechnicianProfile = () => {
             onChange={handlePhotoUpload}
             className="hidden"
           />
+
+          {/* Diagnosis Dialog */}
+          <Dialog open={showDiagnosisDialog} onOpenChange={setShowDiagnosisDialog}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+              <DialogHeader>
+                <DialogTitle className="text-white flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-blue-400" />
+                  التشخيص السريع - {diagnosisIssueType}
+                </DialogTitle>
+              </DialogHeader>
+              <DiagnosisChecklist 
+                issueType={diagnosisIssueType} 
+                onClose={() => setShowDiagnosisDialog(false)}
+              />
+            </DialogContent>
+          </Dialog>
+
+          {/* Work Report Modal */}
+          {activeWorkLog && selectedOrder && (
+            <WorkReportModal
+              open={showWorkReportModal}
+              onOpenChange={setShowWorkReportModal}
+              workLogId={activeWorkLog.id}
+              ticketId={activeWorkLog.ticket_id}
+              technicianId={user?.id || ""}
+              subscriberId={selectedOrder.subscriber?.name ? workOrders.find(o => o.id === activeWorkLog.ticket_id)?.id || "" : ""}
+              ticketNumber={activeWorkLog.ticket?.ticket_number || ""}
+              issueDescription={activeWorkLog.ticket?.issue_description || ""}
+              startTime={activeWorkLog.started_at || ""}
+              onComplete={fetchTechnicianData}
+            />
+          )}
         </main>
       </div>
     </SidebarProvider>
