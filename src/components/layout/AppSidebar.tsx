@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature, Gift } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature, Gift, Hexagon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole, type AppRole } from "@/hooks/useUserRole";
@@ -45,11 +45,11 @@ export const AppSidebar = () => {
 
   if (loading) {
     return (
-      <aside className="w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0">
+      <aside className="w-64 bg-sidebar border-l border-white/[0.06] flex-shrink-0">
         <nav className="p-4 space-y-2">
           <div className="animate-pulse space-y-2">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-12 bg-sidebar-accent rounded-lg" />
+              <div key={i} className="h-12 bg-white/[0.03] rounded-xl" />
             ))}
           </div>
         </nav>
@@ -72,35 +72,59 @@ export const AppSidebar = () => {
         end={item.path === "/"}
         className={({ isActive }) =>
           cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-            "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
+            "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
+            "text-white/60 hover:text-white hover:bg-white/[0.06]",
+            isActive && "bg-gradient-to-r from-primary/20 to-violet-500/20 text-white font-semibold border border-primary/30"
           )
         }
       >
-        <item.icon className="h-5 w-5 flex-shrink-0" />
-        <span>{item.label}</span>
+        {({ isActive }) => (
+          <>
+            {isActive && (
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10" />
+            )}
+            <div className={cn(
+              "relative z-10 p-1.5 rounded-lg transition-all duration-300",
+              isActive ? "bg-primary/20 text-primary" : "text-white/50 group-hover:text-white/80"
+            )}>
+              <item.icon className="h-5 w-5" />
+            </div>
+            <span className="relative z-10">{item.label}</span>
+            {isActive && (
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
+            )}
+          </>
+        )}
       </NavLink>
     );
   };
 
+  const renderSectionTitle = (title: string) => (
+    <h3 className="px-4 text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3 flex items-center gap-2">
+      <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
+      {title}
+    </h3>
+  );
+
   return (
-    <aside className="w-64 bg-sidebar border-l border-sidebar-border flex-shrink-0 overflow-y-auto h-screen sticky top-0">
-      <nav className="p-4 space-y-6">
+    <aside className="w-64 bg-sidebar/80 backdrop-blur-xl border-l border-white/[0.06] flex-shrink-0 overflow-y-auto h-screen sticky top-0 custom-scrollbar">
+      {/* الخلفية المتحركة */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-40 -left-10 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl" />
+      </div>
+      
+      <nav className="relative z-10 p-4 space-y-6">
         {/* القائمة الرئيسية */}
         <div className="space-y-1">
-          <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            القائمة الرئيسية
-          </h3>
+          {renderSectionTitle("القائمة الرئيسية")}
           {menuGroups.main.map(renderMenuItem)}
         </div>
 
         {/* العمليات */}
         {(isAdmin || isAccountant) && (
           <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              العمليات اليومية
-            </h3>
+            {renderSectionTitle("العمليات اليومية")}
             {menuGroups.operations.map(renderMenuItem)}
           </div>
         )}
@@ -108,9 +132,7 @@ export const AppSidebar = () => {
         {/* الصيانة */}
         {(isAdmin || roles.includes('technician')) && (
           <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              الصيانة والدعم
-            </h3>
+            {renderSectionTitle("الصيانة والدعم")}
             {menuGroups.maintenance.map(renderMenuItem)}
           </div>
         )}
@@ -118,90 +140,104 @@ export const AppSidebar = () => {
         {/* الإدارة */}
         {(isAdmin || isAccountant) && (
           <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              الإدارة والتقارير
-            </h3>
+            {renderSectionTitle("الإدارة والتقارير")}
             {menuGroups.management.map(renderMenuItem)}
           </div>
         )}
 
         {/* النظام */}
         <div className="space-y-1">
-          <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            النظام
-          </h3>
+          {renderSectionTitle("النظام")}
           {menuGroups.system.map(renderMenuItem)}
         </div>
 
         {/* الصلاحيات */}
         {(isAccountant || isAdmin) && (
           <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              الصلاحيات
-            </h3>
+            {renderSectionTitle("الصلاحيات")}
             <NavLink
               to="/accountant/permissions"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
+                  "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
+                  "text-white/60 hover:text-white hover:bg-white/[0.06]",
+                  isActive && "bg-gradient-to-r from-primary/20 to-violet-500/20 text-white font-semibold border border-primary/30"
                 )
               }
             >
-              <FileCheck className="h-5 w-5 flex-shrink-0" />
-              <span>صلاحياتي</span>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10" />
+                  )}
+                  <div className={cn(
+                    "relative z-10 p-1.5 rounded-lg transition-all duration-300",
+                    isActive ? "bg-primary/20 text-primary" : "text-white/50 group-hover:text-white/80"
+                  )}>
+                    <FileCheck className="h-5 w-5" />
+                  </div>
+                  <span className="relative z-10">صلاحياتي</span>
+                  {isActive && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
+                  )}
+                </>
+              )}
             </NavLink>
           </div>
         )}
         
         {/* إدارة متقدمة - للمدراء فقط */}
         {isAdmin && (
-          <div className="space-y-1 border-t border-sidebar-border pt-4">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              إدارة متقدمة
-            </h3>
-            <NavLink
-              to="/accounts"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
-                )
-              }
-            >
-              <UserCheck className="h-5 w-5 flex-shrink-0" />
-              <span>إدارة الحسابات</span>
-            </NavLink>
-            <NavLink
-              to="/roles"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
-                )
-              }
-            >
-              <Shield className="h-5 w-5 flex-shrink-0" />
-              <span>إدارة الأدوار</span>
-            </NavLink>
-            <NavLink
-              to="/permissions"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-md"
-                )
-              }
-            >
-              <Key className="h-5 w-5 flex-shrink-0" />
-              <span>إدارة الصلاحيات</span>
-            </NavLink>
+          <div className="space-y-1 border-t border-white/[0.06] pt-4">
+            {renderSectionTitle("إدارة متقدمة")}
+            {[
+              { path: "/accounts", icon: UserCheck, label: "إدارة الحسابات" },
+              { path: "/roles", icon: Shield, label: "إدارة الأدوار" },
+              { path: "/permissions", icon: Key, label: "إدارة الصلاحيات" },
+            ].map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  cn(
+                    "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
+                    "text-white/60 hover:text-white hover:bg-white/[0.06]",
+                    isActive && "bg-gradient-to-r from-primary/20 to-violet-500/20 text-white font-semibold border border-primary/30"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10" />
+                    )}
+                    <div className={cn(
+                      "relative z-10 p-1.5 rounded-lg transition-all duration-300",
+                      isActive ? "bg-primary/20 text-primary" : "text-white/50 group-hover:text-white/80"
+                    )}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <span className="relative z-10">{item.label}</span>
+                    {isActive && (
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
           </div>
         )}
+        
+        {/* التذييل */}
+        <div className="pt-4 border-t border-white/[0.06]">
+          <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-primary/10 to-violet-500/10 border border-primary/20">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold text-white/80">ISP Pro</span>
+            </div>
+            <p className="text-[10px] text-white/40">نظام إدارة متكامل</p>
+          </div>
+        </div>
       </nav>
     </aside>
   );

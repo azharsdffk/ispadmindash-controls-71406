@@ -113,10 +113,17 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background flex w-full" dir="rtl">
+      <div className="min-h-screen bg-background flex w-full relative" dir="rtl">
+        {/* الخلفية الفضائية */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-[20%] w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
+          <div className="absolute bottom-40 left-[10%] w-80 h-80 bg-violet-500/5 rounded-full blur-[100px]" />
+          <div className="absolute top-[60%] right-[60%] w-64 h-64 bg-cyan-500/5 rounded-full blur-[100px]" />
+        </div>
+        
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col relative z-10">
           <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
           
           {/* ترويسة الطباعة */}
@@ -131,62 +138,68 @@ const Index = () => {
             {isAdmin && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Admin Dashboard Link */}
-                <Card 
-                  className="glass-effect hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-950 dark:to-blue-950"
+                <div 
+                  className="group relative cursor-pointer"
                   onClick={() => navigate('/admin')}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-4 rounded-xl bg-gradient-to-br from-slate-700 to-blue-700 shadow-lg">
-                          <Users className="h-8 w-8 text-white" />
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-violet-500/50 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-300" />
+                  <Card className="relative glass-card border-white/[0.08] hover:border-primary/40">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 rounded-xl bg-gradient-to-br from-primary to-violet-600 shadow-lg">
+                            <Users className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-foreground">لوحة الأدمن الشاملة</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              إدارة الفنيين، العملاء، المحاسبة، والتقارير المتقدمة
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-xl font-bold">لوحة الأدمن الشاملة</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            إدارة الفنيين، العملاء، المحاسبة، والتقارير المتقدمة
-                          </p>
-                        </div>
+                        <ArrowLeft className="h-6 w-6 text-primary group-hover:translate-x-[-4px] transition-transform" />
                       </div>
-                      <ArrowLeft className="h-6 w-6 text-primary animate-pulse" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
 
                 {/* Accountant Dashboard Link */}
-                <Card 
-                  className="glass-effect hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-primary/20 hover:border-primary/40 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950"
+                <div 
+                  className="group relative cursor-pointer"
                   onClick={() => navigate('/accountant')}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-lg">
-                          <Calculator className="h-8 w-8 text-white" />
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/50 to-primary/50 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-300" />
+                  <Card className="relative glass-card border-white/[0.08] hover:border-cyan-500/40">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500 to-primary shadow-lg">
+                            <Calculator className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-foreground">لوحة المحاسب المتقدمة</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              النظام المحاسبي - التقارير، القيود، دفتر الأستاذ
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-xl font-bold">لوحة المحاسب المتقدمة</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            النظام المحاسبي - التقارير، القيود، دفتر الأستاذ
-                          </p>
-                        </div>
+                        <ArrowLeft className="h-6 w-6 text-cyan-400 group-hover:translate-x-[-4px] transition-transform" />
                       </div>
-                      <ArrowLeft className="h-6 w-6 text-primary animate-pulse" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             )}
 
             {/* Stats Cards - محسّنة */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card 
-                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary cursor-pointer"
+                className="glass-card stat-card-hover cursor-pointer border-r-4 border-r-primary"
                 onClick={() => setSubscribersListOpen(true)}
               >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium">إجمالي المشتركين</CardTitle>
-                  <div className="p-2 bg-primary/10 rounded-lg">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي المشتركين</CardTitle>
+                  <div className="p-2 bg-primary/20 rounded-xl">
                     <Users className="h-5 w-5 text-primary" />
                   </div>
                 </CardHeader>
@@ -199,12 +212,12 @@ const Index = () => {
               </Card>
 
               <Card 
-                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-warning cursor-pointer"
+                className="glass-card stat-card-hover cursor-pointer border-r-4 border-r-warning"
                 onClick={() => setPendingInvoicesOpen(true)}
               >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium">الفواتير المعلقة</CardTitle>
-                  <div className="p-2 bg-warning/10 rounded-lg">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</CardTitle>
+                  <div className="p-2 bg-warning/20 rounded-xl">
                     <FileText className="h-5 w-5 text-warning" />
                   </div>
                 </CardHeader>
@@ -215,12 +228,12 @@ const Index = () => {
               </Card>
 
               <Card 
-                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-destructive cursor-pointer"
+                className="glass-card stat-card-hover cursor-pointer border-r-4 border-r-destructive"
                 onClick={() => setMaintenanceTicketsOpen(true)}
               >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium">تذاكر الصيانة</CardTitle>
-                  <div className="p-2 bg-destructive/10 rounded-lg">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">تذاكر الصيانة</CardTitle>
+                  <div className="p-2 bg-destructive/20 rounded-xl">
                     <Wrench className="h-5 w-5 text-destructive" />
                   </div>
                 </CardHeader>
@@ -233,12 +246,12 @@ const Index = () => {
               </Card>
 
               <Card 
-                className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-success cursor-pointer"
+                className="glass-card stat-card-hover cursor-pointer border-r-4 border-r-success"
                 onClick={() => setMonthlyRevenueOpen(true)}
               >
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium">الإيرادات الشهرية</CardTitle>
-                  <div className="p-2 bg-success/10 rounded-lg">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">الإيرادات الشهرية</CardTitle>
+                  <div className="p-2 bg-success/20 rounded-xl">
                     <DollarSign className="h-5 w-5 text-success" />
                   </div>
                 </CardHeader>
@@ -252,11 +265,13 @@ const Index = () => {
             </div>
 
             {/* Action Buttons - معاد تنظيمها */}
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-blue-500/10 to-transparent">
+            <Card className="glass-card">
+              <CardHeader className="border-b border-white/[0.06]">
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-blue-600" />
-                  الإجراءات السريعة
+                  <div className="p-2 bg-primary/20 rounded-lg">
+                    <Zap className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="gradient-text">الإجراءات السريعة</span>
                 </CardTitle>
                 <CardDescription>العمليات الأساسية والأكثر استخداماً</CardDescription>
               </CardHeader>
@@ -264,13 +279,13 @@ const Index = () => {
                 {/* العمليات الأساسية */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-blue-600" />
+                    <Users className="h-4 w-4 text-primary" />
                     العمليات الأساسية
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Button
                       onClick={() => setAddSubscriberOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="h-auto py-4 flex-col gap-2 btn-futuristic rounded-xl"
                       title="إضافة مشترك جديد"
                     >
                       <UserPlus className="h-6 w-6" />
@@ -279,7 +294,7 @@ const Index = () => {
 
                     <Button
                       onClick={() => setIssueInvoiceOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="h-auto py-4 flex-col gap-2 btn-futuristic rounded-xl"
                       title="إصدار فاتورة جديدة"
                     >
                       <FileText className="h-6 w-6" />
@@ -288,7 +303,7 @@ const Index = () => {
 
                     <Button
                       onClick={() => setMaintenanceTicketOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="h-auto py-4 flex-col gap-2 btn-futuristic rounded-xl"
                       title="فتح تذكرة صيانة"
                     >
                       <Wrench className="h-6 w-6" />
@@ -297,7 +312,7 @@ const Index = () => {
 
                     <Button
                       onClick={() => setScheduleTechOpen(true)}
-                      className="h-auto py-4 flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white"
+                      className="h-auto py-4 flex-col gap-2 bg-gradient-to-r from-cyan-600 to-primary text-white rounded-xl hover:from-cyan-500 hover:to-primary/90 transition-all"
                       title="جدولة فني"
                     >
                       <Calendar className="h-6 w-6" />
@@ -309,12 +324,12 @@ const Index = () => {
                 {/* السندات المالية */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-blue-600" />
+                    <DollarSign className="h-4 w-4 text-primary" />
                     السندات المالية
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <Button
-                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="h-auto py-4 flex-col gap-2 btn-futuristic rounded-xl"
                       title="إصدار سند قبض"
                       onClick={() => setReceiptOpen(true)}
                     >
@@ -323,7 +338,7 @@ const Index = () => {
                     </Button>
 
                     <Button
-                      className="h-auto py-4 flex-col gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="h-auto py-4 flex-col gap-2 btn-futuristic rounded-xl"
                       title="إصدار سند صرف"
                       onClick={() => setVoucherOpen(true)}
                     >
@@ -332,7 +347,7 @@ const Index = () => {
                     </Button>
 
                     <Button
-                      className="h-auto py-4 flex-col gap-2 bg-blue-500 hover:bg-blue-600 text-white"
+                      className="h-auto py-4 flex-col gap-2 bg-gradient-to-r from-violet-600 to-primary text-white rounded-xl hover:from-violet-500 hover:to-primary/90 transition-all"
                       title="تطبيق خصم"
                       onClick={handleDiscount}
                     >
@@ -345,37 +360,37 @@ const Index = () => {
                 {/* أدوات إضافية */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <Calculator className="h-4 w-4 text-blue-600" />
+                    <Calculator className="h-4 w-4 text-primary" />
                     أدوات إضافية
                   </h3>
                   <div className="grid grid-cols-3 gap-3">
                     <Button
                       variant="outline"
-                      className="h-auto py-4 flex-col gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                      className="h-auto py-4 flex-col gap-2 border-white/[0.1] text-foreground hover:bg-white/[0.05] hover:border-primary/40 rounded-xl transition-all"
                       title="تحديث البيانات (Ctrl+R)"
                       onClick={handleRefresh}
                     >
-                      <RefreshCw className="h-5 w-5" />
+                      <RefreshCw className="h-5 w-5 text-primary" />
                       <span className="text-sm font-medium">تحديث</span>
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="h-auto py-4 flex-col gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                      className="h-auto py-4 flex-col gap-2 border-white/[0.1] text-foreground hover:bg-white/[0.05] hover:border-primary/40 rounded-xl transition-all"
                       title="طباعة (Ctrl+P)"
                       onClick={handlePrint}
                     >
-                      <Printer className="h-5 w-5" />
+                      <Printer className="h-5 w-5 text-primary" />
                       <span className="text-sm font-medium">طباعة</span>
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="h-auto py-4 flex-col gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                      className="h-auto py-4 flex-col gap-2 border-white/[0.1] text-foreground hover:bg-white/[0.05] hover:border-primary/40 rounded-xl transition-all"
                       title="رجوع"
                       onClick={handleBack}
                     >
-                      <ArrowLeft className="h-5 w-5" />
+                      <ArrowLeft className="h-5 w-5 text-primary" />
                       <span className="text-sm font-medium">رجوع</span>
                     </Button>
                   </div>
@@ -384,19 +399,21 @@ const Index = () => {
             </Card>
 
             {/* Recent Activity - محسّن */}
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-purple-500/5 to-transparent">
+            <Card className="glass-card">
+              <CardHeader className="border-b border-white/[0.06]">
                 <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-purple-600" />
-                  النشاط الأخير
+                  <div className="p-2 bg-violet-500/20 rounded-lg">
+                    <Activity className="h-5 w-5 text-violet-400" />
+                  </div>
+                  <span className="gradient-text">النشاط الأخير</span>
                 </CardTitle>
                 <CardDescription>آخر العمليات والأحداث في النظام</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10 hover:border-primary/30 transition-all">
+                  <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/10 hover:border-primary/30 transition-all group">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <UserPlus className="h-6 w-6 text-primary" />
                       </div>
                       <div>
@@ -404,12 +421,12 @@ const Index = () => {
                         <p className="text-sm text-muted-foreground">أحمد محمد - 0501234567</p>
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">منذ 5 دقائق</span>
+                    <span className="text-xs text-muted-foreground bg-white/[0.05] px-3 py-1.5 rounded-full border border-white/[0.08]">منذ 5 دقائق</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-success/5 to-transparent rounded-xl border border-success/10 hover:border-success/30 transition-all">
+                  <div className="flex items-center justify-between p-4 bg-success/5 rounded-xl border border-success/10 hover:border-success/30 transition-all group">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <FileText className="h-6 w-6 text-success" />
                       </div>
                       <div>
@@ -417,12 +434,12 @@ const Index = () => {
                         <p className="text-sm text-muted-foreground">فاتورة #1234 - 500 دينار عراقي</p>
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">منذ 15 دقيقة</span>
+                    <span className="text-xs text-muted-foreground bg-white/[0.05] px-3 py-1.5 rounded-full border border-white/[0.08]">منذ 15 دقيقة</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-warning/5 to-transparent rounded-xl border border-warning/10 hover:border-warning/30 transition-all">
+                  <div className="flex items-center justify-between p-4 bg-warning/5 rounded-xl border border-warning/10 hover:border-warning/30 transition-all group">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl bg-warning/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Wrench className="h-6 w-6 text-warning" />
                       </div>
                       <div>
@@ -430,7 +447,7 @@ const Index = () => {
                         <p className="text-sm text-muted-foreground">انقطاع الإنترنت - عالية</p>
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">منذ 30 دقيقة</span>
+                    <span className="text-xs text-muted-foreground bg-white/[0.05] px-3 py-1.5 rounded-full border border-white/[0.08]">منذ 30 دقيقة</span>
                   </div>
                 </div>
               </CardContent>
