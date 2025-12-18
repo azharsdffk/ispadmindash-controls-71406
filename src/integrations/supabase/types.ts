@@ -1962,6 +1962,119 @@ export type Database = {
         }
         Relationships: []
       }
+      technician_ratings: {
+        Row: {
+          created_at: string | null
+          feedback: string | null
+          id: string
+          rating: number
+          subscriber_id: string
+          technician_id: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          rating: number
+          subscriber_id: string
+          technician_id: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          rating?: number
+          subscriber_id?: string
+          technician_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_ratings_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_ratings_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_ratings_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_ratings_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: true
+            referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technician_stats: {
+        Row: {
+          average_rating: number | null
+          completed_jobs: number | null
+          created_at: string | null
+          id: string
+          reputation_level: string | null
+          technician_id: string
+          total_jobs: number | null
+          total_points: number | null
+          total_ratings: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_rating?: number | null
+          completed_jobs?: number | null
+          created_at?: string | null
+          id?: string
+          reputation_level?: string | null
+          technician_id: string
+          total_jobs?: number | null
+          total_points?: number | null
+          total_ratings?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          average_rating?: number | null
+          completed_jobs?: number | null
+          created_at?: string | null
+          id?: string
+          reputation_level?: string | null
+          technician_id?: string
+          total_jobs?: number | null
+          total_points?: number | null
+          total_ratings?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_stats_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: true
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_stats_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: true
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       technicians: {
         Row: {
           available: boolean | null
@@ -2191,6 +2304,99 @@ export type Database = {
           },
           {
             foreignKeyName: "work_photos_work_log_id_fkey"
+            columns: ["work_log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_reports: {
+        Row: {
+          created_at: string | null
+          customer_signature: string | null
+          diagnosis: string | null
+          id: string
+          labor_cost: number | null
+          parts_cost: number | null
+          parts_used: Json | null
+          report_status: string | null
+          signed_at: string | null
+          subscriber_id: string
+          technician_id: string
+          ticket_id: string
+          total_cost: number | null
+          updated_at: string | null
+          work_log_id: string
+          work_performed: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_signature?: string | null
+          diagnosis?: string | null
+          id?: string
+          labor_cost?: number | null
+          parts_cost?: number | null
+          parts_used?: Json | null
+          report_status?: string | null
+          signed_at?: string | null
+          subscriber_id: string
+          technician_id: string
+          ticket_id: string
+          total_cost?: number | null
+          updated_at?: string | null
+          work_log_id: string
+          work_performed?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_signature?: string | null
+          diagnosis?: string | null
+          id?: string
+          labor_cost?: number | null
+          parts_cost?: number | null
+          parts_used?: Json | null
+          report_status?: string | null
+          signed_at?: string | null
+          subscriber_id?: string
+          technician_id?: string
+          ticket_id?: string
+          total_cost?: number | null
+          updated_at?: string | null
+          work_log_id?: string
+          work_performed?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_reports_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_reports_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_reports_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_reports_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_reports_work_log_id_fkey"
             columns: ["work_log_id"]
             isOneToOne: false
             referencedRelation: "work_logs"
