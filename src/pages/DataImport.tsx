@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileSpreadsheet, Loader2, Link as LinkIcon, Search, Globe, Database, CheckCircle2 } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, Link as LinkIcon, Search, Globe, Database, CheckCircle2, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImportHistory } from "@/components/import/ImportHistory";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
+import { smartSearch, type Subscriber } from "@/services/api/subscriberSearch";
 
 const DataImport = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -23,13 +24,14 @@ const DataImport = () => {
   const [sasUrl, setSasUrl] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [importResult, setImportResult] = useState<{ imported: number; failed: number } | null>(null);
+  const [subscriberResult, setSubscriberResult] = useState<Subscriber | null>(null);
   const { toast } = useToast();
 
   const handleQuickFetch = async () => {
     if (!serviceId.trim()) {
       toast({
         title: "خطأ",
-        description: "الرجاء إدخال رقم الخدمة",
+        description: "الرجاء إدخال رقم الخدمة أو رقم الهاتف",
         variant: "destructive",
       });
       return;
@@ -38,26 +40,46 @@ const DataImport = () => {
     setLoading(true);
     setProgress(0);
     setImportResult(null);
+    setSubscriberResult(null);
+    
     try {
-      setProgress(50);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setProgress(30);
+      
+      const result = await smartSearch(serviceId.trim());
+      
       setProgress(100);
       
-      toast({
-        title: "تم جلب البيانات",
-        description: `تم جلب بيانات المشترك ${serviceId} بنجاح`,
-      });
+      if (result.success && result.subscriber) {
+        setSubscriberResult(result.subscriber);
+        toast({
+          title: "تم جلب البيانات ✅",
+          description: `تم العثور على المشترك: ${result.subscriber.name}`,
+        });
+      } else if (result.success && result.subscribers && result.subscribers.length > 0) {
+        // Multiple results - take the first one
+        setSubscriberResult(result.subscribers[0]);
+        toast({
+          title: "تم جلب البيانات ✅",
+          description: `تم العثور على ${result.count} مشترك`,
+        });
+      } else {
+        toast({
+          title: "لم يتم العثور",
+          description: result.error || "لم يتم العثور على مشترك بهذا الرقم",
+          variant: "destructive",
+        });
+      }
       
-      setServiceId("");
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Fetch error:', error);
       toast({
         title: "خطأ",
-        description: "فشل جلب البيانات",
+        description: error.message || "فشل جلب البيانات",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
-      setProgress(0);
+      setTimeout(() => setProgress(0), 1000);
     }
   };
 
@@ -234,14 +256,14 @@ const DataImport = () => {
                   سحب سريع لبيانات مشترك
                 </CardTitle>
                 <CardDescription>
-                  أدخل رقم الخدمة لجلب بيانات المشترك مباشرة
+                  أدخل رقم الخدمة أو رقم الهاتف لجلب بيانات المشترك مباشرة من قاعدة البيانات
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <Input
-                      placeholder="رقم الخدمة (Service ID)"
+                      placeholder="رقم الخدمة (Service ID) أو رقم الهاتف"
                       value={serviceId}
                       onChange={(e) => setServiceId(e.target.value)}
                       disabled={loading}
@@ -249,12 +271,72 @@ const DataImport = () => {
                     />
                   </div>
                   <Button type="button" onClick={handleQuickFetch} disabled={loading}>
-                    <Download className="ml-2 h-4 w-4" />
-                    سحب البيانات
+                    {loading ? (
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="ml-2 h-4 w-4" />
+                    )}
+                    بحث
                   </Button>
                 </div>
                 {loading && progress > 0 && (
-                  <Progress value={progress} className="mt-3" />
+                  <Progress value={progress} />
+                )}
+                
+                {/* عرض نتيجة البحث */}
+                {subscriberResult && (
+                  <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <User className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold text-lg">بيانات المشترك</h3>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">الاسم:</span>
+                        <p className="font-medium">{subscriberResult.name}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">الهاتف:</span>
+                        <p className="font-medium" dir="ltr">{subscriberResult.phone}</p>
+                      </div>
+                      {subscriberResult.username && (
+                        <div>
+                          <span className="text-muted-foreground">رقم الخدمة:</span>
+                          <p className="font-medium">{subscriberResult.username}</p>
+                        </div>
+                      )}
+                      {subscriberResult.plan && (
+                        <div>
+                          <span className="text-muted-foreground">الباقة:</span>
+                          <p className="font-medium">{subscriberResult.plan}</p>
+                        </div>
+                      )}
+                      {subscriberResult.balance !== undefined && (
+                        <div>
+                          <span className="text-muted-foreground">الرصيد:</span>
+                          <p className="font-medium">{subscriberResult.balance?.toLocaleString()} د.ع</p>
+                        </div>
+                      )}
+                      {subscriberResult.address && (
+                        <div className="col-span-2">
+                          <span className="text-muted-foreground">العنوان:</span>
+                          <p className="font-medium">{subscriberResult.address}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setSubscriberResult(null);
+                          setServiceId("");
+                        }}
+                      >
+                        بحث جديد
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>

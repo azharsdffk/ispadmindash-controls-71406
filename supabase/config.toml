@@ -2,3 +2,6 @@ project_id = "sxmkrmidebylykaefmsl"
 
 [functions.firecrawl-scrape]
 verify_jwt = false
+
+[functions.get-subscriber]
+verify_jwt = false
