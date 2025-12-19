@@ -187,116 +187,127 @@ export default function UserAccountsManagement() {
     <div className="min-h-screen bg-background" dir="rtl">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
       
-      <div className="flex">
-        <main className="flex-1 p-8">
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <AppSidebar />
+        
+        <main className="flex-1 p-6 lg:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                  <Shield className="h-8 w-8" />
-                  إدارة الحسابات والصلاحيات
-                </h1>
-                <p className="text-muted-foreground mt-2">
-                  عرض وإدارة جميع حسابات المستخدمين وصلاحياتهم
-                </p>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-primary/10">
+                  <Shield className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-bold">
+                    إدارة الحسابات والصلاحيات
+                  </h1>
+                  <p className="text-muted-foreground mt-1">
+                    عرض وإدارة جميع حسابات المستخدمين وصلاحياتهم
+                  </p>
+                </div>
               </div>
-              <Button onClick={() => setAddUserOpen(true)} className="gap-2">
+              <Button onClick={() => setAddUserOpen(true)} className="gap-2 shrink-0">
                 <UserPlus className="h-4 w-4" />
                 إضافة مستخدم جديد
               </Button>
             </div>
 
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
+            <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertDescription className="text-blue-700 dark:text-blue-300">
                 تعيين الأدوار يؤثر على صلاحيات الوصول للنظام. تأكد من تعيين الأدوار المناسبة لكل مستخدم.
               </AlertDescription>
             </Alert>
 
-            <div className="bg-card rounded-lg border shadow-sm">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">الاسم</TableHead>
-                    <TableHead className="text-right">البريد الإلكتروني</TableHead>
-                    <TableHead className="text-right">الأدوار الحالية</TableHead>
-                    <TableHead className="text-right">آخر تسجيل دخول</TableHead>
-                    <TableHead className="text-right">عدد مرات الدخول</TableHead>
-                    <TableHead className="text-right">تاريخ الإنشاء</TableHead>
-                    <TableHead className="text-right">إضافة دور</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        لا يوجد مستخدمين
-                      </TableCell>
+            {/* Users Table */}
+            <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="text-right font-semibold">الاسم</TableHead>
+                      <TableHead className="text-right font-semibold">البريد الإلكتروني</TableHead>
+                      <TableHead className="text-right font-semibold">الأدوار الحالية</TableHead>
+                      <TableHead className="text-right font-semibold">آخر تسجيل دخول</TableHead>
+                      <TableHead className="text-right font-semibold">عدد مرات الدخول</TableHead>
+                      <TableHead className="text-right font-semibold">تاريخ الإنشاء</TableHead>
+                      <TableHead className="text-right font-semibold">إضافة دور</TableHead>
                     </TableRow>
-                  ) : (
-                    users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.full_name}</TableCell>
-                        <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-2">
-                            {user.roles.length === 0 ? (
-                              <Badge variant="outline">لا يوجد دور</Badge>
-                            ) : (
-                              user.roles.map((role) => (
-                                <Badge
-                                  key={role}
-                                  variant={getRoleBadgeVariant(role)}
-                                  className="gap-1 cursor-pointer hover:opacity-80"
-                                  onClick={() => handleRemoveRoleClick(user.id, role, user.full_name)}
-                                >
-                                  {getRoleLabel(role)}
-                                  <X className="h-3 w-3" />
-                                </Badge>
-                              ))
-                            )}
+                  </TableHeader>
+                  <TableBody>
+                    {users.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                          <div className="flex flex-col items-center gap-2">
+                            <Shield className="h-12 w-12 text-muted-foreground/50" />
+                            <span>لا يوجد مستخدمين</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {user.last_login 
-                            ? format(new Date(user.last_login), 'dd/MM/yyyy HH:mm', { locale: ar })
-                            : 'لم يسجل دخول بعد'
-                          }
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="secondary">{user.login_count}</Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {user.created_at 
-                            ? format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ar })
-                            : '-'
-                          }
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            onValueChange={(value) => assignRole(user.id, value as AppRole)}
-                          >
-                            <SelectTrigger className="w-[150px]">
-                              <SelectValue placeholder="اختر دور" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">مدير</SelectItem>
-                              <SelectItem value="accountant">محاسب</SelectItem>
-                              <SelectItem value="technician">فني</SelectItem>
-                              <SelectItem value="client">عميل</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      users.map((user) => (
+                        <TableRow key={user.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="font-medium">{user.full_name}</TableCell>
+                          <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-2">
+                              {user.roles.length === 0 ? (
+                                <Badge variant="outline" className="text-muted-foreground">لا يوجد دور</Badge>
+                              ) : (
+                                user.roles.map((role) => (
+                                  <Badge
+                                    key={role}
+                                    variant={getRoleBadgeVariant(role)}
+                                    className="gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => handleRemoveRoleClick(user.id, role, user.full_name)}
+                                  >
+                                    {getRoleLabel(role)}
+                                    <X className="h-3 w-3" />
+                                  </Badge>
+                                ))
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {user.last_login 
+                              ? format(new Date(user.last_login), 'dd/MM/yyyy HH:mm', { locale: ar })
+                              : 'لم يسجل دخول بعد'
+                            }
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">{user.login_count}</Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {user.created_at 
+                              ? format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ar })
+                              : '-'
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              onValueChange={(value) => assignRole(user.id, value as AppRole)}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="اختر دور" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">مدير</SelectItem>
+                                <SelectItem value="accountant">محاسب</SelectItem>
+                                <SelectItem value="technician">فني</SelectItem>
+                                <SelectItem value="client">عميل</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
         </main>
-
-        <AppSidebar />
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
