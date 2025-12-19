@@ -3,7 +3,7 @@
 // - دعم Deno 0.190.0
 // - تحقق من صلاحيات المدير من جدول user_roles
 // - تحديث الأدوار في الجدول الصحيح user_roles
-// - إضافة CORS headers
+// - إضافة CORS headers مع دعم ALLOWED_ORIGIN
 // - معالجة حالة الدور المكرر مسبقاً
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -11,7 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // إعداد CORS Headers لتفادي مشاكل الاستدعاء من المتصفح
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get('ALLOWED_ORIGIN') || '*',
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
@@ -41,6 +41,13 @@ serve(async (req) => {
     // التحقق من المستخدم الذي يقوم بالطلب
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.replace("Bearer ", "").trim();
+
+    if (!token) {
+      return new Response(JSON.stringify({ error: "غير مصرح - رمز المصادقة مطلوب" }), {
+        status: 401,
+        headers: corsHeaders,
+      });
+    }
 
     const { data: authUser, error: authError } = await supabase.auth.getUser(token);
     if (authError || !authUser?.user) {
