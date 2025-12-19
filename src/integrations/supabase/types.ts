@@ -1837,7 +1837,7 @@ export type Database = {
           new_value: string | null
           notes: string | null
           old_value: string | null
-          subscriber_id: string
+          subscriber_id: string | null
           user_agent: string | null
         }
         Insert: {
@@ -1850,7 +1850,7 @@ export type Database = {
           new_value?: string | null
           notes?: string | null
           old_value?: string | null
-          subscriber_id: string
+          subscriber_id?: string | null
           user_agent?: string | null
         }
         Update: {
@@ -1863,7 +1863,7 @@ export type Database = {
           new_value?: string | null
           notes?: string | null
           old_value?: string | null
-          subscriber_id?: string
+          subscriber_id?: string | null
           user_agent?: string | null
         }
         Relationships: [
