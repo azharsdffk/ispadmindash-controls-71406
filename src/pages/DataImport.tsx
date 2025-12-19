@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileSpreadsheet, Loader2, Link as LinkIcon, Search, Globe, Database, CheckCircle2, User } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, Link as LinkIcon, Search, Globe, Database, CheckCircle2, User, Lock, KeyRound } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImportHistory } from "@/components/import/ImportHistory";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -25,6 +25,15 @@ const DataImport = () => {
   const [serviceId, setServiceId] = useState("");
   const [importResult, setImportResult] = useState<{ imported: number; failed: number } | null>(null);
   const [subscriberResult, setSubscriberResult] = useState<Subscriber | null>(null);
+  
+  // SAS credentials
+  const [sasUsername, setSasUsername] = useState("");
+  const [sasPassword, setSasPassword] = useState("");
+  
+  // National Project credentials
+  const [nationalUsername, setNationalUsername] = useState("");
+  const [nationalPassword, setNationalPassword] = useState("");
+  
   const { toast } = useToast();
 
   const handleQuickFetch = async () => {
@@ -382,6 +391,38 @@ const DataImport = () => {
                       </AlertDescription>
                     </Alert>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="sas-username" className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          اسم المستخدم
+                        </Label>
+                        <Input
+                          id="sas-username"
+                          placeholder="أدخل اسم المستخدم"
+                          value={sasUsername}
+                          onChange={(e) => setSasUsername(e.target.value)}
+                          disabled={loading}
+                          dir="ltr"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sas-password" className="flex items-center gap-2">
+                          <Lock className="h-4 w-4" />
+                          كلمة المرور
+                        </Label>
+                        <Input
+                          id="sas-password"
+                          type="password"
+                          placeholder="أدخل كلمة المرور"
+                          value={sasPassword}
+                          onChange={(e) => setSasPassword(e.target.value)}
+                          disabled={loading}
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="sas-url">رابط صفحة SAS</Label>
                       <Textarea
@@ -446,6 +487,38 @@ const DataImport = () => {
                         </ol>
                       </AlertDescription>
                     </Alert>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="national-username" className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          اسم المستخدم
+                        </Label>
+                        <Input
+                          id="national-username"
+                          placeholder="أدخل اسم المستخدم"
+                          value={nationalUsername}
+                          onChange={(e) => setNationalUsername(e.target.value)}
+                          disabled={loading}
+                          dir="ltr"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="national-password" className="flex items-center gap-2">
+                          <Lock className="h-4 w-4" />
+                          كلمة المرور
+                        </Label>
+                        <Input
+                          id="national-password"
+                          type="password"
+                          placeholder="أدخل كلمة المرور"
+                          value={nationalPassword}
+                          onChange={(e) => setNationalPassword(e.target.value)}
+                          disabled={loading}
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="national-url">رابط صفحة المشروع الوطني</Label>
