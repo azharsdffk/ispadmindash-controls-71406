@@ -40,17 +40,48 @@ const menuGroups = {
 };
 
 export const AppSidebar = () => {
-  const { isAdmin, isAccountant, roles } = useUserRole();
-  const { hasPermission, loading } = usePermissions();
+  const { isAdmin, isAccountant, roles, loading: rolesLoading } = useUserRole();
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
 
-  if (loading) {
+  // عرض الـ skeleton فقط أثناء تحميل الأدوار
+  const isLoading = rolesLoading || permissionsLoading;
+
+  if (isLoading) {
     return (
-      <aside className="w-64 bg-sidebar border-l border-white/[0.06] flex-shrink-0">
-        <nav className="p-4 space-y-2">
-          <div className="animate-pulse space-y-2">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-12 bg-white/[0.03] rounded-xl" />
-            ))}
+      <aside className="w-64 bg-sidebar/80 backdrop-blur-xl border-l border-white/[0.06] flex-shrink-0 overflow-y-auto h-screen sticky top-0">
+        {/* الخلفية المتحركة */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-40 -left-10 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl" />
+        </div>
+        <nav className="relative z-10 p-4 space-y-6">
+          <div className="space-y-1">
+            <h3 className="px-4 text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3 flex items-center gap-2">
+              <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
+              جاري التحميل...
+            </h3>
+            <div className="animate-pulse space-y-2">
+              {[...Array(10)].map((_, i) => (
+                <div key={i} className="h-12 bg-white/[0.03] rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </nav>
+      </aside>
+    );
+  }
+
+  // إذا لم يكن هناك أدوار، عرض رسالة مناسبة
+  if (roles.length === 0) {
+    return (
+      <aside className="w-64 bg-sidebar/80 backdrop-blur-xl border-l border-white/[0.06] flex-shrink-0 overflow-y-auto h-screen sticky top-0">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+        </div>
+        <nav className="relative z-10 p-4 space-y-6">
+          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+            <p className="text-sm text-destructive/80 text-center">لم يتم تعيين صلاحيات لحسابك</p>
+            <p className="text-xs text-muted-foreground text-center mt-2">يرجى التواصل مع المدير</p>
           </div>
         </nav>
       </aside>
