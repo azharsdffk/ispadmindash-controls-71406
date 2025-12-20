@@ -38,10 +38,9 @@ import { BalanceSheet } from '@/components/accountant/BalanceSheet';
 import { IncomeStatement } from '@/components/accountant/IncomeStatement';
 import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
 import { usePermissions } from '@/hooks/usePermissions';
-import { DraggableIconGrid } from '@/components/accountant/DraggableIconGrid';
 import { useDashboardLayout } from '@/hooks/useDashboardLayout';
-import { accountantMenuItems } from '@/config/accountantMenu';
 import { RevenueExpenseCharts } from '@/components/accountant/RevenueExpenseCharts';
+import { AccountantMenuGrid } from '@/components/accountant/AccountantMenuGrid';
 
 export default function AccountantDashboard() {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
@@ -176,18 +175,6 @@ export default function AccountantDashboard() {
     return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
   };
 
-  // تصفية القائمة حسب الصلاحيات
-  const filteredMenuItems = accountantMenuItems.filter(item => 
-    !item.permission || hasPermission(item.permission)
-  );
-
-  // ترتيب القائمة حسب التخصيص أو الترتيب الافتراضي
-  const sortedMenuItems = layout.iconOrder.length > 0
-    ? layout.iconOrder
-        .map(id => filteredMenuItems.find(item => item.id === id))
-        .filter(Boolean)
-        .concat(filteredMenuItems.filter(item => !layout.iconOrder.includes(item.id)))
-    : filteredMenuItems;
 
   if (loading || permissionsLoading || layoutLoading) {
     return (
@@ -278,12 +265,7 @@ export default function AccountantDashboard() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <DraggableIconGrid
-                        items={sortedMenuItems as any}
-                        onReorder={updateIconOrder}
-                        viewMode={layout.viewMode}
-                        onViewModeChange={updateViewMode}
-                      />
+                      <AccountantMenuGrid />
                     </CardContent>
                   </Card>
                 </TabsContent>
