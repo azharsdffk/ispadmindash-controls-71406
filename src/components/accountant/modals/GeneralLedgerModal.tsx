@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { GeneralLedger } from '@/components/accountant/GeneralLedger';
 import { BookOpen } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface GeneralLedgerModalProps {
 export const GeneralLedgerModal = ({ open, onOpenChange }: GeneralLedgerModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
             <div className="p-2 rounded-lg gradient-bg">
@@ -18,6 +18,9 @@ export const GeneralLedgerModal = ({ open, onOpenChange }: GeneralLedgerModalPro
             </div>
             دفتر الأستاذ
           </DialogTitle>
+          <DialogDescription>
+            عرض تفاصيل الحسابات وحركة المعاملات المالية
+          </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
           <GeneralLedger />
