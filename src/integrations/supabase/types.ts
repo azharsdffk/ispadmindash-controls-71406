@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      agents: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          phone: string
+          region: string
+          telegram: string | null
+          updated_at: string | null
+          whatsapp: string | null
+          working_hours: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          phone: string
+          region: string
+          telegram?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+          working_hours?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          phone?: string
+          region?: string
+          telegram?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+          working_hours?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1909,6 +1963,7 @@ export type Database = {
         Row: {
           address: string | null
           address_notes: string | null
+          agent_id: string | null
           balance: number | null
           created_at: string | null
           created_by: string | null
@@ -1927,6 +1982,7 @@ export type Database = {
         Insert: {
           address?: string | null
           address_notes?: string | null
+          agent_id?: string | null
           balance?: number | null
           created_at?: string | null
           created_by?: string | null
@@ -1945,6 +2001,7 @@ export type Database = {
         Update: {
           address?: string | null
           address_notes?: string | null
+          agent_id?: string | null
           balance?: number | null
           created_at?: string | null
           created_by?: string | null
@@ -1960,7 +2017,15 @@ export type Database = {
           updated_at?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscribers_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       technician_ratings: {
         Row: {
