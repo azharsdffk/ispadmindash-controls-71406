@@ -326,14 +326,10 @@ export default function CustomerContact() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">الاسم</p>
                     <p className="font-medium">{subscriber.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">رقم الخدمة</p>
-                    <p className="font-medium">{subscriber.username || '-'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">الهاتف</p>
