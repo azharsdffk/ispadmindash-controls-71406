@@ -170,6 +170,36 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require authentication - this is a sensitive import operation
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('Missing Authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get Supabase client early for auth verification
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify user authentication
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('Invalid authentication:', userError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = user.id;
+    console.log('Authenticated user:', userId);
+
     const { url } = await req.json();
 
     if (!url) {
@@ -257,20 +287,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get user from auth header
-    const authHeader = req.headers.get('Authorization');
-    let userId: string | null = null;
-    
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id || null;
-    }
+    // User already authenticated above, reuse supabase client and userId
 
     // Import subscribers to database
     let successCount = 0;
@@ -336,18 +353,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log the import
-    if (userId) {
-      await supabase.from('import_logs').insert({
-        import_type: 'subscribers',
-        source: 'firecrawl_sas',
-        records_imported: successCount,
-        records_failed: failedCount,
-        error_message: errors.length > 0 ? errors.join('\n') : null,
-        status: failedCount === 0 ? 'completed' : 'completed_with_errors',
-        imported_by: userId,
-      });
-    }
+    // Log the import (userId is always available since authentication is required)
+    await supabase.from('import_logs').insert({
+      import_type: 'subscribers',
+      source: 'firecrawl_sas',
+      records_imported: successCount,
+      records_failed: failedCount,
+      error_message: errors.length > 0 ? errors.join('\n') : null,
+      status: failedCount === 0 ? 'completed' : 'completed_with_errors',
+      imported_by: userId,
+    });
 
     console.log(`Import complete: ${successCount} success, ${failedCount} failed`);
 
