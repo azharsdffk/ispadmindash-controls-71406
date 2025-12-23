@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature, Gift, Hexagon, Sparkles } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature, Gift, Hexagon, Sparkles, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole, type AppRole } from "@/hooks/useUserRole";
@@ -222,6 +222,7 @@ export const AppSidebar = () => {
           <div className="space-y-1 border-t border-white/[0.06] pt-4">
             {renderSectionTitle("إدارة متقدمة")}
             {[
+              { path: "/agents", icon: Building2, label: "إدارة الوكلاء" },
               { path: "/accounts", icon: UserCheck, label: "إدارة الحسابات" },
               { path: "/roles", icon: Shield, label: "إدارة الأدوار" },
               { path: "/permissions", icon: Key, label: "إدارة الصلاحيات" },
