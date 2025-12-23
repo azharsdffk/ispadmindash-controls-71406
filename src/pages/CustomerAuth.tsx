@@ -16,24 +16,7 @@ const CustomerAuth = () => {
     password: '',
   });
 
-  // التحقق من تسجيل الدخول
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate('/contact');
-      }
-    };
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate('/contact');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+  // لا نحول المستخدم تلقائياً - نتركه يسجل دخول كعميل
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
