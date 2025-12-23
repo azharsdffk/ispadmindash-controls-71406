@@ -36,6 +36,7 @@ import Discounts from "./pages/Discounts";
 import SecuritySettings from "./pages/SecuritySettings";
 import CustomerContact from "./pages/CustomerContact";
 import AgentsManagement from "./pages/AgentsManagement";
+import AgentDashboard from "./pages/AgentDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +59,12 @@ const App = () => (
               <Route path="/agents" element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AgentsManagement />
+                </ProtectedRoute>
+              } />
+              {/* لوحة تحكم الوكيل */}
+              <Route path="/agent-dashboard" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AgentDashboard />
                 </ProtectedRoute>
               } />
               {/* لوحة الأدمن الشاملة */}

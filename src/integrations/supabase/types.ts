@@ -1078,6 +1078,7 @@ export type Database = {
       }
       maintenance_tickets: {
         Row: {
+          agent_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -1094,6 +1095,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          agent_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -1110,6 +1112,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          agent_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -1126,6 +1129,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "maintenance_tickets_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "maintenance_tickets_subscriber_id_fkey"
             columns: ["subscriber_id"]
