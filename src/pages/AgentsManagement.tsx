@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Plus, Search, Edit, Trash2, MapPin, Phone, MessageCircle, User, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, MapPin, Phone, MessageCircle, User, Loader2, Link } from 'lucide-react';
 import { agentsApi, Agent } from '@/services/api/agents';
 import { DeleteConfirmDialog } from '@/components/modals/DeleteConfirmDialog';
 import { Helmet } from 'react-helmet-async';
@@ -35,8 +35,7 @@ export default function AgentsManagement() {
     region: '',
     address: '',
     working_hours: '',
-    latitude: '',
-    longitude: '',
+    location_url: '',
     active: true,
     notes: '',
   });
@@ -68,8 +67,7 @@ export default function AgentsManagement() {
       region: '',
       address: '',
       working_hours: '',
-      latitude: '',
-      longitude: '',
+      location_url: '',
       active: true,
       notes: '',
     });
@@ -86,8 +84,9 @@ export default function AgentsManagement() {
       region: agent.region,
       address: agent.address || '',
       working_hours: agent.working_hours || '',
-      latitude: agent.latitude?.toString() || '',
-      longitude: agent.longitude?.toString() || '',
+      location_url: agent.latitude && agent.longitude 
+        ? `https://www.google.com/maps?q=${agent.latitude},${agent.longitude}` 
+        : '',
       active: agent.active ?? true,
       notes: agent.notes || '',
     });
@@ -104,6 +103,19 @@ export default function AgentsManagement() {
 
     setSubmitting(true);
     try {
+      // Extract lat/lng from Google Maps URL if provided
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      
+      if (formData.location_url) {
+        // Try to extract coordinates from various Google Maps URL formats
+        const coordsMatch = formData.location_url.match(/[@?](-?\d+\.?\d*),(-?\d+\.?\d*)/);
+        if (coordsMatch) {
+          latitude = parseFloat(coordsMatch[1]);
+          longitude = parseFloat(coordsMatch[2]);
+        }
+      }
+
       const agentData = {
         name: formData.name,
         phone: formData.phone,
@@ -112,8 +124,8 @@ export default function AgentsManagement() {
         region: formData.region,
         address: formData.address || null,
         working_hours: formData.working_hours || null,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        latitude,
+        longitude,
         active: formData.active,
         notes: formData.notes || null,
       };
@@ -373,29 +385,22 @@ export default function AgentsManagement() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">خط العرض</Label>
+            <div className="space-y-2">
+              <Label htmlFor="location_url">رابط الموقع (خرائط جوجل)</Label>
+              <div className="relative">
+                <Link className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                  placeholder="33.3152"
+                  id="location_url"
+                  value={formData.location_url}
+                  onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
+                  placeholder="https://www.google.com/maps?q=33.3152,44.3661"
+                  className="pr-10"
+                  dir="ltr"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">خط الطول</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                  placeholder="44.3661"
-                />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                الصق رابط الموقع من خرائط جوجل مباشرةً
+              </p>
             </div>
 
             <div className="space-y-2">
