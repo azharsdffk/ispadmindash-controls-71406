@@ -16,10 +16,12 @@ import { ReportsAnalytics } from '@/components/admin/ReportsAnalytics';
 import { ActivityLog } from '@/components/admin/ActivityLog';
 import { 
   LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Zap, TrendingUp,
-  Calculator, FileText, Layers, Target, Wallet, User, MapPin
+  Calculator, FileText, Layers, Target, Wallet, User, MapPin, UserCog
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { AccountingEntries } from '@/components/accountant/AccountingEntries';
 import { GeneralLedger } from '@/components/accountant/GeneralLedger';
 import { BalanceSheet } from '@/components/accountant/BalanceSheet';
@@ -89,6 +91,12 @@ const AdminDashboard = () => {
                     <Activity className="h-3 w-3 ml-1" />
                     {new Date().toLocaleDateString('ar-EG')}
                   </Badge>
+                  <Link to="/agents">
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white gap-2">
+                      <UserCog className="h-4 w-4" />
+                      إضافة / تعديل وكيل
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
