@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -22,7 +21,9 @@ import {
   Zap,
   Calendar,
   Bell,
-  Package
+  Package,
+  Wrench,
+  CheckCircle
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
@@ -60,13 +61,15 @@ interface Ticket {
   ticket_number: string;
   status: string;
   created_at: string;
+  issue_type: string | null;
 }
 
+// أنواع المشاكل المتاحة للعميل
 const issueTypes = [
-  { value: 'slow_internet', label: 'انترنت بطيء' },
-  { value: 'disconnection', label: 'انقطاع الخدمة' },
-  { value: 'invoice', label: 'استفسار عن الفاتورة' },
-  { value: 'technical', label: 'مشكلة تقنية' },
+  { value: 'no_internet', label: 'انقطاع الخدمة', icon: '🔴' },
+  { value: 'slow_internet', label: 'انترنت بطيء', icon: '🟡' },
+  { value: 'intermittent', label: 'تقطعات متكررة', icon: '🟠' },
+  { value: 'router_issue', label: 'مشكلة بالراوتر', icon: '📡' },
 ];
 
 export default function CustomerContact() {
@@ -79,9 +82,9 @@ export default function CustomerContact() {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   
-  const [issueType, setIssueType] = useState('');
-  const [issueDescription, setIssueDescription] = useState('');
+  const [selectedIssue, setSelectedIssue] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -195,7 +198,7 @@ export default function CustomerContact() {
       // Load last 3 tickets
       const { data: ticketsData } = await supabase
         .from('maintenance_tickets')
-        .select('id, ticket_number, status, created_at')
+        .select('id, ticket_number, status, created_at, issue_type')
         .eq('subscriber_id', subscriberId)
         .order('created_at', { ascending: false })
         .limit(3);
@@ -208,47 +211,48 @@ export default function CustomerContact() {
     }
   };
 
-  const submitComplaint = async () => {
+  // ✅ إرسال طلب الصيانة - بسيط جداً
+  const submitMaintenanceRequest = async () => {
     if (!subscriber) {
-      toast.error('الرجاء البحث عن المشترك أولاً');
+      toast.error('الرجاء البحث عن حسابك أولاً');
       return;
     }
 
-    if (!issueType) {
+    if (!selectedIssue) {
       toast.error('الرجاء اختيار نوع المشكلة');
-      return;
-    }
-
-    if (!issueDescription.trim()) {
-      toast.error('الرجاء وصف المشكلة');
       return;
     }
 
     setSubmitting(true);
     try {
-      const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`;
-      
-      await supabase
+      // إنشاء التذكرة - agent_id يتم تعيينه تلقائياً من trigger
+      const { data: ticketData, error } = await supabase
         .from('maintenance_tickets')
         .insert({
           subscriber_id: subscriber.id,
-          ticket_number: ticketNumber,
-          issue_type: issueType,
-          issue_description: issueDescription,
+          ticket_number: `TKT-${Date.now().toString().slice(-8)}`,
+          issue_type: selectedIssue,
+          issue_description: issueTypes.find(t => t.value === selectedIssue)?.label || selectedIssue,
           status: 'open',
           priority: 'medium',
-          created_by: user?.id || null,
-        });
+        })
+        .select()
+        .single();
 
-      toast.success('تم إرسال الطلب بنجاح!');
-      setIssueType('');
-      setIssueDescription('');
+      if (error) throw error;
+
+      // عرض رسالة النجاح
+      setShowSuccess(true);
+      setSelectedIssue('');
       
-      if (subscriber) {
-        await loadSubscriberData(subscriber.id);
-      }
+      // إعادة تحميل التذاكر
+      await loadSubscriberData(subscriber.id);
+
+      // إخفاء رسالة النجاح بعد 5 ثواني
+      setTimeout(() => setShowSuccess(false), 5000);
+
     } catch (error) {
-      console.error('Error submitting complaint:', error);
+      console.error('Error submitting maintenance request:', error);
       toast.error('حدث خطأ في إرسال الطلب');
     } finally {
       setSubmitting(false);
@@ -285,6 +289,11 @@ export default function CustomerContact() {
     }
   };
 
+  const getIssueLabel = (issueType: string | null) => {
+    if (!issueType) return '-';
+    return issueTypes.find(t => t.value === issueType)?.label || issueType;
+  };
+
   const openWhatsApp = () => {
     if (!agent?.whatsapp) return;
     const phone = agent.whatsapp.replace(/[^0-9]/g, '');
@@ -319,6 +328,23 @@ export default function CustomerContact() {
       <div className="min-h-screen bg-background p-4" dir="rtl">
         <div className="max-w-lg mx-auto space-y-4">
           
+          {/* ✅ رسالة النجاح */}
+          {showSuccess && (
+            <Card className="border-green-500 bg-green-500/10">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-green-700 dark:text-green-400">تم استلام طلبك!</p>
+                    <p className="text-sm text-muted-foreground">سيتم التواصل معك قريباً</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Search - Only if no subscriber */}
           {!subscriber && (
             <Card>
@@ -346,7 +372,7 @@ export default function CustomerContact() {
 
           {subscriber && (
             <>
-              {/* 1️⃣ Service Status - Most Important */}
+              {/* 1️⃣ Service Status */}
               <Card className="border-2" style={{ borderColor: serviceStatus.status === 'active' ? 'hsl(var(--primary))' : serviceStatus.status === 'stopped' ? 'hsl(0 84% 60%)' : 'hsl(48 96% 53%)' }}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -378,13 +404,6 @@ export default function CustomerContact() {
                     <div className="mt-3 p-2 bg-muted rounded-lg text-sm">
                       <span className="text-muted-foreground">السبب: </span>
                       {subscriber.status_comment}
-                    </div>
-                  )}
-                  
-                  {subscriber.updated_at && (
-                    <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      آخر تحديث: {new Date(subscriber.updated_at).toLocaleDateString('ar-IQ')}
                     </div>
                   )}
                 </CardContent>
@@ -450,7 +469,7 @@ export default function CustomerContact() {
                 </Card>
               )}
 
-              {/* 4️⃣ Agent - Most Important for Customer */}
+              {/* 4️⃣ Agent Contact - زر كبير واضح */}
               <Card className="border-primary/30">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">وكيلك المسؤول</CardTitle>
@@ -486,14 +505,55 @@ export default function CustomerContact() {
                     </div>
                   ) : (
                     <div className="text-center py-4 text-muted-foreground">
-                      <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-                      <p>لم يتم تحديد وكيل لحسابك</p>
+                      <p>لم يتم تعيين وكيل لحسابك</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* 5️⃣ Last 3 Tickets */}
+              {/* 5️⃣ طلب صيانة - بسيط جداً */}
+              <Card className="border-2 border-primary">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Wrench className="h-5 w-5" />
+                    طلب صيانة
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* اختيار نوع المشكلة */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {issueTypes.map((issue) => (
+                      <Button
+                        key={issue.value}
+                        variant={selectedIssue === issue.value ? "default" : "outline"}
+                        className="h-auto py-3 flex flex-col items-center gap-1"
+                        onClick={() => setSelectedIssue(issue.value)}
+                      >
+                        <span className="text-lg">{issue.icon}</span>
+                        <span className="text-xs">{issue.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+
+                  {/* زر الإرسال */}
+                  <Button 
+                    onClick={submitMaintenanceRequest}
+                    disabled={!selectedIssue || submitting}
+                    className="w-full h-12 text-lg"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5 ml-2" />
+                        إرسال الطلب
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* 6️⃣ آخر الطلبات */}
               {tickets.length > 0 && (
                 <Card>
                   <CardHeader className="pb-2">
@@ -502,93 +562,35 @@ export default function CustomerContact() {
                       آخر الطلبات
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {tickets.map((ticket) => (
-                        <div 
-                          key={ticket.id} 
-                          className="flex items-center justify-between p-2 rounded bg-muted/50 text-sm"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs">{ticket.ticket_number}</span>
-                            {getTicketStatus(ticket.status)}
-                          </div>
+                  <CardContent className="space-y-2">
+                    {tickets.map((ticket) => (
+                      <div key={ticket.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{getIssueLabel(ticket.issue_type)}</span>
                           <span className="text-xs text-muted-foreground">
                             {new Date(ticket.created_at).toLocaleDateString('ar-IQ')}
                           </span>
                         </div>
-                      ))}
-                    </div>
+                        {getTicketStatus(ticket.status)}
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               )}
 
-              {/* 6️⃣ Quick Alert */}
-              <Card className="bg-primary/5 border-primary/20">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Bell className="h-4 w-4 text-primary shrink-0" />
-                    <span>الخدمة تعمل بشكل طبيعي في منطقتك</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 7️⃣ Submit Complaint - Simple */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Send className="h-4 w-4" />
-                    إرسال شكوى
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Select value={issueType} onValueChange={setIssueType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="نوع المشكلة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {issueTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Textarea
-                    placeholder="وصف المشكلة..."
-                    value={issueDescription}
-                    onChange={(e) => setIssueDescription(e.target.value)}
-                    rows={2}
-                  />
-
-                  <Button 
-                    onClick={submitComplaint} 
-                    disabled={submitting}
-                    className="w-full"
-                  >
-                    {submitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                    ) : (
-                      <Send className="h-4 w-4 ml-2" />
-                    )}
-                    إرسال
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Change Account Button */}
+              {/* زر تغيير الحساب */}
               <Button 
                 variant="ghost" 
-                className="w-full"
+                className="w-full text-muted-foreground"
                 onClick={() => {
                   setSubscriber(null);
                   setAgent(null);
                   setContract(null);
                   setTickets([]);
+                  setSearchQuery('');
                 }}
               >
-                تغيير الحساب
+                البحث عن حساب آخر
               </Button>
             </>
           )}
