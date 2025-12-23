@@ -37,6 +37,7 @@ import SecuritySettings from "./pages/SecuritySettings";
 import CustomerContact from "./pages/CustomerContact";
 import AgentsManagement from "./pages/AgentsManagement";
 import AgentDashboard from "./pages/AgentDashboard";
+import CustomerAuth from "./pages/CustomerAuth";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -52,6 +53,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/customer-login" element={<CustomerAuth />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               {/* صفحة تواصل الزبون - عامة */}
               <Route path="/contact" element={<CustomerContact />} />
