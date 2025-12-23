@@ -316,125 +316,127 @@ export default function CustomerContact() {
             </Card>
           )}
 
-          {/* Subscriber Info */}
           {subscriber && (
-            <Card className="glass-card border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
-                  معلوماتك
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">الاسم</p>
-                    <p className="font-medium">{subscriber.name}</p>
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* ===== القسم 1: بيانات العميل ===== */}
+              <Card className="glass-card border-primary/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <User className="h-5 w-5 text-primary" />
+                    بياناتك
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <span className="text-muted-foreground text-sm">الاسم</span>
+                    <span className="font-medium">{subscriber.name}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">الهاتف</p>
-                    <p className="font-medium">{subscriber.phone}</p>
+                  <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <span className="text-muted-foreground text-sm">رقم الخدمة</span>
+                    <span className="font-medium font-mono">{subscriber.username || '-'}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">المنطقة</p>
-                    <p className="font-medium">{subscriber.address || '-'}</p>
+                  <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <span className="text-muted-foreground text-sm">الهاتف</span>
+                    <span className="font-medium" dir="ltr">{subscriber.phone}</span>
                   </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mt-4"
-                  onClick={() => {
-                    setSubscriber(null);
-                    setAgent(null);
-                    setTickets([]);
-                  }}
-                >
-                  تغيير الحساب
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Agent Info */}
-          {agent && (
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  وكيلك: {agent.name}
-                </CardTitle>
-                <CardDescription>
-                  <div className="flex items-center gap-2 mt-1">
-                    <MapPin className="h-4 w-4" />
-                    {agent.region}
-                    {agent.address && ` - ${agent.address}`}
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-muted-foreground text-sm">المنطقة</span>
+                    <span className="font-medium">{subscriber.address || '-'}</span>
                   </div>
-                  {agent.working_hours && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <Clock className="h-4 w-4" />
-                      {agent.working_hours}
-                    </div>
-                  )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  <Button onClick={makeCall} className="flex-1 min-w-[140px]">
-                    <Phone className="h-4 w-4 ml-2" />
-                    اتصال
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={() => {
+                      setSubscriber(null);
+                      setAgent(null);
+                      setTickets([]);
+                    }}
+                  >
+                    تغيير الحساب
                   </Button>
-                  
-                  {agent.whatsapp && (
-                    <Button 
-                      onClick={openWhatsApp} 
-                      className="flex-1 min-w-[140px] bg-green-600 hover:bg-green-700"
-                    >
-                      <MessageCircle className="h-4 w-4 ml-2" />
-                      واتساب
-                    </Button>
-                  )}
-                  
-                  {agent.telegram && (
-                    <Button 
-                      onClick={openTelegram} 
-                      variant="outline"
-                      className="flex-1 min-w-[140px]"
-                    >
-                      <Send className="h-4 w-4 ml-2" />
-                      تلغرام
-                    </Button>
-                  )}
-                  
-                  {agent.latitude && agent.longitude && (
-                    <Button onClick={openMap} variant="outline" className="flex-1 min-w-[140px]">
-                      <MapPin className="h-4 w-4 ml-2" />
-                      الموقع
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* ===== القسم 2: معلومات الوكيل + أزرار تواصل ===== */}
+              {agent ? (
+                <Card className="glass-card">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <User className="h-5 w-5" />
+                      وكيلك
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="font-semibold text-lg">{agent.name}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        <span>{agent.region}{agent.address && ` - ${agent.address}`}</span>
+                      </div>
+                      {agent.working_hours && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4 shrink-0" />
+                          <span>{agent.working_hours}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                      <Button onClick={makeCall} size="sm" className="w-full">
+                        <Phone className="h-4 w-4 ml-1" />
+                        اتصال
+                      </Button>
+                      
+                      {agent.whatsapp && (
+                        <Button 
+                          onClick={openWhatsApp} 
+                          size="sm"
+                          className="w-full bg-green-600 hover:bg-green-700"
+                        >
+                          <MessageCircle className="h-4 w-4 ml-1" />
+                          واتساب
+                        </Button>
+                      )}
+                      
+                      {agent.telegram && (
+                        <Button 
+                          onClick={openTelegram} 
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Send className="h-4 w-4 ml-1" />
+                          تلغرام
+                        </Button>
+                      )}
+                      
+                      {agent.latitude && agent.longitude && (
+                        <Button onClick={openMap} variant="outline" size="sm" className="w-full">
+                          <MapPin className="h-4 w-4 ml-1" />
+                          الموقع
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="glass-card border-yellow-500/30 bg-yellow-500/5">
+                  <CardContent className="p-6 flex items-center gap-3">
+                    <AlertTriangle className="h-6 w-6 text-yellow-500 shrink-0" />
+                    <div>
+                      <p className="font-medium">لم يتم تحديد وكيل لحسابك</p>
+                      <p className="text-sm text-muted-foreground">
+                        يمكنك إرسال طلب وسيتم توجيهه للدعم الفني
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
-          {/* No Agent Message */}
-          {subscriber && !agent && (
-            <Card className="glass-card border-yellow-500/30 bg-yellow-500/5">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                  <div>
-                    <p className="font-medium">لم يتم تحديد وكيل لحسابك</p>
-                    <p className="text-sm text-muted-foreground">
-                      يمكنك إرسال طلب وسيتم توجيهه للدعم الفني
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Submit Complaint Form */}
+          {/* ===== القسم 3: إرسال شكوى ===== */}
           {subscriber && (
             <Card className="glass-card">
               <CardHeader>
@@ -447,30 +449,32 @@ export default function CustomerContact() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">نوع الطلب</label>
-                  <Select value={issueType} onValueChange={setIssueType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر نوع المشكلة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {issueTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">نوع الطلب</label>
+                    <Select value={issueType} onValueChange={setIssueType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع المشكلة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {issueTypes.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">وصف المشكلة</label>
-                  <Textarea
-                    placeholder="اكتب تفاصيل المشكلة هنا..."
-                    value={issueDescription}
-                    onChange={(e) => setIssueDescription(e.target.value)}
-                    rows={4}
-                  />
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium mb-2 block">وصف المشكلة</label>
+                    <Textarea
+                      placeholder="اكتب تفاصيل المشكلة هنا..."
+                      value={issueDescription}
+                      onChange={(e) => setIssueDescription(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
                 </div>
 
                 <Button 
