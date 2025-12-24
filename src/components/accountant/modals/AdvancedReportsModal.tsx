@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AdvancedReports } from '@/components/accountant/AdvancedReports';
 import { PieChart } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface AdvancedReportsModalProps {
 export const AdvancedReportsModal = ({ open, onOpenChange }: AdvancedReportsModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
             <div className="p-2 rounded-lg gradient-bg">
@@ -18,6 +18,9 @@ export const AdvancedReportsModal = ({ open, onOpenChange }: AdvancedReportsModa
             </div>
             التقارير المتقدمة
           </DialogTitle>
+          <DialogDescription>
+            تقارير تفصيلية وإحصائيات شاملة
+          </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
           <AdvancedReports />
