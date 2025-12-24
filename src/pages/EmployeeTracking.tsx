@@ -2,15 +2,30 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SettingsModal } from "@/components/modals/SettingsModal";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, Users, Navigation, AlertCircle, Clock, X } from "lucide-react";
+import { 
+  MapPin, Users, Navigation, AlertCircle, Clock, RefreshCcw,
+  Search, LayoutGrid, List, Phone, ExternalLink, Activity,
+  Signal, SignalLow, SignalZero, MoreVertical, Eye, Filter,
+  Wifi, WifiOff, Timer, TrendingUp, TrendingDown, Gauge,
+  Map, Target, Crosshair, Route, History, UserCheck, UserX
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { format, differenceInMinutes, differenceInHours, isToday, parseISO } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface EmployeeLocation {
   id: string;
@@ -19,11 +34,20 @@ interface EmployeeLocation {
   longitude: number;
   accuracy: number | null;
   recorded_at: string;
+  device_info?: any;
   employee?: {
     full_name: string;
     position: string | null;
     phone: string;
   };
+}
+
+interface LocationHistory {
+  id: string;
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  recorded_at: string;
 }
 
 const EmployeeTracking = () => {
@@ -33,12 +57,26 @@ const EmployeeTracking = () => {
   const [showAllModal, setShowAllModal] = useState(false);
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [showInactiveModal, setShowInactiveModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeLocation | null>(null);
+  const [locationHistory, setLocationHistory] = useState<LocationHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const { isAdmin, loading: roleLoading } = useUserRole();
+
+  // Filter and view states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [positionFilter, setPositionFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (!roleLoading && isAdmin) {
       fetchEmployeeLocations();
-      subscribeToLocationUpdates();
+      const unsubscribe = subscribeToLocationUpdates();
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     }
   }, [roleLoading, isAdmin]);
 
@@ -47,7 +85,6 @@ const EmployeeTracking = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Log access for each accessed user, or general access if viewing all
       for (const accessedUserId of accessedUserIds.length > 0 ? accessedUserIds : [null]) {
         await supabase.rpc('log_employee_location_access', {
           p_accessor_id: user.id,
@@ -67,7 +104,6 @@ const EmployeeTracking = () => {
     try {
       setLoading(true);
       
-      // Get latest location for each employee
       const { data: employeeData } = await supabase
         .from('employees')
         .select('user_id, full_name, position, phone');
@@ -104,7 +140,6 @@ const EmployeeTracking = () => {
 
       setLocations(locationsWithEmployees);
       
-      // Log this access for audit trail
       if (locationsWithEmployees.length > 0) {
         await logLocationAccess('bulk_view', locationsWithEmployees.length, accessedUserIds);
       }
@@ -113,6 +148,27 @@ const EmployeeTracking = () => {
       toast.error('فشل تحميل مواقع الموظفين');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLocationHistory = async (userId: string) => {
+    try {
+      setHistoryLoading(true);
+      const { data, error } = await supabase
+        .from('employee_locations')
+        .select('id, latitude, longitude, accuracy, recorded_at')
+        .eq('user_id', userId)
+        .order('recorded_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setLocationHistory(data || []);
+      await logLocationAccess('history_view', data?.length || 0, [userId]);
+    } catch (error) {
+      console.error('Error fetching location history:', error);
+      toast.error('فشل تحميل سجل المواقع');
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -137,44 +193,381 @@ const EmployeeTracking = () => {
     };
   };
 
+  // Statistics
+  const stats = useMemo(() => {
+    const now = new Date();
+    const total = locations.length;
+    
+    const active = locations.filter(loc => {
+      const diffMins = differenceInMinutes(now, parseISO(loc.recorded_at));
+      return diffMins < 15;
+    }).length;
+
+    const idle = locations.filter(loc => {
+      const diffMins = differenceInMinutes(now, parseISO(loc.recorded_at));
+      return diffMins >= 15 && diffMins < 60;
+    }).length;
+
+    const inactive = locations.filter(loc => {
+      const diffMins = differenceInMinutes(now, parseISO(loc.recorded_at));
+      return diffMins >= 60;
+    }).length;
+
+    const highAccuracy = locations.filter(loc => loc.accuracy && loc.accuracy <= 10).length;
+    const todayUpdates = locations.filter(loc => isToday(parseISO(loc.recorded_at))).length;
+
+    const activeRate = total > 0 ? (active / total) * 100 : 0;
+
+    return { total, active, idle, inactive, highAccuracy, todayUpdates, activeRate };
+  }, [locations]);
+
+  // Get unique positions
+  const positions = useMemo(() => {
+    const posSet = new Set(locations.map(loc => loc.employee?.position).filter(Boolean));
+    return [...posSet];
+  }, [locations]);
+
+  // Filtered locations
+  const filteredLocations = useMemo(() => {
+    let filtered = [...locations];
+    const now = new Date();
+
+    // Tab filter
+    if (activeTab === "active") {
+      filtered = filtered.filter(loc => differenceInMinutes(now, parseISO(loc.recorded_at)) < 15);
+    } else if (activeTab === "idle") {
+      filtered = filtered.filter(loc => {
+        const diff = differenceInMinutes(now, parseISO(loc.recorded_at));
+        return diff >= 15 && diff < 60;
+      });
+    } else if (activeTab === "inactive") {
+      filtered = filtered.filter(loc => differenceInMinutes(now, parseISO(loc.recorded_at)) >= 60);
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(loc => {
+        const diffMins = differenceInMinutes(now, parseISO(loc.recorded_at));
+        if (statusFilter === "active") return diffMins < 15;
+        if (statusFilter === "idle") return diffMins >= 15 && diffMins < 60;
+        if (statusFilter === "inactive") return diffMins >= 60;
+        return true;
+      });
+    }
+
+    // Position filter
+    if (positionFilter !== "all") {
+      filtered = filtered.filter(loc => loc.employee?.position === positionFilter);
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(loc =>
+        loc.employee?.full_name?.toLowerCase().includes(query) ||
+        loc.employee?.phone?.includes(query) ||
+        loc.employee?.position?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [locations, activeTab, statusFilter, positionFilter, searchQuery]);
+
   const getTimeAgo = (timestamp: string) => {
     const now = new Date();
-    const time = new Date(timestamp);
-    const diffMs = now.getTime() - time.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
+    const time = parseISO(timestamp);
+    const diffMins = differenceInMinutes(now, time);
 
     if (diffMins < 1) return 'الآن';
     if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
     
-    const diffHours = Math.floor(diffMins / 60);
+    const diffHours = differenceInHours(now, time);
     if (diffHours < 24) return `منذ ${diffHours} ساعة`;
     
     const diffDays = Math.floor(diffHours / 24);
     return `منذ ${diffDays} يوم`;
   };
 
-  const getStatusColor = (timestamp: string) => {
+  const getStatusInfo = (timestamp: string) => {
     const now = new Date();
-    const time = new Date(timestamp);
-    const diffMins = Math.floor((now.getTime() - time.getTime()) / 60000);
+    const time = parseISO(timestamp);
+    const diffMins = differenceInMinutes(now, time);
 
-    if (diffMins < 15) return 'success';
-    if (diffMins < 60) return 'warning';
-    return 'destructive';
+    if (diffMins < 15) {
+      return {
+        status: 'active',
+        label: 'نشط',
+        color: 'bg-green-500',
+        textColor: 'text-green-600',
+        bgLight: 'bg-green-100 dark:bg-green-900/30',
+        icon: Signal
+      };
+    }
+    if (diffMins < 60) {
+      return {
+        status: 'idle',
+        label: 'متوسط',
+        color: 'bg-yellow-500',
+        textColor: 'text-yellow-600',
+        bgLight: 'bg-yellow-100 dark:bg-yellow-900/30',
+        icon: SignalLow
+      };
+    }
+    return {
+      status: 'inactive',
+      label: 'غير نشط',
+      color: 'bg-red-500',
+      textColor: 'text-red-600',
+      bgLight: 'bg-red-100 dark:bg-red-900/30',
+      icon: SignalZero
+    };
+  };
+
+  const getAccuracyBadge = (accuracy: number | null) => {
+    if (!accuracy) return null;
+    if (accuracy <= 10) {
+      return <Badge variant="outline" className="bg-green-100 text-green-700 text-[10px]">دقة عالية ({accuracy.toFixed(0)}م)</Badge>;
+    }
+    if (accuracy <= 50) {
+      return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 text-[10px]">دقة متوسطة ({accuracy.toFixed(0)}م)</Badge>;
+    }
+    return <Badge variant="outline" className="bg-red-100 text-red-700 text-[10px]">دقة منخفضة ({accuracy.toFixed(0)}م)</Badge>;
   };
 
   const openInMaps = async (lat: number, lng: number, userId?: string) => {
-    // Log individual location view for audit
     if (userId) {
       await logLocationAccess('map_view', 1, [userId]);
     }
     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
   };
 
+  const openInWaze = async (lat: number, lng: number, userId?: string) => {
+    if (userId) {
+      await logLocationAccess('waze_view', 1, [userId]);
+    }
+    window.open(`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`, '_blank');
+  };
+
+  const callPhone = (phone?: string) => {
+    if (phone) {
+      window.open(`tel:${phone}`);
+    }
+  };
+
+  const openEmployeeHistory = (location: EmployeeLocation) => {
+    setSelectedEmployee(location);
+    fetchLocationHistory(location.user_id);
+    setShowHistoryModal(true);
+  };
+
+  // Stat Card Component
+  const StatCard = ({ 
+    title, 
+    value, 
+    subtitle, 
+    icon: Icon, 
+    color,
+    onClick 
+  }: { 
+    title: string; 
+    value: number | string; 
+    subtitle?: string;
+    icon: any; 
+    color: string;
+    onClick?: () => void;
+  }) => (
+    <Card 
+      className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${onClick ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+      onClick={onClick}
+    >
+      <div className={`absolute top-0 right-0 w-24 h-24 -mr-6 -mt-6 rounded-full opacity-10 ${color}`} />
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold mt-1">{value}</p>
+            {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+          </div>
+          <div className={`p-3 rounded-xl ${color}`}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Employee Card Component (Grid View)
+  const EmployeeCard = ({ location }: { location: EmployeeLocation }) => {
+    const statusInfo = getStatusInfo(location.recorded_at);
+    const StatusIcon = statusInfo.icon;
+
+    return (
+      <Card 
+        className={`group hover:shadow-lg transition-all duration-300 border-r-4`}
+        style={{ borderRightColor: statusInfo.status === 'active' ? '#22c55e' : statusInfo.status === 'idle' ? '#eab308' : '#ef4444' }}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-full ${statusInfo.bgLight} flex items-center justify-center`}>
+                <span className={`text-lg font-bold ${statusInfo.textColor}`}>
+                  {location.employee?.full_name?.charAt(0) || '؟'}
+                </span>
+              </div>
+              <div>
+                <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
+                <p className="text-xs text-muted-foreground">{location.employee?.position || '-'}</p>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}>
+                  <Navigation className="h-4 w-4 ml-2" />
+                  فتح في خرائط جوجل
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openInWaze(location.latitude, location.longitude, location.user_id)}>
+                  <Route className="h-4 w-4 ml-2" />
+                  فتح في Waze
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {location.employee?.phone && (
+                  <DropdownMenuItem onClick={() => callPhone(location.employee?.phone)}>
+                    <Phone className="h-4 w-4 ml-2" />
+                    اتصال
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => openEmployeeHistory(location)}>
+                  <History className="h-4 w-4 ml-2" />
+                  سجل المواقع
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="flex items-center gap-2 mb-3">
+            <Badge variant="outline" className={`${statusInfo.bgLight} ${statusInfo.textColor} flex items-center gap-1`}>
+              <StatusIcon className="h-3 w-3" />
+              {statusInfo.label}
+            </Badge>
+            {getAccuracyBadge(location.accuracy)}
+          </div>
+
+          <Separator className="my-3" />
+
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5" />
+              <span className="text-xs font-mono">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</span>
+            </div>
+            
+            {location.employee?.phone && (
+              <button 
+                onClick={() => callPhone(location.employee?.phone)}
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                <span dir="ltr" className="text-xs">{location.employee.phone}</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="text-xs">{getTimeAgo(location.recorded_at)}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="flex-1 text-xs"
+              onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
+            >
+              <Navigation className="h-3 w-3 ml-1" />
+              عرض الموقع
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-xs"
+              onClick={() => openEmployeeHistory(location)}
+            >
+              <History className="h-3 w-3" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Employee Row Component (List View)
+  const EmployeeRow = ({ location }: { location: EmployeeLocation }) => {
+    const statusInfo = getStatusInfo(location.recorded_at);
+    const StatusIcon = statusInfo.icon;
+
+    return (
+      <Card className={`border-r-4`} style={{ borderRightColor: statusInfo.status === 'active' ? '#22c55e' : statusInfo.status === 'idle' ? '#eab308' : '#ef4444' }}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className={`w-10 h-10 rounded-full ${statusInfo.bgLight} flex items-center justify-center shrink-0`}>
+                <span className={`font-bold ${statusInfo.textColor}`}>
+                  {location.employee?.full_name?.charAt(0) || '؟'}
+                </span>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold truncate">{location.employee?.full_name || 'موظف'}</h3>
+                  <Badge variant="outline" className={`${statusInfo.bgLight} ${statusInfo.textColor} flex items-center gap-1 shrink-0`}>
+                    <StatusIcon className="h-3 w-3" />
+                    {statusInfo.label}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  {location.employee?.position && <span>{location.employee.position}</span>}
+                  <span className="font-mono">{location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
+                  {getAccuracyBadge(location.accuracy)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <Clock className="h-3 w-3" />
+              <span>{getTimeAgo(location.recorded_at)}</span>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              {location.employee?.phone && (
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => callPhone(location.employee?.phone)}>
+                  <Phone className="h-4 w-4" />
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}>
+                <Navigation className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEmployeeHistory(location)}>
+                <History className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">جاري تحميل بيانات التتبع...</p>
+        </div>
       </div>
     );
   }
@@ -187,6 +580,7 @@ const EmployeeTracking = () => {
           <AppSidebar />
           <main className="flex-1 p-6 overflow-y-auto">
             <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 ليس لديك صلاحية الوصول إلى هذه الصفحة
               </AlertDescription>
@@ -204,309 +598,276 @@ const EmployeeTracking = () => {
       <div className="flex flex-1 w-full">
         <AppSidebar />
         
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-3xl font-bold">تتبع الموظفين</h1>
-                <p className="text-sm text-muted-foreground">
-                  تتبع مواقع الموظفين في الوقت الفعلي
-                </p>
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-primary/10">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold">تتبع الموظفين</h1>
+                  <p className="text-sm text-muted-foreground">مراقبة مواقع الموظفين في الوقت الفعلي</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => fetchEmployeeLocations()} variant="outline" size="sm">
+                  <RefreshCcw className="h-4 w-4 ml-1" />
+                  تحديث
+                </Button>
               </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card 
-                className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setShowAllModal(true)}
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                    <Users className="h-5 w-5" />
-                    إجمالي التتبع
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{locations.length}</p>
-                  <p className="text-xs text-muted-foreground mt-1">موظف مسجل في النظام</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setShowActiveModal(true)}
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-                    <Navigation className="h-5 w-5" />
-                    نشط الآن
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
-                    {locations.filter(loc => {
-                      const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
-                      return diffMins < 15;
-                    }).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">موظف نشط خلال 15 دقيقة</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setShowInactiveModal(true)}
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2 text-orange-700 dark:text-orange-400">
-                    <Clock className="h-5 w-5" />
-                    غير نشط
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-4xl font-bold text-orange-600 dark:text-orange-400">
-                    {locations.filter(loc => {
-                      const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
-                      return diffMins >= 60;
-                    }).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">موظف غير نشط لأكثر من ساعة</p>
-                </CardContent>
-              </Card>
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <StatCard
+                title="إجمالي الموظفين"
+                value={stats.total}
+                icon={Users}
+                color="bg-primary"
+                onClick={() => setActiveTab("all")}
+              />
+              <StatCard
+                title="نشط الآن"
+                value={stats.active}
+                subtitle="آخر 15 دقيقة"
+                icon={Signal}
+                color="bg-green-500"
+                onClick={() => setActiveTab("active")}
+              />
+              <StatCard
+                title="نشاط متوسط"
+                value={stats.idle}
+                subtitle="15-60 دقيقة"
+                icon={SignalLow}
+                color="bg-yellow-500"
+                onClick={() => setActiveTab("idle")}
+              />
+              <StatCard
+                title="غير نشط"
+                value={stats.inactive}
+                subtitle="أكثر من ساعة"
+                icon={SignalZero}
+                color="bg-red-500"
+                onClick={() => setActiveTab("inactive")}
+              />
+              <StatCard
+                title="دقة عالية"
+                value={stats.highAccuracy}
+                subtitle="≤ 10 متر"
+                icon={Target}
+                color="bg-blue-500"
+              />
+              <StatCard
+                title="نسبة النشاط"
+                value={`${stats.activeRate.toFixed(0)}%`}
+                icon={Activity}
+                color="bg-purple-500"
+              />
             </div>
 
-            {/* Map Placeholder */}
+            {/* Activity Progress */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  خريطة المواقع
-                </CardTitle>
-                <CardDescription>
-                  عرض مواقع الموظفين على الخريطة
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-muted rounded-lg p-12 text-center">
-                  <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-2">
-                    يتطلب مفتاح Mapbox API لعرض الخريطة التفاعلية
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    المواقع معروضة في القائمة أدناه
-                  </p>
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">توزيع حالات النشاط</span>
+                  <span className="text-xs text-muted-foreground">{stats.total} موظف</span>
+                </div>
+                <div className="flex h-3 rounded-full overflow-hidden bg-muted">
+                  {stats.total > 0 && (
+                    <>
+                      <div 
+                        className="bg-green-500 transition-all duration-500" 
+                        style={{ width: `${(stats.active / stats.total) * 100}%` }} 
+                        title={`نشط: ${stats.active}`}
+                      />
+                      <div 
+                        className="bg-yellow-500 transition-all duration-500" 
+                        style={{ width: `${(stats.idle / stats.total) * 100}%` }} 
+                        title={`متوسط: ${stats.idle}`}
+                      />
+                      <div 
+                        className="bg-red-500 transition-all duration-500" 
+                        style={{ width: `${(stats.inactive / stats.total) * 100}%` }} 
+                        title={`غير نشط: ${stats.inactive}`}
+                      />
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-6 mt-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> نشط ({stats.active})</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500" /> متوسط ({stats.idle})</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> غير نشط ({stats.inactive})</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Employee Locations List */}
-            <Card>
-              <CardHeader>
-                <CardTitle>مواقع الموظفين</CardTitle>
-                <CardDescription>
-                  آخر موقع مسجل لكل موظف
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {locations.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">لا توجد بيانات موقع متاحة</p>
+            {/* Tabs and Filters */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <TabsList>
+                  <TabsTrigger value="all">الكل ({stats.total})</TabsTrigger>
+                  <TabsTrigger value="active" className="text-green-600">نشط ({stats.active})</TabsTrigger>
+                  <TabsTrigger value="idle" className="text-yellow-600">متوسط ({stats.idle})</TabsTrigger>
+                  <TabsTrigger value="inactive" className="text-red-600">غير نشط ({stats.inactive})</TabsTrigger>
+                </TabsList>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === "grid" ? "secondary" : "ghost"}
+                    size="icon"
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "secondary" : "ghost"}
+                    size="icon"
+                    onClick={() => setViewMode("list")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Filters */}
+              <Card className="mt-4">
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="md:col-span-2">
+                      <div className="relative">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="بحث بالاسم، الهاتف، المنصب..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pr-10"
+                        />
+                      </div>
+                    </div>
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="حالة النشاط" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">جميع الحالات</SelectItem>
+                        <SelectItem value="active">نشط</SelectItem>
+                        <SelectItem value="idle">متوسط</SelectItem>
+                        <SelectItem value="inactive">غير نشط</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={positionFilter} onValueChange={setPositionFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="المنصب" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">جميع المناصب</SelectItem>
+                        {positions.map(pos => (
+                          <SelectItem key={pos} value={pos!}>{pos}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Content */}
+              <TabsContent value={activeTab} className="mt-4">
+                {filteredLocations.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground text-lg">لا توجد بيانات مواقع مطابقة</p>
+                    </CardContent>
+                  </Card>
+                ) : viewMode === "grid" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredLocations.map(location => (
+                      <EmployeeCard key={location.id} location={location} />
+                    ))}
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {locations.map((location) => (
-                      <Card key={location.id} className="border-l-4" style={{
-                        borderLeftColor: `hsl(var(--${getStatusColor(location.recorded_at)}))`
-                      }}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <h3 className="font-semibold">
-                                  {location.employee?.full_name || 'موظف'}
-                                </h3>
-                                <Badge variant={getStatusColor(location.recorded_at) as any}>
-                                  {getTimeAgo(location.recorded_at)}
-                                </Badge>
-                              </div>
-                              
-                              {location.employee?.position && (
-                                <p className="text-sm text-muted-foreground mb-1">
-                                  {location.employee.position}
-                                </p>
-                              )}
-                              
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
-                                  <span>
-                                    {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-                                  </span>
-                                </div>
-                                
-                                {location.accuracy && (
-                                  <div>
-                                    دقة: {location.accuracy.toFixed(0)}م
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <p className="text-xs text-muted-foreground mt-2">
-                                آخر تحديث: {new Date(location.recorded_at).toLocaleString('ar-IQ')}
-                              </p>
-                            </div>
-                            
-                            <button
-                              onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
-                              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
-                            >
-                              <Navigation className="h-4 w-4" />
-                              عرض
-                            </button>
-                          </div>
-                        </CardContent>
-                      </Card>
+                    {filteredLocations.map(location => (
+                      <EmployeeRow key={location.id} location={location} />
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </TabsContent>
+            </Tabs>
+
+            {/* Results Count */}
+            {filteredLocations.length > 0 && (
+              <p className="text-sm text-muted-foreground text-center">
+                عرض {filteredLocations.length} من {stats.total} موظف
+              </p>
+            )}
           </div>
         </main>
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
 
-      {/* All Employees Modal */}
-      <Dialog open={showAllModal} onOpenChange={setShowAllModal}>
-        <DialogContent className="max-w-2xl" dir="rtl">
+      {/* Location History Modal */}
+      <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh]" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-blue-600">
-              <Users className="h-5 w-5" />
-              إجمالي التتبع ({locations.length})
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              سجل مواقع {selectedEmployee?.employee?.full_name || 'الموظف'}
             </DialogTitle>
+            <DialogDescription>
+              آخر 50 موقع مسجل
+            </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-3 p-1">
-              {locations.map((location) => (
-                <Card key={location.id} className="border-r-4 border-r-blue-500">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
-                        <p className="text-sm text-muted-foreground">{location.employee?.position || '-'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          آخر تحديث: {getTimeAgo(location.recorded_at)}
-                        </p>
+            {historyLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : locationHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                لا توجد سجلات مواقع
+              </div>
+            ) : (
+              <div className="space-y-2 p-1">
+                {locationHistory.map((loc, index) => (
+                  <Card key={loc.id} className="border-r-2 border-r-primary/30">
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="text-sm font-mono">{loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(parseISO(loc.recorded_at), 'dd/MM/yyyy HH:mm:ss', { locale: ar })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {loc.accuracy && (
+                            <span className="text-xs text-muted-foreground">دقة: {loc.accuracy.toFixed(0)}م</span>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => openInMaps(loc.latitude, loc.longitude)}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <Badge variant={getStatusColor(location.recorded_at) as any}>
-                        {getStatusColor(location.recorded_at) === 'success' ? 'نشط' : getStatusColor(location.recorded_at) === 'warning' ? 'متوسط' : 'غير نشط'}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {locations.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">لا توجد بيانات</p>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
-      {/* Active Employees Modal */}
-      <Dialog open={showActiveModal} onOpenChange={setShowActiveModal}>
-        <DialogContent className="max-w-2xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-emerald-600">
-              <Navigation className="h-5 w-5" />
-              الموظفين النشطين الآن
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-3 p-1">
-              {locations.filter(loc => {
-                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
-                return diffMins < 15;
-              }).map((location) => (
-                <Card key={location.id} className="border-r-4 border-r-emerald-500">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
-                        <p className="text-sm text-muted-foreground">{location.employee?.position || '-'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          آخر تحديث: {getTimeAgo(location.recorded_at)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
-                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm flex items-center gap-1"
-                      >
-                        <Navigation className="h-3 w-3" />
-                        عرض الموقع
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {locations.filter(loc => {
-                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
-                return diffMins < 15;
-              }).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">لا يوجد موظفين نشطين حالياً</p>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
-      {/* Inactive Employees Modal */}
-      <Dialog open={showInactiveModal} onOpenChange={setShowInactiveModal}>
-        <DialogContent className="max-w-2xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-orange-600">
-              <Clock className="h-5 w-5" />
-              الموظفين غير النشطين
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-3 p-1">
-              {locations.filter(loc => {
-                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
-                return diffMins >= 60;
-              }).map((location) => (
-                <Card key={location.id} className="border-r-4 border-r-orange-500">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{location.employee?.full_name || 'موظف'}</h3>
-                        <p className="text-sm text-muted-foreground">{location.employee?.position || '-'}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          آخر تحديث: {getTimeAgo(location.recorded_at)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => openInMaps(location.latitude, location.longitude, location.user_id)}
-                        className="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm flex items-center gap-1"
-                      >
-                        <MapPin className="h-3 w-3" />
-                        آخر موقع
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {locations.filter(loc => {
-                const diffMins = Math.floor((new Date().getTime() - new Date(loc.recorded_at).getTime()) / 60000);
-                return diffMins >= 60;
-              }).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">جميع الموظفين نشطين</p>
-              )}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </ScrollArea>
         </DialogContent>
       </Dialog>
