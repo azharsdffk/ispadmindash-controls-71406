@@ -798,6 +798,10 @@ export const GeneralLedger = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<LedgerEntry | null>(null);
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
+  const [showImportStatement, setShowImportStatement] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<LedgerEntry[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   // مجموعات الحسابات
   const accountGroups: AccountGroup[] = [
@@ -946,6 +950,84 @@ export const GeneralLedger = () => {
   const handleCopyEntry = (entry: LedgerEntry) => {
     toast.success(`تم نسخ القيد ${entry.reference}`);
     setShowAddEntry(true);
+  };
+
+  // دوال استيراد كشف الحساب
+  const handleOpenImportStatement = () => {
+    setShowImportStatement(true);
+    setImportFile(null);
+    setImportPreview([]);
+  };
+
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImportFile(file);
+      // محاكاة معاينة البيانات المستوردة
+      const mockPreview: LedgerEntry[] = [
+        {
+          id: 'imp1',
+          date: new Date().toISOString().split('T')[0],
+          description: 'قيد مستورد - تحويل بنكي',
+          reference: 'IMP-001',
+          referenceType: 'journal',
+          debit: 5000000,
+          credit: 0,
+          balance: 0,
+          currency: 'IQD',
+          status: 'pending',
+          counterAccount: 'البنك'
+        },
+        {
+          id: 'imp2',
+          date: new Date().toISOString().split('T')[0],
+          description: 'قيد مستورد - دفعة عميل',
+          reference: 'IMP-002',
+          referenceType: 'receipt',
+          debit: 3500000,
+          credit: 0,
+          balance: 0,
+          currency: 'IQD',
+          status: 'pending',
+          counterAccount: 'حسابات المدينين'
+        },
+        {
+          id: 'imp3',
+          date: new Date().toISOString().split('T')[0],
+          description: 'قيد مستورد - مصروفات',
+          reference: 'IMP-003',
+          referenceType: 'voucher',
+          debit: 0,
+          credit: 1500000,
+          balance: 0,
+          currency: 'IQD',
+          status: 'pending',
+          counterAccount: 'مصروفات عامة'
+        }
+      ];
+      setImportPreview(mockPreview);
+      toast.success(`تم تحميل الملف: ${file.name}`);
+    }
+  };
+
+  const handleConfirmImport = () => {
+    if (importPreview.length === 0) {
+      toast.error('لا توجد بيانات للاستيراد');
+      return;
+    }
+    setIsImporting(true);
+    // محاكاة عملية الاستيراد
+    setTimeout(() => {
+      setIsImporting(false);
+      toast.success(`تم استيراد ${importPreview.length} قيود بنجاح`);
+      setShowImportStatement(false);
+      setImportFile(null);
+      setImportPreview([]);
+    }, 2000);
+  };
+
+  const handleReconcileConfirm = () => {
+    toast.success('تم تأكيد المطابقة بنجاح');
   };
 
   const toggleEntrySelection = (entryId: string) => {
@@ -1643,11 +1725,11 @@ export const GeneralLedger = () => {
               </div>
               <Separator className="my-6" />
               <div className="flex justify-center gap-4">
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleOpenImportStatement}>
                   <Upload className="h-4 w-4 ml-2" />
                   استيراد كشف حساب
                 </Button>
-                <Button>
+                <Button onClick={handleReconcileConfirm}>
                   <CheckCircle className="h-4 w-4 ml-2" />
                   تأكيد المطابقة
                 </Button>
@@ -1987,6 +2069,191 @@ export const GeneralLedger = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* نافذة استيراد كشف الحساب */}
+      <Dialog open={showImportStatement} onOpenChange={setShowImportStatement}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              استيراد كشف الحساب
+            </DialogTitle>
+            <DialogDescription>
+              قم برفع ملف كشف الحساب لاستيراد القيود تلقائياً
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* معلومات الحساب */}
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  {getAccountTypeIcon(currentAccount.type)}
+                </div>
+                <div>
+                  <p className="font-medium">{currentAccount.name}</p>
+                  <p className="text-sm text-muted-foreground">كود: {currentAccount.code}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* رفع الملف */}
+            <div className="space-y-3">
+              <Label>رفع ملف كشف الحساب</Label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.xls,.pdf"
+                  onChange={handleImportFileChange}
+                  className="hidden"
+                  id="import-file"
+                />
+                <label htmlFor="import-file" className="cursor-pointer">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="p-4 bg-primary/10 rounded-full">
+                      <Upload className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">اسحب الملف هنا أو انقر للاختيار</p>
+                      <p className="text-sm text-muted-foreground">
+                        الصيغ المدعومة: CSV, Excel, PDF
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              {importFile && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm">{importFile.name}</span>
+                  <Badge variant="outline" className="mr-auto">
+                    {(importFile.size / 1024).toFixed(1)} KB
+                  </Badge>
+                </div>
+              )}
+            </div>
+
+            {/* خيارات الاستيراد */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>تنسيق التاريخ</Label>
+                <Select defaultValue="dd-mm-yyyy">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dd-mm-yyyy">يوم/شهر/سنة</SelectItem>
+                    <SelectItem value="mm-dd-yyyy">شهر/يوم/سنة</SelectItem>
+                    <SelectItem value="yyyy-mm-dd">سنة/شهر/يوم</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>العملة الافتراضية</Label>
+                <Select defaultValue="IQD">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IQD">دينار عراقي (IQD)</SelectItem>
+                    <SelectItem value="USD">دولار أمريكي (USD)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* معاينة البيانات */}
+            {importPreview.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    معاينة البيانات ({importPreview.length} قيود)
+                  </Label>
+                  <Badge className="bg-blue-500/10 text-blue-600">
+                    جاهز للاستيراد
+                  </Badge>
+                </div>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">التاريخ</TableHead>
+                        <TableHead className="text-right">البيان</TableHead>
+                        <TableHead className="text-right">المرجع</TableHead>
+                        <TableHead className="text-right">المدين</TableHead>
+                        <TableHead className="text-right">الدائن</TableHead>
+                        <TableHead className="text-right">الحالة</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importPreview.map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell>{new Date(entry.date).toLocaleDateString('ar-IQ')}</TableCell>
+                          <TableCell>{entry.description}</TableCell>
+                          <TableCell className="font-mono text-xs">{entry.reference}</TableCell>
+                          <TableCell className="text-green-600">
+                            {entry.debit > 0 ? formatCurrency(entry.debit, 'IQD') : '-'}
+                          </TableCell>
+                          <TableCell className="text-red-600">
+                            {entry.credit > 0 ? formatCurrency(entry.credit, 'IQD') : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="bg-amber-500/10 text-amber-600">
+                              <Clock className="h-3 w-3 ml-1" />
+                              معلق
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex gap-6">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-green-600">
+                        {formatCurrency(importPreview.reduce((sum, e) => sum + e.debit, 0), 'IQD')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">إجمالي المدين</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-red-600">
+                        {formatCurrency(importPreview.reduce((sum, e) => sum + e.credit, 0), 'IQD')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">إجمالي الدائن</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox id="auto-approve" />
+                    <Label htmlFor="auto-approve" className="text-sm">ترحيل تلقائي بعد الاستيراد</Label>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowImportStatement(false)}>
+              إلغاء
+            </Button>
+            <Button 
+              onClick={handleConfirmImport} 
+              disabled={importPreview.length === 0 || isImporting}
+            >
+              {isImporting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 ml-2 animate-spin" />
+                  جاري الاستيراد...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 ml-2" />
+                  تأكيد الاستيراد
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
