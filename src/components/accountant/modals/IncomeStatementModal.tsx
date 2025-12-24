@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { IncomeStatement } from '@/components/accountant/IncomeStatement';
 import { TrendingUp } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface IncomeStatementModalProps {
 export const IncomeStatementModal = ({ open, onOpenChange }: IncomeStatementModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
             <div className="p-2 rounded-lg gradient-bg">
@@ -18,6 +18,9 @@ export const IncomeStatementModal = ({ open, onOpenChange }: IncomeStatementModa
             </div>
             قائمة الدخل
           </DialogTitle>
+          <DialogDescription>
+            عرض الإيرادات والمصروفات وصافي الربح
+          </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
           <IncomeStatement />
