@@ -3,7 +3,6 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/currency';
@@ -39,8 +38,8 @@ import { IncomeStatement } from '@/components/accountant/IncomeStatement';
 import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDashboardLayout } from '@/hooks/useDashboardLayout';
-import { RevenueExpenseCharts } from '@/components/accountant/RevenueExpenseCharts';
 import { AccountantMenuGrid } from '@/components/accountant/AccountantMenuGrid';
+import { OverviewDashboard } from '@/components/accountant/OverviewDashboard';
 
 export default function AccountantDashboard() {
   const { hasPermission, loading: permissionsLoading } = usePermissions();
@@ -271,256 +270,11 @@ export default function AccountantDashboard() {
                 </TabsContent>
 
                 <TabsContent value="overview" className="space-y-6 mt-0">
-                  {/* Main Financial KPIs */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                    {/* Revenue Card */}
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4 md:p-6">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2.5 rounded-xl gradient-bg">
-                              <Coins className="h-5 w-5 text-white" />
-                            </div>
-                            <ArrowUpRight className="h-4 w-4 text-secondary" />
-                          </div>
-                          <div>
-                            <p className="text-xs md:text-sm text-muted-foreground">إجمالي الإيرادات</p>
-                            <h3 className="text-lg md:text-2xl font-bold gradient-text mt-1">
-                              {formatCurrency(stats.totalRevenue, 'IQD')}
-                            </h3>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Expenses Card */}
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4 md:p-6">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2.5 rounded-xl bg-destructive">
-                              <TrendingDown className="h-5 w-5 text-white" />
-                            </div>
-                            <ArrowDownRight className="h-4 w-4 text-destructive" />
-                          </div>
-                          <div>
-                            <p className="text-xs md:text-sm text-muted-foreground">إجمالي المصروفات</p>
-                            <h3 className="text-lg md:text-2xl font-bold text-destructive mt-1">
-                              {formatCurrency(stats.totalExpenses, 'IQD')}
-                            </h3>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Net Profit Card */}
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4 md:p-6">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-xl ${stats.netProfit >= 0 ? 'bg-secondary' : 'bg-destructive'}`}>
-                              <DollarSign className="h-5 w-5 text-white" />
-                            </div>
-                            {stats.netProfit >= 0 ? (
-                              <ArrowUpRight className="h-4 w-4 text-secondary" />
-                            ) : (
-                              <ArrowDownRight className="h-4 w-4 text-destructive" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-xs md:text-sm text-muted-foreground">صافي الربح</p>
-                            <h3 className={`text-lg md:text-2xl font-bold mt-1 ${stats.netProfit >= 0 ? 'text-secondary' : 'text-destructive'}`}>
-                              {formatCurrency(stats.netProfit, 'IQD')}
-                            </h3>
-                            <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">
-                              هامش الربح: {stats.profitMargin.toFixed(1)}%
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Cash Flow Card */}
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4 md:p-6">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-xl ${stats.cashFlow >= 0 ? 'bg-primary' : 'bg-destructive'}`}>
-                              <Wallet className="h-5 w-5 text-white" />
-                            </div>
-                            {stats.cashFlow >= 0 ? (
-                              <ArrowUpRight className="h-4 w-4 text-primary" />
-                            ) : (
-                              <ArrowDownRight className="h-4 w-4 text-destructive" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-xs md:text-sm text-muted-foreground">التدفق النقدي</p>
-                            <h3 className={`text-lg md:text-2xl font-bold mt-1 ${stats.cashFlow >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                              {formatCurrency(stats.cashFlow, 'IQD')}
-                            </h3>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Charts Section */}
-                  <RevenueExpenseCharts stats={stats} />
-
-                  {/* Quick Stats Row */}
-                  <Card className="border-0 shadow-md">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-primary" />
-                        إحصائيات سريعة
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/5 border border-secondary/10">
-                          <div className="p-2 rounded-lg bg-secondary/10">
-                            <FileText className="h-4 w-4 text-secondary" />
-                          </div>
-                          <div>
-                            <p className="text-xl md:text-2xl font-bold">{stats.paidInvoices}</p>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">فواتير مدفوعة</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-500/5 border border-orange-500/10">
-                          <div className="p-2 rounded-lg bg-orange-500/10">
-                            <AlertCircle className="h-4 w-4 text-orange-500" />
-                          </div>
-                          <div>
-                            <p className="text-xl md:text-2xl font-bold">{stats.pendingInvoices}</p>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">فواتير معلقة</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <Banknote className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-lg md:text-xl font-bold">{formatCurrency(stats.todayPayments, 'IQD')}</p>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">مدفوعات اليوم</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-destructive/5 border border-destructive/10">
-                          <div className="p-2 rounded-lg bg-destructive/10">
-                            <Archive className="h-4 w-4 text-destructive" />
-                          </div>
-                          <div>
-                            <p className="text-xl md:text-2xl font-bold">{stats.lowStockItems}</p>
-                            <p className="text-[10px] md:text-xs text-muted-foreground">مخزون منخفض</p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Recent Transactions Tables */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card className="border-0 shadow-md">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <div className="p-2 rounded-lg gradient-bg">
-                            <FileText className="h-4 w-4 text-white" />
-                          </div>
-                          آخر الفواتير
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="rounded-lg border overflow-hidden">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/30">
-                                <TableHead className="font-semibold">رقم الفاتورة</TableHead>
-                                <TableHead className="font-semibold">المشترك</TableHead>
-                                <TableHead className="font-semibold">المبلغ</TableHead>
-                                <TableHead className="font-semibold">الحالة</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {recentInvoices.length === 0 ? (
-                                <TableRow>
-                                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                                    <FileText className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                                    <p className="text-sm">لا توجد فواتير حالياً</p>
-                                  </TableCell>
-                                </TableRow>
-                              ) : (
-                                recentInvoices.map((invoice) => (
-                                  <TableRow key={invoice.id} className="hover:bg-muted/30 transition-colors">
-                                    <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                                    <TableCell>{invoice.subscribers?.name || 'غير محدد'}</TableCell>
-                                    <TableCell className="font-semibold">
-                                      {formatCurrency(invoice.net_amount || invoice.amount, invoice.currency || 'IQD')}
-                                    </TableCell>
-                                    <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                                  </TableRow>
-                                ))
-                              )}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-0 shadow-md">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <div className="p-2 rounded-lg bg-secondary">
-                            <Banknote className="h-4 w-4 text-white" />
-                          </div>
-                          آخر المدفوعات
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="rounded-lg border overflow-hidden">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/30">
-                                <TableHead className="font-semibold">المشترك</TableHead>
-                                <TableHead className="font-semibold">المبلغ</TableHead>
-                                <TableHead className="font-semibold">الطريقة</TableHead>
-                                <TableHead className="font-semibold">التاريخ</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {recentPayments.length === 0 ? (
-                                <TableRow>
-                                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                                    <Banknote className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                                    <p className="text-sm">لا توجد مدفوعات حالياً</p>
-                                  </TableCell>
-                                </TableRow>
-                              ) : (
-                                recentPayments.map((payment) => (
-                                  <TableRow key={payment.id} className="hover:bg-muted/30 transition-colors">
-                                    <TableCell className="font-medium">{payment.subscribers?.name || 'غير محدد'}</TableCell>
-                                    <TableCell className="font-semibold text-secondary">
-                                      {formatCurrency(payment.amount, payment.currency || 'IQD')}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge variant="outline" className="text-xs">
-                                        {payment.payment_method}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
-                                      {new Date(payment.payment_date).toLocaleDateString('ar-IQ')}
-                                    </TableCell>
-                                  </TableRow>
-                                ))
-                              )}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                  <OverviewDashboard 
+                    stats={stats} 
+                    recentInvoices={recentInvoices} 
+                    recentPayments={recentPayments} 
+                  />
                 </TabsContent>
 
               {hasPermission('view_reports') && (
