@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Download, FileText, TrendingUp, Calculator, Building2, Wallet } from 'lucide-react';
+import { Download, FileText, TrendingUp, Calculator, Building2, Wallet, Printer } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
 
 export const BalanceSheet = () => {
@@ -46,11 +46,201 @@ export const BalanceSheet = () => {
 
   const equity = totalAssets - totalLiabilities;
 
-  const handleExport = () => {
-    toast({
-      title: 'تصدير الميزانية',
-      description: 'سيتم تصدير الميزانية العمومية قريباً'
-    });
+  const handleExportPDF = () => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <title>الميزانية العمومية</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 40px; background: white; direction: rtl; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #1e40af; padding-bottom: 20px; }
+          .header h1 { color: #1e40af; font-size: 28px; margin-bottom: 10px; }
+          .header p { color: #666; font-size: 14px; }
+          .content { display: flex; gap: 30px; margin-bottom: 30px; }
+          .section { flex: 1; }
+          .section-title { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 12px 20px; border-radius: 8px 8px 0 0; font-size: 16px; font-weight: bold; }
+          .section-title.assets { background: linear-gradient(135deg, #166534, #22c55e); }
+          .section-content { border: 1px solid #e5e7eb; border-top: none; padding: 20px; border-radius: 0 0 8px 8px; }
+          .category { margin-bottom: 20px; }
+          .category-title { font-weight: bold; color: #374151; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+          .item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px dashed #f3f4f6; }
+          .item:last-child { border-bottom: none; }
+          .subtotal { background: #f9fafb; padding: 10px; border-radius: 6px; margin-top: 10px; font-weight: bold; display: flex; justify-content: space-between; }
+          .subtotal.green { background: #dcfce7; color: #166534; }
+          .subtotal.blue { background: #dbeafe; color: #1e40af; }
+          .subtotal.purple { background: #f3e8ff; color: #7c3aed; }
+          .total { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 15px 20px; border-radius: 8px; margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; }
+          .total.green { background: linear-gradient(135deg, #166534, #22c55e); }
+          .ratios { margin-top: 30px; }
+          .ratios-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 15px; text-align: center; }
+          .ratios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+          .ratio-card { background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 15px; border-radius: 8px; text-align: center; }
+          .ratio-card .label { font-size: 12px; color: #64748b; margin-bottom: 5px; }
+          .ratio-card .value { font-size: 24px; font-weight: bold; color: #1e40af; }
+          .ratio-card .desc { font-size: 10px; color: #94a3b8; margin-top: 5px; }
+          .footer { margin-top: 40px; text-align: center; color: #9ca3af; font-size: 12px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          @media print { body { padding: 20px; } .content { flex-direction: row; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>الميزانية العمومية</h1>
+          <p>كما في ${new Date().toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+        
+        <div class="content">
+          <div class="section">
+            <div class="section-title assets">الأصول (Assets)</div>
+            <div class="section-content">
+              <div class="category">
+                <div class="category-title">الأصول المتداولة</div>
+                ${balanceSheetData.assets.current.map(item => `
+                  <div class="item">
+                    <span>${item.name}</span>
+                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                  </div>
+                `).join('')}
+                <div class="subtotal green">
+                  <span>إجمالي الأصول المتداولة</span>
+                  <span>${totalCurrentAssets.toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+              </div>
+              
+              <div class="category">
+                <div class="category-title">الأصول الثابتة</div>
+                ${balanceSheetData.assets.fixed.map(item => `
+                  <div class="item">
+                    <span>${item.name}</span>
+                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                  </div>
+                `).join('')}
+                <div class="subtotal green">
+                  <span>إجمالي الأصول الثابتة</span>
+                  <span>${totalFixedAssets.toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+              </div>
+              
+              <div class="total green">
+                <span>إجمالي الأصول</span>
+                <span>${totalAssets.toLocaleString('ar-IQ')} د.ع</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">الخصوم وحقوق الملكية</div>
+            <div class="section-content">
+              <div class="category">
+                <div class="category-title">الخصوم المتداولة</div>
+                ${balanceSheetData.liabilities.current.map(item => `
+                  <div class="item">
+                    <span>${item.name}</span>
+                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                  </div>
+                `).join('')}
+                <div class="subtotal blue">
+                  <span>إجمالي الخصوم المتداولة</span>
+                  <span>${totalCurrentLiabilities.toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+              </div>
+              
+              <div class="category">
+                <div class="category-title">الخصوم طويلة الأجل</div>
+                ${balanceSheetData.liabilities.longTerm.map(item => `
+                  <div class="item">
+                    <span>${item.name}</span>
+                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                  </div>
+                `).join('')}
+                <div class="subtotal blue">
+                  <span>إجمالي الخصوم طويلة الأجل</span>
+                  <span>${totalLongTermLiabilities.toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+              </div>
+              
+              <div class="subtotal blue">
+                <span>إجمالي الخصوم</span>
+                <span>${totalLiabilities.toLocaleString('ar-IQ')} د.ع</span>
+              </div>
+              
+              <div class="category" style="margin-top: 15px;">
+                <div class="category-title">حقوق الملكية</div>
+                <div class="item">
+                  <span>رأس المال</span>
+                  <span>${(equity * 0.6).toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+                <div class="item">
+                  <span>الأرباح المحتجزة</span>
+                  <span>${(equity * 0.4).toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+                <div class="subtotal purple">
+                  <span>إجمالي حقوق الملكية</span>
+                  <span>${equity.toLocaleString('ar-IQ')} د.ع</span>
+                </div>
+              </div>
+              
+              <div class="total">
+                <span>إجمالي الخصوم وحقوق الملكية</span>
+                <span>${(totalLiabilities + equity).toLocaleString('ar-IQ')} د.ع</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="ratios">
+          <div class="ratios-title">النسب المالية</div>
+          <div class="ratios-grid">
+            <div class="ratio-card">
+              <div class="label">نسبة التداول</div>
+              <div class="value">${(totalCurrentAssets / totalCurrentLiabilities).toFixed(2)}</div>
+              <div class="desc">الأصول المتداولة / الخصوم المتداولة</div>
+            </div>
+            <div class="ratio-card">
+              <div class="label">نسبة الملكية</div>
+              <div class="value">${((equity / totalAssets) * 100).toFixed(1)}%</div>
+              <div class="desc">حقوق الملكية / إجمالي الأصول</div>
+            </div>
+            <div class="ratio-card">
+              <div class="label">نسبة المديونية</div>
+              <div class="value">${((totalLiabilities / totalAssets) * 100).toFixed(1)}%</div>
+              <div class="desc">إجمالي الخصوم / إجمالي الأصول</div>
+            </div>
+            <div class="ratio-card">
+              <div class="label">رأس المال العامل</div>
+              <div class="value">${((totalCurrentAssets - totalCurrentLiabilities) / 1000000).toFixed(1)}M</div>
+              <div class="desc">الأصول المتداولة - الخصوم المتداولة</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>تم إنشاء هذا التقرير بواسطة نظام المحاسبة - ${new Date().toLocaleDateString('ar-IQ')} ${new Date().toLocaleTimeString('ar-IQ')}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+      toast({
+        title: 'تم فتح نافذة الطباعة',
+        description: 'يمكنك طباعة الميزانية أو حفظها كـ PDF'
+      });
+    } else {
+      toast({
+        title: 'خطأ',
+        description: 'يرجى السماح بالنوافذ المنبثقة لتصدير PDF',
+        variant: 'destructive'
+      });
+    }
   };
 
   return (
@@ -63,7 +253,7 @@ export const BalanceSheet = () => {
             <p className="text-sm text-muted-foreground">كما في {new Date().toLocaleDateString('ar-IQ')}</p>
           </div>
         </div>
-        <Button onClick={handleExport} variant="outline">
+        <Button onClick={handleExportPDF} variant="outline">
           <Download className="h-4 w-4 ml-2" />
           تصدير PDF
         </Button>
