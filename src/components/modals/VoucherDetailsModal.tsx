@@ -12,7 +12,7 @@ interface VoucherDetailsModalProps {
   voucher: {
     id: string;
     voucher_number: string;
-    voucher_type: "income" | "expense";
+    voucher_type: "income" | "expense" | "receipt";
     amount: number;
     currency?: Currency;
     account?: string;
@@ -49,7 +49,7 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
     
     const printWindow = window.open('', '_blank');
     if (printWindow) {
-      const isIncome = voucher.voucher_type === 'income';
+      const isIncome = voucher.voucher_type === 'income' || voucher.voucher_type === 'receipt';
       const primaryColor = isIncome ? '#059669' : '#dc2626';
       const primaryLight = isIncome ? '#d1fae5' : '#fee2e2';
       const gradientStart = isIncome ? '#065f46' : '#991b1b';
@@ -421,8 +421,8 @@ export const VoucherDetailsModal = ({ open, onOpenChange, voucher }: VoucherDeta
               <p className="text-sm text-muted-foreground">رقم السند</p>
               <p className="font-semibold">{voucher.voucher_number}</p>
             </div>
-            <Badge variant={voucher.voucher_type === "income" ? "default" : "destructive"} className="text-sm">
-              {voucher.voucher_type === "income" ? "سند قبض" : "سند صرف"}
+            <Badge variant={voucher.voucher_type === "income" || voucher.voucher_type === "receipt" ? "default" : "destructive"} className="text-sm">
+              {voucher.voucher_type === "income" || voucher.voucher_type === "receipt" ? "سند قبض" : "سند صرف"}
             </Badge>
           </div>
 
