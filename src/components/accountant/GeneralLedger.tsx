@@ -1643,11 +1643,16 @@ export const GeneralLedger = () => {
               </div>
               <Separator className="my-6" />
               <div className="flex justify-center gap-4">
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  onClick={() => toast.success('تم بدء استيراد كشف الحساب (تجريبي)')}
+                >
                   <Upload className="h-4 w-4 ml-2" />
                   استيراد كشف حساب
                 </Button>
-                <Button>
+                <Button
+                  onClick={() => toast.success('تم تأكيد المطابقة (تجريبي)')}
+                >
                   <CheckCircle className="h-4 w-4 ml-2" />
                   تأكيد المطابقة
                 </Button>
