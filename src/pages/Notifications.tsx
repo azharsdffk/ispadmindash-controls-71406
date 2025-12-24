@@ -99,6 +99,7 @@ const Notifications = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
+  const [viewNotification, setViewNotification] = useState<Notification | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -820,8 +821,11 @@ const Notifications = () => {
                                 onClick={() => {
                                   if (selectMode) {
                                     toggleSelectNotification(notification.id);
-                                  } else if (!notification.read) {
-                                    markAsRead(notification.id);
+                                  } else {
+                                    setViewNotification(notification);
+                                    if (!notification.read) {
+                                      markAsRead(notification.id);
+                                    }
                                   }
                                 }}
                               >
@@ -965,6 +969,86 @@ const Notifications = () => {
               <Trash2 className="h-4 w-4" />
               حذف الكل
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Notification Details Dialog */}
+      <AlertDialog open={!!viewNotification} onOpenChange={(open) => !open && setViewNotification(null)}>
+        <AlertDialogContent dir="rtl" className="bg-card border-border max-w-lg">
+          <AlertDialogHeader>
+            <div className="flex items-start gap-4">
+              {viewNotification && (
+                <div className={`p-3 rounded-xl border ${getNotificationIconBg(viewNotification.type)} shrink-0`}>
+                  {getNotificationIcon(viewNotification.type)}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <AlertDialogTitle className="text-foreground text-xl">
+                    {viewNotification?.title}
+                  </AlertDialogTitle>
+                  {viewNotification && !viewNotification.read && (
+                    <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                      جديد
+                    </Badge>
+                  )}
+                </div>
+                {viewNotification && (
+                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatDistanceToNow(new Date(viewNotification.created_at), { addSuffix: true, locale: ar })}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(viewNotification.created_at), 'dd/MM/yyyy HH:mm')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </AlertDialogHeader>
+          
+          <div className="mt-4 p-4 rounded-xl bg-muted/50 border border-border">
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+              {viewNotification?.message}
+            </p>
+          </div>
+
+          {viewNotification?.action_url && (
+            <div className="mt-4">
+              <Button 
+                className="w-full gap-2" 
+                onClick={() => {
+                  window.location.href = viewNotification.action_url!;
+                }}
+              >
+                <Eye className="h-4 w-4" />
+                عرض التفاصيل
+              </Button>
+            </div>
+          )}
+
+          <AlertDialogFooter className="mt-4 gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                if (viewNotification) {
+                  handleDeleteClick(viewNotification.id, viewNotification.title);
+                  setViewNotification(null);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              حذف
+            </Button>
+            <AlertDialogCancel className="gap-2">
+              <XCircle className="h-4 w-4" />
+              إغلاق
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
