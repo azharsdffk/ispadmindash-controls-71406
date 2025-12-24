@@ -75,14 +75,14 @@ const App = () => (
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
-              {/* لوحة المحاسب - مستقلة بيوزر خاص */}
+              {/* لوحة المحاسب - للمحاسب أو المدير */}
               <Route path="/accountant" element={
-                <ProtectedRoute allowedRoles={['accountant']}>
+                <ProtectedRoute allowedRoles={['accountant', 'admin']}>
                   <AccountantDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/accountant/permissions" element={
-                <ProtectedRoute allowedRoles={['accountant']}>
+                <ProtectedRoute allowedRoles={['accountant', 'admin']}>
                   <AccountantPermissions />
                 </ProtectedRoute>
               } />
