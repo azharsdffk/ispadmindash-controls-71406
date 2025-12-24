@@ -18,7 +18,7 @@ import {
   ArrowUpRight, ArrowDownRight, BarChart3, PieChart, Clock,
   AlertCircle, FileSpreadsheet, Hash, User, Building, Wallet,
   CreditCard, Receipt, Scale, Calculator, Briefcase, Target,
-  History, Tag, Link2, ChevronDown, ChevronUp, MoreVertical
+  History, Tag, Link2, ChevronDown, ChevronUp, MoreVertical, Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -60,7 +60,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface AccountingEntry {
@@ -131,6 +130,14 @@ const COST_CENTERS = [
   { code: 'CC005', name: 'العمليات' },
 ];
 
+const generateEntryNumber = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+  return `JE-${year}${month}-${random}`;
+};
+
 export const AccountingEntries = () => {
   const [entries, setEntries] = useState<AccountingEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,8 +149,15 @@ export const AccountingEntries = () => {
   const [selectedEntry, setSelectedEntry] = useState<AccountingEntry | null>(null);
   const [showNewEntryDialog, setShowNewEntryDialog] = useState(false);
   const [showEntryDetails, setShowEntryDetails] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<AccountingEntry | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<AccountingEntry | null>(null);
   const [activeTab, setActiveTab] = useState('entries');
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [savingEntry, setSavingEntry] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Form state for new entry
@@ -372,11 +386,36 @@ export const AccountingEntries = () => {
   const calculateTotals = () => {
     const totalDebit = newEntry.line_items.reduce((sum, item) => sum + (item.debit || 0), 0);
     const totalCredit = newEntry.line_items.reduce((sum, item) => sum + (item.credit || 0), 0);
-    return { totalDebit, totalCredit, isBalanced: totalDebit === totalCredit };
+    return { totalDebit, totalCredit, isBalanced: totalDebit === totalCredit && totalDebit > 0 };
   };
 
-  const handleSaveEntry = () => {
-    const { isBalanced } = calculateTotals();
+  const resetNewEntryForm = () => {
+    setNewEntry({
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+      reference: '',
+      notes: '',
+      cost_center: '',
+      project: '',
+      line_items: [
+        { id: '1', account_code: '', account_name: '', description: '', debit: 0, credit: 0 },
+        { id: '2', account_code: '', account_name: '', description: '', debit: 0, credit: 0 },
+      ]
+    });
+  };
+
+  const handleSaveEntry = (status: 'draft' | 'pending') => {
+    const { isBalanced, totalDebit } = calculateTotals();
+    
+    if (!newEntry.description.trim()) {
+      toast({
+        title: 'خطأ',
+        description: 'يرجى إدخال وصف للقيد',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (!isBalanced) {
       toast({
         title: 'خطأ في التوازن',
@@ -386,11 +425,298 @@ export const AccountingEntries = () => {
       return;
     }
     
+    setSavingEntry(true);
+    
+    // Simulate saving
+    setTimeout(() => {
+      const debitItem = newEntry.line_items.find(i => i.debit > 0);
+      const creditItem = newEntry.line_items.find(i => i.credit > 0);
+      
+      const newEntryData: AccountingEntry = {
+        id: Date.now().toString(),
+        entry_number: generateEntryNumber(),
+        date: newEntry.date,
+        description: newEntry.description,
+        debit_account: debitItem?.account_name || '',
+        credit_account: creditItem?.account_name || '',
+        amount: totalDebit,
+        currency: 'IQD',
+        reference: newEntry.reference,
+        created_at: new Date().toISOString(),
+        status: status,
+        created_by: 'المستخدم الحالي',
+        notes: newEntry.notes,
+        cost_center: COST_CENTERS.find(c => c.code === newEntry.cost_center)?.name,
+        fiscal_year: new Date().getFullYear().toString(),
+        period: new Date().toLocaleDateString('ar-IQ', { month: 'long' }),
+        line_items: newEntry.line_items.filter(i => i.debit > 0 || i.credit > 0)
+      };
+      
+      setEntries([newEntryData, ...entries]);
+      setSavingEntry(false);
+      setShowNewEntryDialog(false);
+      resetNewEntryForm();
+      
+      toast({
+        title: status === 'draft' ? 'تم الحفظ كمسودة' : 'تم الإرسال للمراجعة',
+        description: `تم حفظ القيد ${newEntryData.entry_number} بنجاح`,
+      });
+    }, 1000);
+  };
+
+  const handleApproveEntry = (entry: AccountingEntry) => {
+    setEntries(entries.map(e => 
+      e.id === entry.id 
+        ? { ...e, status: 'approved' as const, approved_by: 'المستخدم الحالي', approved_at: new Date().toISOString() }
+        : e
+    ));
     toast({
-      title: 'تم الحفظ',
-      description: 'تم حفظ القيد المحاسبي بنجاح',
+      title: 'تم الاعتماد',
+      description: `تم اعتماد القيد ${entry.entry_number}`,
     });
-    setShowNewEntryDialog(false);
+    setShowEntryDetails(false);
+  };
+
+  const handleRejectEntry = (entry: AccountingEntry) => {
+    setEntries(entries.map(e => 
+      e.id === entry.id 
+        ? { ...e, status: 'rejected' as const }
+        : e
+    ));
+    toast({
+      title: 'تم الرفض',
+      description: `تم رفض القيد ${entry.entry_number}`,
+      variant: 'destructive'
+    });
+    setShowEntryDetails(false);
+  };
+
+  const handlePostEntry = (entry: AccountingEntry) => {
+    setEntries(entries.map(e => 
+      e.id === entry.id 
+        ? { ...e, status: 'posted' as const }
+        : e
+    ));
+    toast({
+      title: 'تم الترحيل',
+      description: `تم ترحيل القيد ${entry.entry_number} إلى دفتر الأستاذ`,
+    });
+    setShowEntryDetails(false);
+  };
+
+  const handleSendForReview = (entry: AccountingEntry) => {
+    setEntries(entries.map(e => 
+      e.id === entry.id 
+        ? { ...e, status: 'pending' as const }
+        : e
+    ));
+    toast({
+      title: 'تم الإرسال',
+      description: `تم إرسال القيد ${entry.entry_number} للمراجعة`,
+    });
+  };
+
+  const handleDeleteEntry = () => {
+    if (entryToDelete) {
+      setEntries(entries.filter(e => e.id !== entryToDelete.id));
+      toast({
+        title: 'تم الحذف',
+        description: `تم حذف القيد ${entryToDelete.entry_number}`,
+      });
+      setShowDeleteDialog(false);
+      setEntryToDelete(null);
+      setShowEntryDetails(false);
+    }
+  };
+
+  const handleCopyEntry = (entry: AccountingEntry) => {
+    const copiedEntry: AccountingEntry = {
+      ...entry,
+      id: Date.now().toString(),
+      entry_number: generateEntryNumber(),
+      date: new Date().toISOString().split('T')[0],
+      status: 'draft',
+      created_at: new Date().toISOString(),
+      created_by: 'المستخدم الحالي',
+      approved_by: undefined,
+      approved_at: undefined,
+    };
+    setEntries([copiedEntry, ...entries]);
+    toast({
+      title: 'تم النسخ',
+      description: `تم نسخ القيد إلى ${copiedEntry.entry_number}`,
+    });
+  };
+
+  const handlePrintEntry = (entry: AccountingEntry) => {
+    const printContent = `
+      <html dir="rtl">
+        <head>
+          <title>قيد محاسبي - ${entry.entry_number}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+            th { background-color: #f0f0f0; }
+            .total-row { font-weight: bold; background-color: #e0e0e0; }
+            .header-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>قيد محاسبي</h1>
+          <div class="header-info">
+            <div>رقم القيد: ${entry.entry_number}</div>
+            <div>التاريخ: ${new Date(entry.date).toLocaleDateString('ar-IQ')}</div>
+          </div>
+          <p><strong>البيان:</strong> ${entry.description}</p>
+          <p><strong>المرجع:</strong> ${entry.reference || '-'}</p>
+          <p><strong>مركز التكلفة:</strong> ${entry.cost_center || '-'}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>الحساب</th>
+                <th>البيان</th>
+                <th>مدين</th>
+                <th>دائن</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${entry.line_items?.map(item => `
+                <tr>
+                  <td>${item.account_name}</td>
+                  <td>${item.description}</td>
+                  <td>${item.debit > 0 ? item.debit.toLocaleString() : '-'}</td>
+                  <td>${item.credit > 0 ? item.credit.toLocaleString() : '-'}</td>
+                </tr>
+              `).join('')}
+              <tr class="total-row">
+                <td colspan="2">الإجمالي</td>
+                <td>${entry.amount.toLocaleString()}</td>
+                <td>${entry.amount.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top: 30px;"><strong>ملاحظات:</strong> ${entry.notes || '-'}</p>
+          <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+            <div>المُعد: ${entry.created_by}</div>
+            <div>المُعتمد: ${entry.approved_by || '____________'}</div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleExportExcel = () => {
+    const headers = ['رقم القيد', 'التاريخ', 'البيان', 'الحساب المدين', 'الحساب الدائن', 'المبلغ', 'الحالة', 'مركز التكلفة', 'المرجع'];
+    const rows = filteredEntries.map(entry => [
+      entry.entry_number,
+      new Date(entry.date).toLocaleDateString('ar-IQ'),
+      entry.description,
+      entry.debit_account,
+      entry.credit_account,
+      entry.amount,
+      entry.status === 'posted' ? 'مرحّل' : entry.status === 'approved' ? 'معتمد' : entry.status === 'pending' ? 'قيد المراجعة' : entry.status === 'draft' ? 'مسودة' : 'مرفوض',
+      entry.cost_center || '',
+      entry.reference
+    ]);
+    
+    let csv = '\uFEFF'; // BOM for UTF-8
+    csv += headers.join(',') + '\n';
+    rows.forEach(row => {
+      csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `accounting_entries_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: 'تم التصدير',
+      description: 'تم تصدير القيود المحاسبية بنجاح',
+    });
+  };
+
+  const handlePrintAll = () => {
+    const printContent = `
+      <html dir="rtl">
+        <head>
+          <title>دفتر القيود اليومية</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+            th, td { border: 1px solid #333; padding: 6px; text-align: right; }
+            th { background-color: #f0f0f0; }
+            .total-row { font-weight: bold; background-color: #e0e0e0; }
+          </style>
+        </head>
+        <body>
+          <h1>دفتر القيود اليومية</h1>
+          <p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-IQ')}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>رقم القيد</th>
+                <th>التاريخ</th>
+                <th>البيان</th>
+                <th>الحساب المدين</th>
+                <th>الحساب الدائن</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredEntries.map(entry => `
+                <tr>
+                  <td>${entry.entry_number}</td>
+                  <td>${new Date(entry.date).toLocaleDateString('ar-IQ')}</td>
+                  <td>${entry.description}</td>
+                  <td>${entry.debit_account}</td>
+                  <td>${entry.credit_account}</td>
+                  <td>${entry.amount.toLocaleString()}</td>
+                  <td>${entry.status === 'posted' ? 'مرحّل' : entry.status === 'approved' ? 'معتمد' : entry.status === 'pending' ? 'قيد المراجعة' : entry.status === 'draft' ? 'مسودة' : 'مرفوض'}</td>
+                </tr>
+              `).join('')}
+              <tr class="total-row">
+                <td colspan="5">الإجمالي</td>
+                <td>${totalDebit.toLocaleString()}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleImport = () => {
+    toast({
+      title: 'استيراد القيود',
+      description: 'يرجى تحميل ملف Excel أو CSV يحتوي على القيود المحاسبية',
+    });
+    setShowImportDialog(false);
+  };
+
+  const handleOpenReport = (reportType: string) => {
+    setSelectedReport(reportType);
+    setShowReportDialog(true);
   };
 
   // Account balances calculation
@@ -518,15 +844,15 @@ export const AccountingEntries = () => {
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
               <Upload className="h-4 w-4 ml-2" />
               استيراد
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportExcel}>
               <Download className="h-4 w-4 ml-2" />
               تصدير Excel
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handlePrintAll}>
               <Printer className="h-4 w-4 ml-2" />
               طباعة
             </Button>
@@ -679,39 +1005,78 @@ export const AccountingEntries = () => {
                                   <Eye className="h-4 w-4 ml-2" />
                                   عرض التفاصيل
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="h-4 w-4 ml-2" />
-                                  تعديل
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyEntry(entry);
+                                }}>
                                   <Copy className="h-4 w-4 ml-2" />
                                   نسخ القيد
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePrintEntry(entry);
+                                }}>
                                   <Printer className="h-4 w-4 ml-2" />
                                   طباعة
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 {entry.status === 'draft' && (
-                                  <DropdownMenuItem className="text-blue-600">
+                                  <DropdownMenuItem 
+                                    className="text-blue-600"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSendForReview(entry);
+                                    }}
+                                  >
                                     <CheckCircle className="h-4 w-4 ml-2" />
                                     إرسال للمراجعة
                                   </DropdownMenuItem>
                                 )}
                                 {entry.status === 'pending' && (
                                   <>
-                                    <DropdownMenuItem className="text-green-600">
+                                    <DropdownMenuItem 
+                                      className="text-green-600"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleApproveEntry(entry);
+                                      }}
+                                    >
                                       <CheckCircle className="h-4 w-4 ml-2" />
                                       اعتماد
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-red-600">
+                                    <DropdownMenuItem 
+                                      className="text-red-600"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRejectEntry(entry);
+                                      }}
+                                    >
                                       <XCircle className="h-4 w-4 ml-2" />
                                       رفض
                                     </DropdownMenuItem>
                                   </>
                                 )}
+                                {entry.status === 'approved' && (
+                                  <DropdownMenuItem 
+                                    className="text-green-600"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePostEntry(entry);
+                                    }}
+                                  >
+                                    <CheckCircle className="h-4 w-4 ml-2" />
+                                    ترحيل للأستاذ
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600">
+                                <DropdownMenuItem 
+                                  className="text-red-600"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEntryToDelete(entry);
+                                    setShowDeleteDialog(true);
+                                  }}
+                                >
                                   <Trash2 className="h-4 w-4 ml-2" />
                                   حذف
                                 </DropdownMenuItem>
@@ -768,46 +1133,53 @@ export const AccountingEntries = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {accountBalances.map((balance, index) => {
-                  const account = ACCOUNT_TYPES.find(a => a.name === balance.account_name);
-                  const Icon = account?.icon || Wallet;
-                  return (
-                    <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <Icon className="h-5 w-5 text-primary" />
+                {accountBalances.length === 0 ? (
+                  <div className="col-span-full text-center py-10 text-muted-foreground">
+                    <Scale className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>لا توجد أرصدة حسابات مسجلة</p>
+                  </div>
+                ) : (
+                  accountBalances.map((balance, index) => {
+                    const account = ACCOUNT_TYPES.find(a => a.name === balance.account_name);
+                    const Icon = account?.icon || Wallet;
+                    return (
+                      <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Icon className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{balance.account_name}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{balance.account_code}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium">{balance.account_name}</p>
-                              <p className="text-xs text-muted-foreground font-mono">{balance.account_code}</p>
+                          </div>
+                          <Separator className="my-3" />
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">المدين:</span>
+                              <span className="text-green-600 font-medium">{formatCurrency(balance.debit_balance, 'IQD')}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">الدائن:</span>
+                              <span className="text-blue-600 font-medium">{formatCurrency(balance.credit_balance, 'IQD')}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between font-bold">
+                              <span>الرصيد:</span>
+                              <span className={balance.net_balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                {formatCurrency(Math.abs(balance.net_balance), 'IQD')}
+                                <span className="text-xs mr-1">({balance.net_balance >= 0 ? 'مدين' : 'دائن'})</span>
+                              </span>
                             </div>
                           </div>
-                        </div>
-                        <Separator className="my-3" />
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">المدين:</span>
-                            <span className="text-green-600 font-medium">{formatCurrency(balance.debit_balance, 'IQD')}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">الدائن:</span>
-                            <span className="text-blue-600 font-medium">{formatCurrency(balance.credit_balance, 'IQD')}</span>
-                          </div>
-                          <Separator />
-                          <div className="flex justify-between font-bold">
-                            <span>الرصيد:</span>
-                            <span className={balance.net_balance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                              {formatCurrency(Math.abs(balance.net_balance), 'IQD')}
-                              <span className="text-xs mr-1">({balance.net_balance >= 0 ? 'مدين' : 'دائن'})</span>
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
               </div>
             </CardContent>
           </Card>
@@ -825,7 +1197,7 @@ export const AccountingEntries = () => {
                   </CardTitle>
                   <CardDescription>للفترة المنتهية في {new Date().toLocaleDateString('ar-IQ')}</CardDescription>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleExportExcel}>
                   <Download className="h-4 w-4 ml-2" />
                   تصدير
                 </Button>
@@ -842,27 +1214,37 @@ export const AccountingEntries = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {accountBalances.map((balance, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-mono">{balance.account_code}</TableCell>
-                      <TableCell className="font-medium">{balance.account_name}</TableCell>
-                      <TableCell className="text-left text-green-600" dir="ltr">
-                        {balance.debit_balance > 0 ? formatCurrency(balance.debit_balance, 'IQD') : '-'}
-                      </TableCell>
-                      <TableCell className="text-left text-blue-600" dir="ltr">
-                        {balance.credit_balance > 0 ? formatCurrency(balance.credit_balance, 'IQD') : '-'}
+                  {accountBalances.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                        لا توجد بيانات لعرضها
                       </TableCell>
                     </TableRow>
-                  ))}
-                  <TableRow className="bg-muted/50 font-bold border-t-2">
-                    <TableCell colSpan={2}>الإجمالي</TableCell>
-                    <TableCell className="text-left text-green-600" dir="ltr">
-                      {formatCurrency(accountBalances.reduce((sum, b) => sum + b.debit_balance, 0), 'IQD')}
-                    </TableCell>
-                    <TableCell className="text-left text-blue-600" dir="ltr">
-                      {formatCurrency(accountBalances.reduce((sum, b) => sum + b.credit_balance, 0), 'IQD')}
-                    </TableCell>
-                  </TableRow>
+                  ) : (
+                    <>
+                      {accountBalances.map((balance, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-mono">{balance.account_code}</TableCell>
+                          <TableCell className="font-medium">{balance.account_name}</TableCell>
+                          <TableCell className="text-left text-green-600" dir="ltr">
+                            {balance.debit_balance > 0 ? formatCurrency(balance.debit_balance, 'IQD') : '-'}
+                          </TableCell>
+                          <TableCell className="text-left text-blue-600" dir="ltr">
+                            {balance.credit_balance > 0 ? formatCurrency(balance.credit_balance, 'IQD') : '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="bg-muted/50 font-bold border-t-2">
+                        <TableCell colSpan={2}>الإجمالي</TableCell>
+                        <TableCell className="text-left text-green-600" dir="ltr">
+                          {formatCurrency(accountBalances.reduce((sum, b) => sum + b.debit_balance, 0), 'IQD')}
+                        </TableCell>
+                        <TableCell className="text-left text-blue-600" dir="ltr">
+                          {formatCurrency(accountBalances.reduce((sum, b) => sum + b.credit_balance, 0), 'IQD')}
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -872,42 +1254,60 @@ export const AccountingEntries = () => {
         {/* Reports Tab */}
         <TabsContent value="reports" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => handleOpenReport('daily')}
+            >
               <CardContent className="p-6 text-center">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 text-blue-500" />
                 <h3 className="font-semibold mb-2">تقرير القيود اليومية</h3>
                 <p className="text-sm text-muted-foreground">عرض جميع القيود لفترة محددة</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => handleOpenReport('account-movement')}
+            >
               <CardContent className="p-6 text-center">
                 <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-green-500" />
                 <h3 className="font-semibold mb-2">تقرير حركة الحسابات</h3>
                 <p className="text-sm text-muted-foreground">تفاصيل حركة كل حساب</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => handleOpenReport('cost-center')}
+            >
               <CardContent className="p-6 text-center">
                 <PieChart className="h-12 w-12 mx-auto mb-4 text-purple-500" />
                 <h3 className="font-semibold mb-2">تحليل مراكز التكلفة</h3>
                 <p className="text-sm text-muted-foreground">توزيع المصروفات حسب المركز</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => handleOpenReport('audit')}
+            >
               <CardContent className="p-6 text-center">
                 <History className="h-12 w-12 mx-auto mb-4 text-orange-500" />
                 <h3 className="font-semibold mb-2">سجل التعديلات</h3>
                 <p className="text-sm text-muted-foreground">تتبع جميع التغييرات</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => handleOpenReport('comparison')}
+            >
               <CardContent className="p-6 text-center">
                 <Target className="h-12 w-12 mx-auto mb-4 text-red-500" />
                 <h3 className="font-semibold mb-2">تقرير المقارنة</h3>
                 <p className="text-sm text-muted-foreground">مقارنة بين فترات مختلفة</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => handleOpenReport('pending')}
+            >
               <CardContent className="p-6 text-center">
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
                 <h3 className="font-semibold mb-2">القيود المعلقة</h3>
@@ -1099,15 +1499,25 @@ export const AccountingEntries = () => {
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowNewEntryDialog(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowNewEntryDialog(false);
+              resetNewEntryForm();
+            }}>
               إلغاء
             </Button>
-            <Button variant="secondary">
-              <FileText className="h-4 w-4 ml-2" />
+            <Button 
+              variant="secondary" 
+              onClick={() => handleSaveEntry('draft')}
+              disabled={savingEntry}
+            >
+              {savingEntry ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <FileText className="h-4 w-4 ml-2" />}
               حفظ كمسودة
             </Button>
-            <Button onClick={handleSaveEntry}>
-              <CheckCircle className="h-4 w-4 ml-2" />
+            <Button 
+              onClick={() => handleSaveEntry('pending')}
+              disabled={savingEntry}
+            >
+              {savingEntry ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <CheckCircle className="h-4 w-4 ml-2" />}
               حفظ وإرسال للمراجعة
             </Button>
           </DialogFooter>
@@ -1245,21 +1655,189 @@ export const AccountingEntries = () => {
                 </div>
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter className="gap-2 flex-wrap">
                 <Button variant="outline" onClick={() => setShowEntryDetails(false)}>
                   إغلاق
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => handlePrintEntry(selectedEntry)}>
                   <Printer className="h-4 w-4 ml-2" />
                   طباعة
                 </Button>
-                <Button variant="outline">
-                  <Edit className="h-4 w-4 ml-2" />
-                  تعديل
+                <Button variant="outline" onClick={() => handleCopyEntry(selectedEntry)}>
+                  <Copy className="h-4 w-4 ml-2" />
+                  نسخ
+                </Button>
+                {selectedEntry.status === 'draft' && (
+                  <Button variant="default" onClick={() => handleSendForReview(selectedEntry)}>
+                    <CheckCircle className="h-4 w-4 ml-2" />
+                    إرسال للمراجعة
+                  </Button>
+                )}
+                {selectedEntry.status === 'pending' && (
+                  <>
+                    <Button variant="default" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveEntry(selectedEntry)}>
+                      <CheckCircle className="h-4 w-4 ml-2" />
+                      اعتماد
+                    </Button>
+                    <Button variant="destructive" onClick={() => handleRejectEntry(selectedEntry)}>
+                      <XCircle className="h-4 w-4 ml-2" />
+                      رفض
+                    </Button>
+                  </>
+                )}
+                {selectedEntry.status === 'approved' && (
+                  <Button variant="default" className="bg-green-600 hover:bg-green-700" onClick={() => handlePostEntry(selectedEntry)}>
+                    <CheckCircle className="h-4 w-4 ml-2" />
+                    ترحيل للأستاذ
+                  </Button>
+                )}
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    setEntryToDelete(selectedEntry);
+                    setShowDeleteDialog(true);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 ml-2" />
+                  حذف
                 </Button>
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف القيد {entryToDelete?.entry_number}؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEntry} className="bg-red-600 hover:bg-red-700">
+              حذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              استيراد القيود المحاسبية
+            </DialogTitle>
+            <DialogDescription>
+              قم بتحميل ملف Excel أو CSV يحتوي على القيود المحاسبية
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="border-2 border-dashed rounded-lg p-8 text-center">
+              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground mb-2">اسحب الملف هنا أو</p>
+              <Button variant="outline">
+                اختر ملف
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                الصيغ المدعومة: Excel (.xlsx, .xls) أو CSV
+              </p>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <a href="#" className="text-primary hover:underline flex items-center gap-1">
+                <Download className="h-4 w-4" />
+                تحميل نموذج الاستيراد
+              </a>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={handleImport}>
+              استيراد
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              {selectedReport === 'daily' && 'تقرير القيود اليومية'}
+              {selectedReport === 'account-movement' && 'تقرير حركة الحسابات'}
+              {selectedReport === 'cost-center' && 'تحليل مراكز التكلفة'}
+              {selectedReport === 'audit' && 'سجل التعديلات'}
+              {selectedReport === 'comparison' && 'تقرير المقارنة'}
+              {selectedReport === 'pending' && 'القيود المعلقة'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>من تاريخ</Label>
+                <Input type="date" />
+              </div>
+              <div className="space-y-2">
+                <Label>إلى تاريخ</Label>
+                <Input type="date" />
+              </div>
+            </div>
+            
+            {(selectedReport === 'account-movement' || selectedReport === 'cost-center') && (
+              <div className="space-y-2">
+                <Label>{selectedReport === 'account-movement' ? 'الحساب' : 'مركز التكلفة'}</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedReport === 'account-movement' 
+                      ? ACCOUNT_TYPES.map(a => <SelectItem key={a.code} value={a.code}>{a.name}</SelectItem>)
+                      : COST_CENTERS.map(c => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>صيغة التصدير</Label>
+              <Select defaultValue="pdf">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="excel">Excel</SelectItem>
+                  <SelectItem value="print">طباعة مباشرة</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReportDialog(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={() => {
+              toast({
+                title: 'جاري إنشاء التقرير',
+                description: 'سيتم تحميل التقرير خلال لحظات',
+              });
+              setShowReportDialog(false);
+            }}>
+              <Download className="h-4 w-4 ml-2" />
+              إنشاء التقرير
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
