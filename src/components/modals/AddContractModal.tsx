@@ -12,9 +12,10 @@ import { toast } from "sonner";
 interface AddContractModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export const AddContractModal = ({ open, onOpenChange }: AddContractModalProps) => {
+export const AddContractModal = ({ open, onOpenChange, onSuccess }: AddContractModalProps) => {
   const [loading, setLoading] = useState(false);
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
@@ -94,6 +95,7 @@ export const AddContractModal = ({ open, onOpenChange }: AddContractModalProps) 
 
       toast.success('تم إنشاء العقد بنجاح');
       onOpenChange(false);
+      onSuccess?.();
       resetForm();
     } catch (error: any) {
       console.error('Error creating contract:', error);
