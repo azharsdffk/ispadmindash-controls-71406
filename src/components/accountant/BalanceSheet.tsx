@@ -100,12 +100,12 @@ export const BalanceSheet = () => {
                 ${balanceSheetData.assets.current.map(item => `
                   <div class="item">
                     <span>${item.name}</span>
-                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                    <span>${item.amount.toLocaleString('en-US')} د.ع</span>
                   </div>
                 `).join('')}
                 <div class="subtotal green">
                   <span>إجمالي الأصول المتداولة</span>
-                  <span>${totalCurrentAssets.toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${totalCurrentAssets.toLocaleString('en-US')} د.ع</span>
                 </div>
               </div>
               
@@ -114,18 +114,18 @@ export const BalanceSheet = () => {
                 ${balanceSheetData.assets.fixed.map(item => `
                   <div class="item">
                     <span>${item.name}</span>
-                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                    <span>${item.amount.toLocaleString('en-US')} د.ع</span>
                   </div>
                 `).join('')}
                 <div class="subtotal green">
                   <span>إجمالي الأصول الثابتة</span>
-                  <span>${totalFixedAssets.toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${totalFixedAssets.toLocaleString('en-US')} د.ع</span>
                 </div>
               </div>
               
               <div class="total green">
                 <span>إجمالي الأصول</span>
-                <span>${totalAssets.toLocaleString('ar-IQ')} د.ع</span>
+                <span>${totalAssets.toLocaleString('en-US')} د.ع</span>
               </div>
             </div>
           </div>
@@ -138,12 +138,12 @@ export const BalanceSheet = () => {
                 ${balanceSheetData.liabilities.current.map(item => `
                   <div class="item">
                     <span>${item.name}</span>
-                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                    <span>${item.amount.toLocaleString('en-US')} د.ع</span>
                   </div>
                 `).join('')}
                 <div class="subtotal blue">
                   <span>إجمالي الخصوم المتداولة</span>
-                  <span>${totalCurrentLiabilities.toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${totalCurrentLiabilities.toLocaleString('en-US')} د.ع</span>
                 </div>
               </div>
               
@@ -152,39 +152,39 @@ export const BalanceSheet = () => {
                 ${balanceSheetData.liabilities.longTerm.map(item => `
                   <div class="item">
                     <span>${item.name}</span>
-                    <span>${item.amount.toLocaleString('ar-IQ')} د.ع</span>
+                    <span>${item.amount.toLocaleString('en-US')} د.ع</span>
                   </div>
                 `).join('')}
                 <div class="subtotal blue">
                   <span>إجمالي الخصوم طويلة الأجل</span>
-                  <span>${totalLongTermLiabilities.toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${totalLongTermLiabilities.toLocaleString('en-US')} د.ع</span>
                 </div>
               </div>
               
               <div class="subtotal blue">
                 <span>إجمالي الخصوم</span>
-                <span>${totalLiabilities.toLocaleString('ar-IQ')} د.ع</span>
+                <span>${totalLiabilities.toLocaleString('en-US')} د.ع</span>
               </div>
               
               <div class="category" style="margin-top: 15px;">
                 <div class="category-title">حقوق الملكية</div>
                 <div class="item">
                   <span>رأس المال</span>
-                  <span>${(equity * 0.6).toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${(equity * 0.6).toLocaleString('en-US')} د.ع</span>
                 </div>
                 <div class="item">
                   <span>الأرباح المحتجزة</span>
-                  <span>${(equity * 0.4).toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${(equity * 0.4).toLocaleString('en-US')} د.ع</span>
                 </div>
                 <div class="subtotal purple">
                   <span>إجمالي حقوق الملكية</span>
-                  <span>${equity.toLocaleString('ar-IQ')} د.ع</span>
+                  <span>${equity.toLocaleString('en-US')} د.ع</span>
                 </div>
               </div>
               
               <div class="total">
                 <span>إجمالي الخصوم وحقوق الملكية</span>
-                <span>${(totalLiabilities + equity).toLocaleString('ar-IQ')} د.ع</span>
+                <span>${(totalLiabilities + equity).toLocaleString('en-US')} د.ع</span>
               </div>
             </div>
           </div>
