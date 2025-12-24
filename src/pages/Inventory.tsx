@@ -29,6 +29,7 @@ import { formatCurrency } from "@/lib/currency";
 import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog";
 import { InventoryDetailsModal } from "@/components/modals/InventoryDetailsModal";
 import { InventoryMovementsModal } from "@/components/inventory/InventoryMovementsModal";
+import { AddInventoryItemModal } from "@/components/inventory/AddInventoryItemModal";
 
 interface InventoryItem {
   id: string;
@@ -565,129 +566,10 @@ const Inventory = () => {
                   <RefreshCcw className="h-4 w-4 ml-1" />
                   تحديث
                 </Button>
-                <Dialog open={addItemOpen} onOpenChange={setAddItemOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 ml-2" />
-                      إضافة صنف
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" dir="rtl">
-                    <DialogHeader>
-                      <DialogTitle>إضافة صنف جديد</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div>
-                        <Label htmlFor="item_name">اسم الصنف *</Label>
-                        <Input
-                          id="item_name"
-                          value={formData.item_name}
-                          onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="item_code">كود الصنف</Label>
-                          <Input
-                            id="item_code"
-                            value={formData.item_code}
-                            onChange={(e) => setFormData({ ...formData, item_code: e.target.value })}
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="category">الفئة</Label>
-                          <Input
-                            id="category"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            list="categories-list"
-                          />
-                          <datalist id="categories-list">
-                            {categories.map(cat => (
-                              <option key={cat} value={cat} />
-                            ))}
-                          </datalist>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="quantity">الكمية *</Label>
-                          <Input
-                            id="quantity"
-                            type="number"
-                            min="0"
-                            value={formData.quantity}
-                            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                            required
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="unit">الوحدة</Label>
-                          <Input
-                            id="unit"
-                            value={formData.unit}
-                            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="unit_price">سعر الوحدة</Label>
-                          <Input
-                            id="unit_price"
-                            type="number"
-                            min="0"
-                            value={formData.unit_price}
-                            onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="min_stock_level">الحد الأدنى</Label>
-                          <Input
-                            id="min_stock_level"
-                            type="number"
-                            min="0"
-                            value={formData.min_stock_level}
-                            onChange={(e) => setFormData({ ...formData, min_stock_level: e.target.value })}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="supplier">المورد</Label>
-                        <Input
-                          id="supplier"
-                          value={formData.supplier}
-                          onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                          list="suppliers-list"
-                        />
-                        <datalist id="suppliers-list">
-                          {suppliers.map(sup => (
-                            <option key={sup} value={sup} />
-                          ))}
-                        </datalist>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="notes">ملاحظات</Label>
-                        <Textarea
-                          id="notes"
-                          value={formData.notes}
-                          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        />
-                      </div>
-
-                      <Button type="submit" className="w-full">إضافة الصنف</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={() => setAddItemOpen(true)}>
+                  <Plus className="h-4 w-4 ml-2" />
+                  إضافة صنف
+                </Button>
               </div>
             </div>
 
@@ -1116,6 +998,14 @@ const Inventory = () => {
         onOpenChange={setMovementsOpen}
         item={movementsItem}
         onMovementAdded={fetchInventory}
+      />
+
+      <AddInventoryItemModal
+        open={addItemOpen}
+        onOpenChange={setAddItemOpen}
+        onSuccess={fetchInventory}
+        categories={categories}
+        suppliers={suppliers}
       />
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
