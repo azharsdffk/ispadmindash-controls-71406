@@ -1,4 +1,4 @@
-import { Settings, User, LogOut, Wifi, Sparkles } from "lucide-react";
+import { Settings, User, LogOut, Wifi, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface AppHeaderProps {
   onOpenSettings?: () => void;
@@ -17,6 +18,20 @@ interface AppHeaderProps {
 
 export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // تحديد ما إذا كان يجب إظهار زر الرجوع (ليس في الصفحة الرئيسية)
+  const showBackButton = location.pathname !== "/" && location.pathname !== "/dashboard";
+  
+  const handleGoBack = () => {
+    // إذا كان هناك تاريخ للتنقل، ارجع للخلف، وإلا اذهب للرئيسية
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate("/dashboard");
+    }
+  };
   
   return (
     <header className="sticky top-0 z-50 bg-card/60 backdrop-blur-2xl border-b border-white/[0.06]">
@@ -25,6 +40,18 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
       
       <div className="flex items-center justify-between h-16 px-6 animate-fade-in">
         <div className="flex items-center gap-4">
+          {/* زر الرجوع */}
+          {showBackButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleGoBack}
+              className="hover:bg-white/[0.06] hover:scale-110 transition-all rounded-xl border border-transparent hover:border-white/[0.08] group"
+              title="رجوع"
+            >
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </Button>
+          )}
           {/* الشعار */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
