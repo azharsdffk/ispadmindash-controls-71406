@@ -688,7 +688,7 @@ export const AdvancedReports = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="default">نشط</Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: 'إعدادات التقرير', description: 'فتح إعدادات قائمة الدخل الشهرية' })}>
                       <Settings className="h-4 w-4" />
                     </Button>
                   </div>
@@ -706,7 +706,7 @@ export const AdvancedReports = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="default">نشط</Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: 'إعدادات التقرير', description: 'فتح إعدادات الميزانية العمومية الربع سنوية' })}>
                       <Settings className="h-4 w-4" />
                     </Button>
                   </div>
@@ -724,13 +724,13 @@ export const AdvancedReports = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">متوقف</Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: 'إعدادات التقرير', description: 'فتح إعدادات تقرير الذمم المدينة الأسبوعي' })}>
                       <Settings className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
 
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={() => toast({ title: 'إضافة تقرير مجدول', description: 'سيتم فتح نموذج إضافة تقرير مجدول جديد' })}>
                   <Clock className="h-4 w-4 ml-2" />
                   إضافة تقرير مجدول جديد
                 </Button>
