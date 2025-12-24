@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,7 +16,7 @@ import { ReportsAnalytics } from '@/components/admin/ReportsAnalytics';
 import { ActivityLog } from '@/components/admin/ActivityLog';
 import { 
   LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Zap, TrendingUp,
-  Calculator, FileText, Layers, Target, Wallet, User, MapPin, UserCog
+  Calculator, FileText, Layers, Target, Wallet, User, MapPin, UserCog, Coins, Archive
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SettingsModal } from '@/components/modals/SettingsModal';
@@ -30,11 +30,128 @@ import { CashFlowStatement } from '@/components/accountant/CashFlowStatement';
 import { AdvancedReports } from '@/components/accountant/AdvancedReports';
 import { AdminCustomerPortal } from '@/components/admin/AdminCustomerPortal';
 import { AdminTechnicianView } from '@/components/admin/AdminTechnicianView';
+import { OverviewDashboard } from '@/components/accountant/OverviewDashboard';
+import { FinancialCharts } from '@/components/accountant/FinancialCharts';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminDashboard = () => {
   const { isAdmin, loading } = useUserRole();
   const [activeTab, setActiveTab] = useState('overview');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [accountingStats, setAccountingStats] = useState({
+    totalRevenue: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    pendingInvoices: 0,
+    paidInvoices: 0,
+    todayPayments: 0,
+    lowStockItems: 0,
+    totalReceivables: 0,
+    totalPayables: 0,
+    cashFlow: 0,
+    inventoryValue: 0,
+    profitMargin: 0,
+    overdueInvoices: 0,
+  });
+  const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
+  const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [accountingLoading, setAccountingLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'accounting') {
+      fetchAccountingData();
+    }
+  }, [activeTab]);
+
+  const fetchAccountingData = async () => {
+    setAccountingLoading(true);
+    try {
+      const { data: invoices } = await supabase
+        .from('invoices')
+        .select('amount, net_amount, status, currency');
+
+      const totalRevenue = invoices?.reduce((sum, inv) => 
+        inv.status === 'paid' ? sum + (inv.net_amount || 0) : sum, 0) || 0;
+      const pendingInvoices = invoices?.filter(inv => inv.status === 'pending').length || 0;
+      const paidInvoices = invoices?.filter(inv => inv.status === 'paid').length || 0;
+
+      const { data: vouchers } = await supabase
+        .from('vouchers')
+        .select('amount, currency');
+
+      const totalExpenses = vouchers?.reduce((sum, v) => sum + (v.amount || 0), 0) || 0;
+
+      const todayDate = new Date().toISOString().split('T')[0];
+      const { data: todayPaymentsData } = await supabase
+        .from('payments')
+        .select('amount')
+        .eq('payment_date', todayDate);
+
+      const todayPayments = todayPaymentsData?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+      const { data: inventory } = await supabase
+        .from('inventory')
+        .select('*');
+
+      const lowStockItems = inventory?.filter(item => 
+        item.quantity < (item.min_stock_level || 10)
+      ).length || 0;
+
+      const { data: recentInvoicesData } = await supabase
+        .from('invoices')
+        .select('*, subscribers(name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { data: recentPaymentsData } = await supabase
+        .from('payments')
+        .select('*, subscribers(name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const inventoryValue = inventory?.reduce((sum, item) => 
+        sum + ((item.quantity || 0) * (item.unit_price || 0)), 0) || 0;
+
+      const totalReceivables = invoices?.reduce((sum, inv) => 
+        inv.status === 'pending' || inv.status === 'overdue' ? sum + (inv.net_amount || 0) : sum, 0) || 0;
+
+      const overdueInvoices = invoices?.filter(inv => 
+        (inv.status === 'pending' || inv.status === 'overdue')
+      ).length || 0;
+
+      const { data: allPayments } = await supabase
+        .from('payments')
+        .select('amount');
+      
+      const totalPayments = allPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+      const cashFlow = totalPayments - totalExpenses;
+
+      const profitMargin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0;
+
+      setAccountingStats({
+        totalRevenue,
+        totalExpenses,
+        netProfit: totalRevenue - totalExpenses,
+        pendingInvoices,
+        paidInvoices,
+        todayPayments,
+        lowStockItems,
+        totalReceivables,
+        totalPayables: totalExpenses,
+        cashFlow,
+        inventoryValue,
+        profitMargin,
+        overdueInvoices,
+      });
+
+      setRecentInvoices(recentInvoicesData || []);
+      setRecentPayments(recentPaymentsData || []);
+    } catch (error) {
+      console.error('Error fetching accounting data:', error);
+    } finally {
+      setAccountingLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -178,38 +295,76 @@ const AdminDashboard = () => {
             </TabsContent>
 
             <TabsContent value="accounting" className="space-y-6">
-              <Tabs defaultValue="entries" className="space-y-4">
-                <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full">
-                  <TabsTrigger value="entries" className="gap-2">
-                    <FileText className="h-4 w-4" />
-                    القيود المحاسبية
-                  </TabsTrigger>
-                  <TabsTrigger value="ledger" className="gap-2">
-                    <Layers className="h-4 w-4" />
-                    دفتر الأستاذ
-                  </TabsTrigger>
-                  <TabsTrigger value="advanced" className="gap-2">
-                    <Target className="h-4 w-4" />
-                    التقارير المتقدمة
-                  </TabsTrigger>
-                  <TabsTrigger value="cashflow" className="gap-2">
-                    <Wallet className="h-4 w-4" />
-                    التدفقات النقدية
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="entries">
-                  <AccountingEntries />
-                </TabsContent>
-                <TabsContent value="ledger">
-                  <GeneralLedger />
-                </TabsContent>
-                <TabsContent value="advanced">
-                  <AdvancedReports />
-                </TabsContent>
-                <TabsContent value="cashflow">
-                  <CashFlowStatement />
-                </TabsContent>
-              </Tabs>
+              {accountingLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <Tabs defaultValue="overview" className="space-y-4">
+                  <TabsList className="grid grid-cols-3 lg:grid-cols-8 w-full bg-slate-700/50 border border-blue-800/30 p-1 rounded-lg">
+                    <TabsTrigger value="overview" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <Activity className="h-4 w-4" />
+                      <span className="hidden sm:inline">نظرة عامة</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="financial" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="hidden sm:inline">التحليل المالي</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="entries" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <FileText className="h-4 w-4" />
+                      <span className="hidden sm:inline">القيود</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="ledger" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <Layers className="h-4 w-4" />
+                      <span className="hidden sm:inline">دفتر الأستاذ</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="balance" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <Target className="h-4 w-4" />
+                      <span className="hidden sm:inline">الميزانية</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="income" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <Coins className="h-4 w-4" />
+                      <span className="hidden sm:inline">قائمة الدخل</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="cashflow" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <Wallet className="h-4 w-4" />
+                      <span className="hidden sm:inline">التدفقات</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="advanced" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                      <Archive className="h-4 w-4" />
+                      <span className="hidden sm:inline">متقدمة</span>
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="overview" className="space-y-6">
+                    <OverviewDashboard 
+                      stats={accountingStats} 
+                      recentInvoices={recentInvoices} 
+                      recentPayments={recentPayments} 
+                    />
+                  </TabsContent>
+                  <TabsContent value="financial" className="space-y-4">
+                    <FinancialCharts />
+                  </TabsContent>
+                  <TabsContent value="entries">
+                    <AccountingEntries />
+                  </TabsContent>
+                  <TabsContent value="ledger">
+                    <GeneralLedger />
+                  </TabsContent>
+                  <TabsContent value="balance">
+                    <BalanceSheet />
+                  </TabsContent>
+                  <TabsContent value="income">
+                    <IncomeStatement />
+                  </TabsContent>
+                  <TabsContent value="cashflow">
+                    <CashFlowStatement />
+                  </TabsContent>
+                  <TabsContent value="advanced">
+                    <AdvancedReports />
+                  </TabsContent>
+                </Tabs>
+              )}
             </TabsContent>
 
             <TabsContent value="reports">
