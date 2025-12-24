@@ -332,7 +332,8 @@ const Vouchers = () => {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
