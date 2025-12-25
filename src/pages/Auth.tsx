@@ -368,6 +368,22 @@ const Auth = () => {
                 </div>
               </div>
 
+              {/* تسجيل الدخول بالهاتف */}
+              <a
+                href="/phone-auth"
+                className="flex items-center justify-center gap-3 w-full h-13 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.15] text-white/80 rounded-xl transition-all duration-300"
+              >
+                <Phone className="h-5 w-5" />
+                <span>تسجيل الدخول برقم الهاتف (OTP)</span>
+              </a>
+
+              {/* الفاصل الثاني */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/[0.04]" />
+                </div>
+              </div>
+
               {/* الميزات */}
               <div className="grid grid-cols-3 gap-3">
                 {[

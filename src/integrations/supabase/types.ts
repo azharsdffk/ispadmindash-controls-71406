@@ -1236,6 +1236,63 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_rate_limits: {
+        Row: {
+          attempts_count: number | null
+          blocked_until: string | null
+          created_at: string | null
+          id: string
+          last_sent_at: string | null
+          phone_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          attempts_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          last_sent_at?: string | null
+          phone_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          attempts_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          last_sent_at?: string | null
+          phone_number?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      otp_verification_attempts: {
+        Row: {
+          blocked_until: string | null
+          created_at: string | null
+          failed_attempts: number | null
+          id: string
+          last_attempt_at: string | null
+          phone_number: string
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          last_attempt_at?: string | null
+          phone_number: string
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          last_attempt_at?: string | null
+          phone_number?: string
+        }
+        Relationships: []
+      }
       packages: {
         Row: {
           active: boolean | null
@@ -2548,13 +2605,33 @@ export type Database = {
         Returns: number
       }
       check_expired_contracts: { Args: never; Returns: undefined }
+      check_otp_rate_limit: {
+        Args: { p_phone: string }
+        Returns: {
+          can_send: boolean
+          message: string
+          wait_seconds: number
+        }[]
+      }
       check_password_reset_rate_limit: {
         Args: { p_identifier: string }
         Returns: boolean
       }
+      check_verification_attempts: {
+        Args: { p_phone: string }
+        Returns: {
+          attempts_left: number
+          can_verify: boolean
+          message: string
+        }[]
+      }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       cleanup_old_data: { Args: never; Returns: undefined }
       cleanup_old_location_data: { Args: never; Returns: undefined }
+      clear_verification_attempts: {
+        Args: { p_phone: string }
+        Returns: undefined
+      }
       generate_complaint_number: { Args: never; Returns: string }
       generate_contract_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
@@ -2622,6 +2699,11 @@ export type Database = {
         }
         Returns: string
       }
+      record_failed_verification: {
+        Args: { p_phone: string }
+        Returns: undefined
+      }
+      record_otp_sent: { Args: { p_phone: string }; Returns: undefined }
       refresh_user_permissions: {
         Args: { p_user_id: string }
         Returns: {
