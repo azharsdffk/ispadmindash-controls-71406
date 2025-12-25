@@ -341,17 +341,20 @@ const TechnicianProfile = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Use signed URL instead of public URL for security
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from("work-photos")
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 86400 * 7); // 7 days expiry
 
-      // Save photo record
+      if (signedUrlError) throw signedUrlError;
+
+      // Save photo record with the file path (not the signed URL)
       const { error: insertError } = await supabase.from("work_photos").insert({
         work_log_id: activeWorkLog.id,
         ticket_id: activeWorkLog.ticket_id,
         technician_id: user.id,
         photo_type: photoType,
-        photo_url: urlData.publicUrl,
+        photo_url: fileName, // Store the path, generate signed URLs when displaying
       });
 
       if (insertError) throw insertError;
