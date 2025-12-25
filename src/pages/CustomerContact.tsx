@@ -417,7 +417,7 @@ export default function CustomerContact() {
   return (
     <>
       <Helmet>
-        <title>بوابة العميل | خدمة الإنترنت</title>
+        <title>ISP | خدمة الإنترنت</title>
         <meta name="description" content="عرض حالة الخدمة والتواصل مع الوكيل وطلب الصيانة" />
       </Helmet>
 
@@ -431,7 +431,7 @@ export default function CustomerContact() {
                   <Wifi className="h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold">بوابة العميل</h1>
+                  <h1 className="text-xl font-bold">ISP</h1>
                   <p className="text-sm opacity-80">خدمة الإنترنت</p>
                 </div>
               </div>
