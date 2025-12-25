@@ -25,6 +25,11 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/auth" replace />;
   }
 
+  // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
+  if (roles.length === 0) {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
   // إذا كانت هناك أدوار محددة، تحقق من أن المستخدم لديه واحد منها على الأقل
   if (allowedRoles && allowedRoles.length > 0) {
     const hasAllowedRole = roles.some(role => allowedRoles.includes(role));

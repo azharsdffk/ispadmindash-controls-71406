@@ -39,6 +39,7 @@ import AgentsManagement from "./pages/AgentsManagement";
 import AgentDashboard from "./pages/AgentDashboard";
 import CustomerAuth from "./pages/CustomerAuth";
 import Auth from "./pages/Auth";
+import PendingApproval from "./pages/PendingApproval";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/customer-login" element={<CustomerAuth />} />
+              <Route path="/pending-approval" element={<PendingApproval />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               {/* صفحة تواصل الزبون - عامة */}
               <Route path="/contact" element={<CustomerContact />} />

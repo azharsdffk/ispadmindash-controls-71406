@@ -143,8 +143,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       const userRolesList = userRoles?.map(r => r.role) || [];
       
-      // توجيه حسب الدور
-      if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
+      // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
+      if (userRolesList.length === 0) {
+        navigate('/pending-approval');
+      } else if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
         navigate('/accountant');
       } else if (userRolesList.includes('technician') && !userRolesList.includes('admin')) {
         navigate('/technician');
@@ -162,7 +164,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/pending-approval`,
         data: {
           full_name: fullName,
           phone: phone,
@@ -170,7 +172,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
     if (!error) {
-      navigate('/');
+      // توجيه المستخدم الجديد إلى صفحة انتظار الموافقة
+      navigate('/pending-approval');
     }
     return { error };
   };
