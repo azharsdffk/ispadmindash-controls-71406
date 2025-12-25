@@ -40,6 +40,7 @@ import AgentDashboard from "./pages/AgentDashboard";
 import CustomerAuth from "./pages/CustomerAuth";
 import Auth from "./pages/Auth";
 import PendingApproval from "./pages/PendingApproval";
+import PhoneAuth from "./pages/PhoneAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/phone-auth" element={<PhoneAuth />} />
               <Route path="/customer-login" element={<CustomerAuth />} />
               <Route path="/pending-approval" element={<PendingApproval />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
