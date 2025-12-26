@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Use environment variable for CORS origin, no wildcard fallback
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://sxmkrmidebylykaefmsl.lovableproject.com';
 
 function getCorsHeaders(req: Request) {
@@ -25,11 +24,11 @@ interface SendOTPRequest {
   phone: string;
 }
 
-// IP-based rate limiting with in-memory store (resets on function cold start)
+// IP-based rate limiting
 const ipRateLimits = new Map<string, { count: number; firstAttempt: number; blockedUntil?: number }>();
-const IP_RATE_LIMIT = 10; // max requests per window
-const IP_RATE_WINDOW = 60 * 1000; // 1 minute window
-const IP_BLOCK_DURATION = 15 * 60 * 1000; // 15 minute block
+const IP_RATE_LIMIT = 10;
+const IP_RATE_WINDOW = 60 * 1000;
+const IP_BLOCK_DURATION = 15 * 60 * 1000;
 
 function checkIpRateLimit(ip: string): { allowed: boolean; waitSeconds?: number } {
   const now = Date.now();
@@ -40,18 +39,15 @@ function checkIpRateLimit(ip: string): { allowed: boolean; waitSeconds?: number 
     return { allowed: true };
   }
   
-  // Check if blocked
   if (record.blockedUntil && now < record.blockedUntil) {
     return { allowed: false, waitSeconds: Math.ceil((record.blockedUntil - now) / 1000) };
   }
   
-  // Reset window if expired
   if (now - record.firstAttempt > IP_RATE_WINDOW) {
     ipRateLimits.set(ip, { count: 1, firstAttempt: now });
     return { allowed: true };
   }
   
-  // Check limit
   if (record.count >= IP_RATE_LIMIT) {
     record.blockedUntil = now + IP_BLOCK_DURATION;
     return { allowed: false, waitSeconds: Math.ceil(IP_BLOCK_DURATION / 1000) };
@@ -68,10 +64,14 @@ function getClientIp(req: Request): string {
          'unknown';
 }
 
+// Generate 6-digit OTP
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -84,12 +84,11 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // IP-based rate limiting check
+    // IP rate limiting
     const ipCheck = checkIpRateLimit(clientIp);
     if (!ipCheck.allowed) {
       console.log(`IP rate limited: ${clientIp}`);
       
-      // Log blocked attempt to security audit
       await supabase.from('security_audit_logs').insert({
         action: 'otp_send_ip_blocked',
         ip_address: clientIp,
@@ -112,7 +111,7 @@ serve(async (req) => {
 
     const { phone }: SendOTPRequest = await req.json();
 
-    // تنسيق رقم الهاتف (9647xxxxxxxx)
+    // Format phone number
     let formattedPhone = phone.replace(/[^0-9]/g, '');
     if (formattedPhone.startsWith('0')) {
       formattedPhone = '964' + formattedPhone.substring(1);
@@ -123,7 +122,7 @@ serve(async (req) => {
 
     console.log('Processing OTP request for phone:', formattedPhone, 'from IP:', clientIp);
 
-    // التحقق من rate limit (phone-based)
+    // Phone-based rate limit check
     const { data: rateLimitCheck, error: rateLimitError } = await supabase
       .rpc('check_otp_rate_limit', { p_phone: formattedPhone });
 
@@ -134,7 +133,6 @@ serve(async (req) => {
 
     const rateLimit = rateLimitCheck?.[0];
     if (rateLimit && !rateLimit.can_send) {
-      // Log phone rate limit hit
       await supabase.from('security_audit_logs').insert({
         action: 'otp_send_phone_blocked',
         ip_address: clientIp,
@@ -155,67 +153,86 @@ serve(async (req) => {
       );
     }
 
-    // Log OTP send attempt
-    await supabase.from('security_audit_logs').insert({
-      action: 'otp_send_attempt',
-      ip_address: clientIp,
-      user_agent: userAgent,
-      metadata: { phone: formattedPhone },
-    });
+    // Generate OTP
+    const otpCode = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // إرسال OTP عبر Supabase Auth
-    const { data, error } = await supabase.auth.signInWithOtp({
-      phone: `+${formattedPhone}`,
-      options: {
-        channel: 'sms',
-      },
-    });
+    // Delete old OTPs for this phone
+    await supabase
+      .from('phone_otps')
+      .delete()
+      .eq('phone', formattedPhone);
 
-    if (error) {
-      console.error('Supabase OTP error:', error);
-      
-      // محاولة إرسال عبر SMS محلي كـ fallback
-      const localSmsResult = await sendLocalSms(formattedPhone, supabase);
-      
-      if (!localSmsResult.success) {
-        // Log failed OTP send
-        await supabase.from('security_audit_logs').insert({
-          action: 'otp_send_failed',
-          ip_address: clientIp,
-          user_agent: userAgent,
-          metadata: { phone: formattedPhone, error: error.message },
-        });
-        
-        throw new Error(error.message);
-      }
-      
-      // تسجيل الإرسال
-      await supabase.rpc('record_otp_sent', { p_phone: formattedPhone });
-      
-      // Log successful OTP send
-      await supabase.from('security_audit_logs').insert({
-        action: 'otp_send_success',
-        ip_address: clientIp,
-        user_agent: userAgent,
-        metadata: { phone: formattedPhone, provider: 'local' },
+    // Store new OTP
+    const { error: insertError } = await supabase
+      .from('phone_otps')
+      .insert({
+        phone: formattedPhone,
+        otp_code: otpCode,
+        expires_at: expiresAt.toISOString(),
       });
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'تم إرسال رمز التحقق',
-          provider: 'local',
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+
+    if (insertError) {
+      console.error('Failed to store OTP:', insertError);
+      throw new Error('فشل في حفظ رمز التحقق');
     }
 
-    // تسجيل الإرسال الناجح
+    // Send SMS via Twilio
+    const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+
+    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
+      console.error('Twilio credentials not configured');
+      throw new Error('خدمة الرسائل غير متوفرة حالياً');
+    }
+
+    const message = `رمز التحقق الخاص بك هو: ${otpCode}\nصالح لمدة 5 دقائق`;
+
+    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+    
+    const response = await fetch(twilioUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        To: `+${formattedPhone}`,
+        From: twilioPhoneNumber,
+        Body: message,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Twilio error:', errorData);
+      
+      // Delete the stored OTP since SMS failed
+      await supabase
+        .from('phone_otps')
+        .delete()
+        .eq('phone', formattedPhone);
+      
+      throw new Error('فشل في إرسال الرسالة النصية');
+    }
+
+    const result = await response.json();
+
+    // Log SMS
+    await supabase.from('sms_logs').insert({
+      recipient_phone: formattedPhone,
+      message: message,
+      status: 'sent',
+      provider: 'twilio',
+      provider_message_id: result.sid,
+      sent_at: new Date().toISOString(),
+    });
+
+    // Record OTP sent
     await supabase.rpc('record_otp_sent', { p_phone: formattedPhone });
 
-    // Log successful OTP send
+    // Log success
     await supabase.from('security_audit_logs').insert({
       action: 'otp_send_success',
       ip_address: clientIp,
@@ -223,13 +240,12 @@ serve(async (req) => {
       metadata: { phone: formattedPhone, provider: 'twilio' },
     });
 
-    console.log('OTP sent successfully via Supabase Auth');
+    console.log('OTP sent successfully via Twilio');
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'تم إرسال رمز التحقق',
-        provider: 'twilio',
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -251,63 +267,3 @@ serve(async (req) => {
     );
   }
 });
-
-// دالة لإرسال SMS عبر بوابة محلية
-async function sendLocalSms(phone: string, supabase: any): Promise<{ success: boolean; messageId?: string }> {
-  try {
-    // توليد رمز OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // محاولة إرسال عبر Twilio كـ fallback
-    const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
-
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-      console.log('Twilio credentials not configured');
-      return { success: false };
-    }
-
-    const message = `رمز التحقق الخاص بك هو: ${otp}\nصالح لمدة 5 دقائق`;
-
-    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-    
-    const response = await fetch(twilioUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        To: `+${phone}`,
-        From: twilioPhoneNumber,
-        Body: message,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Twilio error:', errorData);
-      return { success: false };
-    }
-
-    const result = await response.json();
-    
-    // تسجيل في سجل SMS
-    await supabase.from('sms_logs').insert({
-      recipient_phone: phone,
-      message: message,
-      status: 'sent',
-      provider: 'twilio',
-      provider_message_id: result.sid,
-      sent_at: new Date().toISOString(),
-    });
-
-    console.log('SMS sent via Twilio fallback');
-    return { success: true, messageId: result.sid };
-
-  } catch (error) {
-    console.error('Local SMS error:', error);
-    return { success: false };
-  }
-}

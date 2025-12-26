@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Use environment variable for CORS origin, no wildcard fallback
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://sxmkrmidebylykaefmsl.lovableproject.com';
 
 function getCorsHeaders(req: Request) {
@@ -26,11 +25,11 @@ interface VerifyOTPRequest {
   otp: string;
 }
 
-// IP-based rate limiting with in-memory store
+// IP-based rate limiting
 const ipRateLimits = new Map<string, { count: number; firstAttempt: number; blockedUntil?: number }>();
-const IP_RATE_LIMIT = 20; // max requests per window
-const IP_RATE_WINDOW = 60 * 1000; // 1 minute window
-const IP_BLOCK_DURATION = 15 * 60 * 1000; // 15 minute block
+const IP_RATE_LIMIT = 20;
+const IP_RATE_WINDOW = 60 * 1000;
+const IP_BLOCK_DURATION = 15 * 60 * 1000;
 
 function checkIpRateLimit(ip: string): { allowed: boolean; waitSeconds?: number } {
   const now = Date.now();
@@ -41,18 +40,15 @@ function checkIpRateLimit(ip: string): { allowed: boolean; waitSeconds?: number 
     return { allowed: true };
   }
   
-  // Check if blocked
   if (record.blockedUntil && now < record.blockedUntil) {
     return { allowed: false, waitSeconds: Math.ceil((record.blockedUntil - now) / 1000) };
   }
   
-  // Reset window if expired
   if (now - record.firstAttempt > IP_RATE_WINDOW) {
     ipRateLimits.set(ip, { count: 1, firstAttempt: now });
     return { allowed: true };
   }
   
-  // Check limit
   if (record.count >= IP_RATE_LIMIT) {
     record.blockedUntil = now + IP_BLOCK_DURATION;
     return { allowed: false, waitSeconds: Math.ceil(IP_BLOCK_DURATION / 1000) };
@@ -72,7 +68,6 @@ function getClientIp(req: Request): string {
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -85,23 +80,15 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // IP-based rate limiting check
+    // IP rate limiting
     const ipCheck = checkIpRateLimit(clientIp);
     if (!ipCheck.allowed) {
       console.log(`IP rate limited: ${clientIp}`);
       
-      // Log blocked attempt
-      await supabase.from('security_audit_logs').insert({
-        action: 'otp_verify_ip_blocked',
-        ip_address: clientIp,
-        user_agent: userAgent,
-        metadata: { reason: 'ip_rate_limit', wait_seconds: ipCheck.waitSeconds },
-      });
-      
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'تم تجاوز الحد المسموح للطلبات. يرجى المحاولة لاحقاً',
+          error: 'تم تجاوز الحد المسموح للطلبات',
           waitSeconds: ipCheck.waitSeconds,
         }),
         { 
@@ -113,7 +100,7 @@ serve(async (req) => {
 
     const { phone, otp }: VerifyOTPRequest = await req.json();
 
-    // تنسيق رقم الهاتف
+    // Format phone
     let formattedPhone = phone.replace(/[^0-9]/g, '');
     if (formattedPhone.startsWith('0')) {
       formattedPhone = '964' + formattedPhone.substring(1);
@@ -122,31 +109,22 @@ serve(async (req) => {
       formattedPhone = '964' + formattedPhone;
     }
 
-    console.log('Verifying OTP for phone:', formattedPhone, 'from IP:', clientIp);
+    console.log('Verifying OTP for phone:', formattedPhone);
 
-    // التحقق من محاولات الإدخال (phone-based)
-    const { data: attemptCheck, error: attemptError } = await supabase
+    // Check verification attempts
+    const { data: attemptsCheck, error: attemptsError } = await supabase
       .rpc('check_verification_attempts', { p_phone: formattedPhone });
 
-    if (attemptError) {
-      console.error('Attempt check error:', attemptError);
-      throw new Error('خطأ في التحقق من المحاولات');
+    if (attemptsError) {
+      console.error('Attempts check error:', attemptsError);
     }
 
-    const attempt = attemptCheck?.[0];
-    if (attempt && !attempt.can_verify) {
-      // Log phone rate limit hit
-      await supabase.from('security_audit_logs').insert({
-        action: 'otp_verify_phone_blocked',
-        ip_address: clientIp,
-        user_agent: userAgent,
-        metadata: { phone: formattedPhone, reason: 'phone_rate_limit' },
-      });
-      
+    const attempts = attemptsCheck?.[0];
+    if (attempts && !attempts.can_verify) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: attempt.message,
+          error: attempts.message,
           attemptsLeft: 0,
         }),
         { 
@@ -156,40 +134,38 @@ serve(async (req) => {
       );
     }
 
-    // Log verification attempt
-    await supabase.from('security_audit_logs').insert({
-      action: 'otp_verify_attempt',
-      ip_address: clientIp,
-      user_agent: userAgent,
-      metadata: { phone: formattedPhone },
-    });
+    // Get stored OTP from phone_otps table
+    const { data: otpRecord, error: otpError } = await supabase
+      .from('phone_otps')
+      .select('*')
+      .eq('phone', formattedPhone)
+      .eq('verified', false)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    // التحقق من OTP عبر Supabase Auth
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone: `+${formattedPhone}`,
-      token: otp,
-      type: 'sms',
-    });
+    if (otpError) {
+      console.error('OTP lookup error:', otpError);
+      throw new Error('خطأ في التحقق من الرمز');
+    }
 
-    if (error) {
-      console.error('OTP verification error:', error);
-      
-      // تسجيل محاولة فاشلة
+    if (!otpRecord) {
+      // Record failed attempt
       await supabase.rpc('record_failed_verification', { p_phone: formattedPhone });
       
-      // Log failed verification
       await supabase.from('security_audit_logs').insert({
         action: 'otp_verify_failed',
         ip_address: clientIp,
         user_agent: userAgent,
-        metadata: { phone: formattedPhone, error: 'invalid_otp' },
+        metadata: { phone: formattedPhone, reason: 'otp_not_found_or_expired' },
       });
-      
+
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'رمز التحقق غير صحيح',
-          attemptsLeft: attempt ? attempt.attempts_left - 1 : 4,
+          error: 'الرمز غير صالح أو منتهي الصلاحية',
+          attemptsLeft: attempts?.attempts_left || 4,
         }),
         { 
           status: 400,
@@ -198,46 +174,138 @@ serve(async (req) => {
       );
     }
 
-    // مسح المحاولات بعد النجاح
-    await supabase.rpc('clear_verification_attempts', { p_phone: formattedPhone });
+    // Verify OTP
+    if (otpRecord.otp_code !== otp) {
+      // Record failed attempt
+      await supabase.rpc('record_failed_verification', { p_phone: formattedPhone });
+      
+      await supabase.from('security_audit_logs').insert({
+        action: 'otp_verify_failed',
+        ip_address: clientIp,
+        user_agent: userAgent,
+        metadata: { phone: formattedPhone, reason: 'wrong_otp' },
+      });
 
-    // التحقق مما إذا كان المستخدم جديد
-    const isNewUser = !data.user?.created_at || 
-      (new Date().getTime() - new Date(data.user.created_at).getTime()) < 60000;
-
-    // إنشاء ملف شخصي للمستخدمين الجدد
-    if (isNewUser && data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: data.user.id,
-          full_name: 'مستخدم جديد',
-          phone: formattedPhone,
-        }, { onConflict: 'id' });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-      }
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'الرمز غير صحيح',
+          attemptsLeft: (attempts?.attempts_left || 5) - 1,
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    // Log successful verification
+    // OTP is correct - mark as verified
+    await supabase
+      .from('phone_otps')
+      .update({ verified: true })
+      .eq('id', otpRecord.id);
+
+    // Clear verification attempts
+    await supabase.rpc('clear_verification_attempts', { p_phone: formattedPhone });
+
+    // Check if user exists with this phone
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('phone', formattedPhone)
+      .maybeSingle();
+
+    let userId: string;
+    let isNewUser = false;
+    let session = null;
+
+    if (existingProfile) {
+      userId = existingProfile.id;
+      
+      // Generate sign-in link for existing user
+      const { data: signInData, error: signInError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: `${formattedPhone}@phone.local`,
+      });
+      
+      if (!signInError && signInData) {
+        // Get the session by signing in
+        const { data: sessionData } = await supabase.auth.admin.getUserById(userId);
+        if (sessionData?.user) {
+          // Create a session for the user
+          const { data: tokenData } = await supabase.auth.admin.generateLink({
+            type: 'magiclink',
+            email: sessionData.user.email || `${formattedPhone}@phone.local`,
+          });
+          session = tokenData;
+        }
+      }
+    } else {
+      // Create new user
+      const tempEmail = `${formattedPhone}@phone.local`;
+      const tempPassword = crypto.randomUUID();
+      
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email: tempEmail,
+        password: tempPassword,
+        email_confirm: true,
+        phone: `+${formattedPhone}`,
+        phone_confirm: true,
+        user_metadata: {
+          phone: formattedPhone,
+          full_name: 'مستخدم جديد',
+        },
+      });
+
+      if (createError) {
+        console.error('Failed to create user:', createError);
+        throw new Error('فشل في إنشاء الحساب');
+      }
+
+      userId = newUser.user.id;
+      isNewUser = true;
+
+      // Update profile with phone
+      await supabase
+        .from('profiles')
+        .update({ phone: formattedPhone })
+        .eq('id', userId);
+    }
+
+    // Create custom session in sessions table
+    const sessionToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    await supabase.from('sessions').insert({
+      user_id: userId,
+      session_token: sessionToken,
+      expires_at: expiresAt.toISOString(),
+      ip_address: clientIp,
+      user_agent: userAgent,
+      device_name: 'Phone Auth',
+    });
+
+    // Log success
     await supabase.from('security_audit_logs').insert({
       action: 'otp_verify_success',
-      user_id: data.user?.id,
+      user_id: userId,
       ip_address: clientIp,
       user_agent: userAgent,
       metadata: { phone: formattedPhone, is_new_user: isNewUser },
     });
 
-    console.log('OTP verified successfully, user:', data.user?.id);
+    console.log('OTP verified successfully for:', formattedPhone, 'userId:', userId);
+
+    // Clean up old OTPs
+    await supabase.rpc('cleanup_expired_otps');
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'تم التحقق بنجاح',
-        session: data.session,
-        user: data.user,
         isNewUser,
+        userId,
+        sessionToken,
+        message: isNewUser ? 'تم إنشاء حسابك بنجاح' : 'تم تسجيل الدخول بنجاح',
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -111,14 +111,6 @@ const PhoneAuth = () => {
       if (error) throw error;
 
       if (data.success) {
-        // تعيين الجلسة
-        if (data.session) {
-          await supabase.auth.setSession({
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
-          });
-        }
-
         toast({
           title: 'نجاح',
           description: data.isNewUser ? 'تم إنشاء حسابك بنجاح' : 'تم تسجيل الدخول بنجاح',
