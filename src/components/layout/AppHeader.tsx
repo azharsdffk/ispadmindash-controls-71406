@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Settings, User, LogOut, Wifi, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useNavigate, useLocation } from "react-router-dom";
+import { ProfileModal } from "@/components/modals/ProfileModal";
 
 interface AppHeaderProps {
   onOpenSettings?: () => void;
@@ -20,6 +22,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
   
   // تحديد ما إذا كان يجب إظهار زر الرجوع (ليس في الصفحة الرئيسية)
   const showBackButton = location.pathname !== "/" && location.pathname !== "/dashboard";
@@ -113,7 +116,10 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuItem className="hover:bg-white/[0.06] cursor-pointer">
+              <DropdownMenuItem 
+                onClick={() => setProfileOpen(true)} 
+                className="hover:bg-white/[0.06] cursor-pointer"
+              >
                 <User className="ml-2 h-4 w-4" />
                 الملف الشخصي
               </DropdownMenuItem>
@@ -135,6 +141,8 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
           </DropdownMenu>
         </div>
       </div>
+      
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
   );
 };
