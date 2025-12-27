@@ -101,6 +101,42 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_billing_settings: {
+        Row: {
+          advance_days: number | null
+          auto_send_email: boolean | null
+          auto_send_sms: boolean | null
+          billing_day: number | null
+          created_at: string | null
+          created_by: string | null
+          enabled: boolean | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          advance_days?: number | null
+          auto_send_email?: boolean | null
+          auto_send_sms?: boolean | null
+          billing_day?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          enabled?: boolean | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          advance_days?: number | null
+          auto_send_email?: boolean | null
+          auto_send_sms?: boolean | null
+          billing_day?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          enabled?: boolean | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       complaints: {
         Row: {
           assigned_to: string | null
@@ -1531,7 +1567,9 @@ export type Database = {
           created_at: string | null
           full_name: string
           id: string
+          notification_settings: Json | null
           phone: string | null
+          push_token: string | null
           updated_at: string | null
           username: string | null
         }
@@ -1539,7 +1577,9 @@ export type Database = {
           created_at?: string | null
           full_name: string
           id: string
+          notification_settings?: Json | null
           phone?: string | null
+          push_token?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1547,7 +1587,9 @@ export type Database = {
           created_at?: string | null
           full_name?: string
           id?: string
+          notification_settings?: Json | null
           phone?: string | null
+          push_token?: string | null
           updated_at?: string | null
           username?: string | null
         }
