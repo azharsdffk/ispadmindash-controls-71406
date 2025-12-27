@@ -7,10 +7,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { User, FileText, DollarSign, Wrench, Package, Download, CreditCard, CheckCircle, Clock, XCircle } from "lucide-react";
+import { User, FileText, DollarSign, Wrench, Package, Download, CreditCard, CheckCircle, Clock, XCircle, Plus, Gift, Award } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CreateTicketForm } from "@/components/customer/CreateTicketForm";
+import { ActiveOffersDisplay } from "@/components/customer/ActiveOffersDisplay";
+import { LoyaltyPointsDisplay } from "@/components/customer/LoyaltyPointsDisplay";
 
 const CustomerPortal = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -227,138 +231,178 @@ const CustomerPortal = () => {
               </Card>
             </div>
 
-            {/* Invoices */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    الفواتير
-                  </CardTitle>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 ml-2" />
-                    تنزيل الكل
-                  </Button>
-                </div>
-                <CardDescription>آخر 10 فواتير</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {invoices.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">لا توجد فواتير</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>رقم الفاتورة</TableHead>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>المبلغ</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>الإجراءات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {invoices.map((invoice) => (
-                        <TableRow key={invoice.id}>
-                          <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                          <TableCell>{new Date(invoice.issue_date).toLocaleDateString('ar-IQ')}</TableCell>
-                          <TableCell>{Number(invoice.net_amount).toLocaleString()} دينار</TableCell>
-                          <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm">
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+            {/* Loyalty Points and Offers */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <LoyaltyPointsDisplay subscriberId={subscriberData.id} />
+              <ActiveOffersDisplay />
+            </div>
 
-            {/* Payments */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
+            {/* Tabs for different sections */}
+            <Tabs defaultValue="invoices" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-4 h-12">
+                <TabsTrigger value="invoices" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  الفواتير
+                </TabsTrigger>
+                <TabsTrigger value="payments" className="gap-2">
+                  <CreditCard className="h-4 w-4" />
                   المدفوعات
-                </CardTitle>
-                <CardDescription>آخر 10 مدفوعات</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {payments.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">لا توجد مدفوعات</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>المبلغ</TableHead>
-                        <TableHead>طريقة الدفع</TableHead>
-                        <TableHead>الملاحظات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {payments.map((payment) => (
-                        <TableRow key={payment.id}>
-                          <TableCell>{new Date(payment.payment_date).toLocaleDateString('ar-IQ')}</TableCell>
-                          <TableCell className="font-semibold text-success">
-                            +{Number(payment.amount).toLocaleString()} دينار
-                          </TableCell>
-                          <TableCell>
-                            {payment.payment_method === 'cash' ? 'نقدي' :
-                             payment.payment_method === 'card' ? 'بطاقة' :
-                             payment.payment_method === 'bank_transfer' ? 'حوالة بنكية' : payment.payment_method}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {payment.notes || '-'}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+                </TabsTrigger>
+                <TabsTrigger value="tickets" className="gap-2">
+                  <Wrench className="h-4 w-4" />
+                  الصيانة
+                </TabsTrigger>
+                <TabsTrigger value="new-ticket" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  طلب جديد
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Maintenance Tickets */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wrench className="h-5 w-5" />
-                  تذاكر الصيانة
-                </CardTitle>
-                <CardDescription>آخر 10 تذاكر</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {tickets.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">لا توجد تذاكر صيانة</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>رقم التذكرة</TableHead>
-                        <TableHead>الوصف</TableHead>
-                        <TableHead>الأولوية</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>التاريخ</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tickets.map((ticket) => (
-                        <TableRow key={ticket.id}>
-                          <TableCell className="font-medium">{ticket.ticket_number}</TableCell>
-                          <TableCell>{ticket.issue_description}</TableCell>
-                          <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
-                          <TableCell>{getStatusBadge(ticket.status)}</TableCell>
-                          <TableCell>{new Date(ticket.created_at).toLocaleDateString('ar-IQ')}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+              <TabsContent value="invoices">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        الفواتير
+                      </CardTitle>
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 ml-2" />
+                        تنزيل الكل
+                      </Button>
+                    </div>
+                    <CardDescription>آخر 10 فواتير</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {invoices.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">لا توجد فواتير</p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>رقم الفاتورة</TableHead>
+                            <TableHead>التاريخ</TableHead>
+                            <TableHead>المبلغ</TableHead>
+                            <TableHead>الحالة</TableHead>
+                            <TableHead>الإجراءات</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {invoices.map((invoice) => (
+                            <TableRow key={invoice.id}>
+                              <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                              <TableCell>{new Date(invoice.issue_date).toLocaleDateString('ar-IQ')}</TableCell>
+                              <TableCell>{Number(invoice.net_amount).toLocaleString()} دينار</TableCell>
+                              <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="sm">
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="payments">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      المدفوعات
+                    </CardTitle>
+                    <CardDescription>آخر 10 مدفوعات</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {payments.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">لا توجد مدفوعات</p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>التاريخ</TableHead>
+                            <TableHead>المبلغ</TableHead>
+                            <TableHead>طريقة الدفع</TableHead>
+                            <TableHead>الملاحظات</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {payments.map((payment) => (
+                            <TableRow key={payment.id}>
+                              <TableCell>{new Date(payment.payment_date).toLocaleDateString('ar-IQ')}</TableCell>
+                              <TableCell className="font-semibold text-success">
+                                +{Number(payment.amount).toLocaleString()} دينار
+                              </TableCell>
+                              <TableCell>
+                                {payment.payment_method === 'cash' ? 'نقدي' :
+                                 payment.payment_method === 'card' ? 'بطاقة' :
+                                 payment.payment_method === 'bank_transfer' ? 'حوالة بنكية' : payment.payment_method}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {payment.notes || '-'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="tickets">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Wrench className="h-5 w-5" />
+                      تذاكر الصيانة
+                    </CardTitle>
+                    <CardDescription>آخر 10 تذاكر</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {tickets.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">لا توجد تذاكر صيانة</p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>رقم التذكرة</TableHead>
+                            <TableHead>الوصف</TableHead>
+                            <TableHead>الأولوية</TableHead>
+                            <TableHead>الحالة</TableHead>
+                            <TableHead>التاريخ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {tickets.map((ticket) => (
+                            <TableRow key={ticket.id}>
+                              <TableCell className="font-medium">{ticket.ticket_number}</TableCell>
+                              <TableCell>{ticket.issue_description}</TableCell>
+                              <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
+                              <TableCell>{getStatusBadge(ticket.status)}</TableCell>
+                              <TableCell>{new Date(ticket.created_at).toLocaleDateString('ar-IQ')}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="new-ticket">
+                <div className="max-w-md mx-auto">
+                  <CreateTicketForm 
+                    subscriberId={subscriberData.id} 
+                    onSuccess={fetchCustomerData}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>
