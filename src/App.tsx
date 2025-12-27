@@ -41,6 +41,7 @@ import CustomerAuth from "./pages/CustomerAuth";
 import Auth from "./pages/Auth";
 import PendingApproval from "./pages/PendingApproval";
 import PhoneAuth from "./pages/PhoneAuth";
+import Features from "./pages/Features";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,8 @@ const App = () => (
               <Route path="/customer-login" element={<CustomerAuth />} />
               <Route path="/pending-approval" element={<PendingApproval />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              {/* صفحة الميزات - عامة */}
+              <Route path="/features" element={<Features />} />
               {/* صفحة تواصل الزبون - عامة */}
               <Route path="/contact" element={<CustomerContact />} />
               {/* إدارة الوكلاء - للمدير فقط */}

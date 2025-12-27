@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogIn, Eye, EyeOff, Phone, Lock, Wifi, Shield, Headphones, Zap } from 'lucide-react';
+import { LogIn, Eye, EyeOff, Phone, Lock, Wifi, ArrowLeft } from 'lucide-react';
+import FeaturesBadges from '@/components/features/FeaturesBadges';
 
 const CustomerAuth = () => {
   const navigate = useNavigate();
@@ -208,24 +209,17 @@ const CustomerAuth = () => {
         </div>
 
         {/* المميزات */}
-        <div className="mt-10 flex flex-wrap justify-center gap-6 max-w-lg">
-          <div className="flex items-center gap-2 text-white/60">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-blue-400" />
-            </div>
-            <span className="text-sm">آمن</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/60">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-cyan-400" />
-            </div>
-            <span className="text-sm">سريع</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/60">
-            <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
-              <Headphones className="w-4 h-4 text-violet-400" />
-            </div>
-            <span className="text-sm">دعم متواصل</span>
+        <div className="mt-10">
+          <FeaturesBadges />
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              onClick={() => navigate('/features')}
+              className="text-white/40 hover:text-white/70"
+            >
+              عرض تفاصيل الميزات
+              <ArrowLeft className="w-4 h-4 mr-1" />
+            </Button>
           </div>
         </div>
 
