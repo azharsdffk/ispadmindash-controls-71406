@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.verify-otp]
 verify_jwt = false
+
+[functions.auto-generate-invoices]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
