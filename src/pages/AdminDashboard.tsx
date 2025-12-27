@@ -9,14 +9,13 @@ import { AdminStatsCards } from '@/components/admin/AdminStatsCards';
 import { AdminCharts } from '@/components/admin/AdminCharts';
 import { MapView } from '@/components/admin/MapView';
 import { TicketsTable } from '@/components/admin/TicketsTable';
-import { TechniciansTable } from '@/components/admin/TechniciansTable';
 import { SubscribersTable } from '@/components/admin/SubscribersTable';
 import { FinancialManagement } from '@/components/admin/FinancialManagement';
 import { ReportsAnalytics } from '@/components/admin/ReportsAnalytics';
 import { ActivityLog } from '@/components/admin/ActivityLog';
 import { 
-  LayoutDashboard, Wrench, Users, DollarSign, BarChart3, Activity, Zap, TrendingUp,
-  Calculator, FileText, Layers, Target, Wallet, User, MapPin, UserCog, Coins, Archive
+  LayoutDashboard, Zap, TrendingUp, Activity, UserCog,
+  FileText, Layers, Target, Coins, Wallet, Archive
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SettingsModal } from '@/components/modals/SettingsModal';
@@ -32,10 +31,21 @@ import { AdminCustomerPortal } from '@/components/admin/AdminCustomerPortal';
 import { AdminTechnicianView } from '@/components/admin/AdminTechnicianView';
 import { OverviewDashboard } from '@/components/accountant/OverviewDashboard';
 import { FinancialCharts } from '@/components/accountant/FinancialCharts';
+import { DraggableTabsBar } from '@/components/admin/DraggableTabsBar';
+import { useAdminLayout } from '@/hooks/useAdminLayout';
+import { mainAdminTabs, accountingSubTabs, getOrderedTabs } from '@/config/adminTabs';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminDashboard = () => {
   const { isAdmin, loading } = useUserRole();
+  const { 
+    layout, 
+    loading: layoutLoading, 
+    updateTabOrder, 
+    updateAccountingTabOrder, 
+    resetToDefault 
+  } = useAdminLayout();
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [accountingStats, setAccountingStats] = useState({
@@ -56,6 +66,10 @@ const AdminDashboard = () => {
   const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
   const [accountingLoading, setAccountingLoading] = useState(false);
+
+  // Get ordered tabs based on saved layout
+  const orderedMainTabs = getOrderedTabs(mainAdminTabs, layout.tabOrder);
+  const orderedAccountingTabs = getOrderedTabs(accountingSubTabs, layout.accountingTabOrder);
 
   useEffect(() => {
     if (activeTab === 'accounting') {
@@ -153,7 +167,7 @@ const AdminDashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || layoutLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -223,48 +237,11 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full bg-slate-800/50 border border-blue-800/30 p-1 rounded-lg backdrop-blur-sm">
-              <TabsTrigger value="overview" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden lg:inline">الرئيسية</span>
-              </TabsTrigger>
-              <TabsTrigger value="tickets" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <Wrench className="h-4 w-4" />
-                <span className="hidden lg:inline">التذاكر</span>
-              </TabsTrigger>
-              <TabsTrigger value="technicians" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <MapPin className="h-4 w-4" />
-                <span className="hidden lg:inline">الفنيين</span>
-              </TabsTrigger>
-              <TabsTrigger value="subscribers" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <Users className="h-4 w-4" />
-                <span className="hidden lg:inline">المشتركين</span>
-              </TabsTrigger>
-              <TabsTrigger value="customers" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <User className="h-4 w-4" />
-                <span className="hidden lg:inline">بوابة العميل</span>
-              </TabsTrigger>
-              <TabsTrigger value="finance" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <DollarSign className="h-4 w-4" />
-                <span className="hidden lg:inline">المالية</span>
-              </TabsTrigger>
-              <TabsTrigger value="accounting" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <Calculator className="h-4 w-4" />
-                <span className="hidden lg:inline">المحاسبة</span>
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden lg:inline">التقارير</span>
-              </TabsTrigger>
-              <TabsTrigger value="statements" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <FileText className="h-4 w-4" />
-                <span className="hidden lg:inline">القوائم المالية</span>
-              </TabsTrigger>
-              <TabsTrigger value="activity" className="gap-2 text-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <Activity className="h-4 w-4" />
-                <span className="hidden lg:inline">السجل</span>
-              </TabsTrigger>
-            </TabsList>
+            <DraggableTabsBar
+              tabs={orderedMainTabs}
+              onReorder={updateTabOrder}
+              onReset={resetToDefault}
+            />
 
             <TabsContent value="overview" className="space-y-6 animate-fade-in">
               <AdminStatsCards />
