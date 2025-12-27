@@ -15,6 +15,8 @@ import {
   Coins,
   Wallet,
   Archive,
+  Settings,
+  Calendar,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -35,6 +37,8 @@ export const mainAdminTabs: AdminTabConfig[] = [
   { id: 'reports', label: 'التقارير', icon: BarChart3 },
   { id: 'statements', label: 'القوائم المالية', icon: FileText },
   { id: 'activity', label: 'السجل', icon: Activity },
+  { id: 'auto-billing', label: 'الفوترة التلقائية', icon: Calendar },
+  { id: 'system-settings', label: 'إعدادات النظام', icon: Settings },
 ];
 
 export const accountingSubTabs: AdminTabConfig[] = [
