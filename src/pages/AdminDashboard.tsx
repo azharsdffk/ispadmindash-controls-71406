@@ -35,6 +35,8 @@ import { DraggableTabsBar } from '@/components/admin/DraggableTabsBar';
 import { useAdminLayout } from '@/hooks/useAdminLayout';
 import { mainAdminTabs, accountingSubTabs, getOrderedTabs } from '@/config/adminTabs';
 import { supabase } from '@/integrations/supabase/client';
+import { AutoBillingSettings } from '@/components/billing/AutoBillingSettings';
+import { PushNotificationSettings } from '@/components/notifications/PushNotificationSettings';
 
 const AdminDashboard = () => {
   const { isAdmin, loading } = useUserRole();
@@ -371,6 +373,16 @@ const AdminDashboard = () => {
 
             <TabsContent value="activity">
               <ActivityLog />
+            </TabsContent>
+
+            <TabsContent value="auto-billing" className="space-y-6">
+              <AutoBillingSettings />
+            </TabsContent>
+
+            <TabsContent value="system-settings" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <PushNotificationSettings />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
