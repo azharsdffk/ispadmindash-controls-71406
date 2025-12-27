@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ProfileModal } from "@/components/modals/ProfileModal";
-
+import { ComprehensiveSettingsModal } from "@/components/settings/ComprehensiveSettingsModal";
 interface AppHeaderProps {
   onOpenSettings?: () => void;
 }
@@ -23,6 +23,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   // تحديد ما إذا كان يجب إظهار زر الرجوع (ليس في الصفحة الرئيسية)
   const showBackButton = location.pathname !== "/" && location.pathname !== "/dashboard";
@@ -80,17 +81,15 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
           
           <NotificationBell />
 
-          {onOpenSettings && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-white/[0.06] hover:scale-110 transition-all rounded-xl border border-transparent hover:border-white/[0.08]"
-              onClick={onOpenSettings}
-              title="الإعدادات (Alt+S)"
-            >
-              <Settings className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-white/[0.06] hover:scale-110 transition-all rounded-xl border border-transparent hover:border-white/[0.08]"
+            onClick={() => setSettingsOpen(true)}
+            title="الإعدادات (Alt+S)"
+          >
+            <Settings className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+          </Button>
 
           <DropdownMenu dir="rtl">
             <DropdownMenuTrigger asChild>
@@ -123,12 +122,13 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
                 <User className="ml-2 h-4 w-4" />
                 الملف الشخصي
               </DropdownMenuItem>
-              {onOpenSettings && (
-                <DropdownMenuItem onClick={onOpenSettings} className="hover:bg-white/[0.06] cursor-pointer">
-                  <Settings className="ml-2 h-4 w-4" />
-                  الإعدادات
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem 
+                onClick={() => setSettingsOpen(true)} 
+                className="hover:bg-white/[0.06] cursor-pointer"
+              >
+                <Settings className="ml-2 h-4 w-4" />
+                الإعدادات
+              </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-white/[0.06]" />
               <DropdownMenuItem 
                 onClick={signOut} 
@@ -143,6 +143,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
       </div>
       
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
+      <ComprehensiveSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </header>
   );
 };
