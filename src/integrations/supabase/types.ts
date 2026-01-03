@@ -1112,6 +1112,44 @@ export type Database = {
           },
         ]
       }
+      mac_address_history: {
+        Row: {
+          action: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          mac_address: string
+          notes: string | null
+          subscriber_id: string
+        }
+        Insert: {
+          action: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          mac_address: string
+          notes?: string | null
+          subscriber_id: string
+        }
+        Update: {
+          action?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          mac_address?: string
+          notes?: string | null
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mac_address_history_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_tickets: {
         Row: {
           agent_id: string | null
@@ -2107,6 +2145,8 @@ export type Database = {
           id: string
           latitude: number | null
           longitude: number | null
+          mac_address: string | null
+          mac_locked: boolean | null
           name: string
           phone: string
           phone_secondary: string | null
@@ -2126,6 +2166,8 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          mac_address?: string | null
+          mac_locked?: boolean | null
           name: string
           phone: string
           phone_secondary?: string | null
@@ -2145,6 +2187,8 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          mac_address?: string | null
+          mac_locked?: boolean | null
           name?: string
           phone?: string
           phone_secondary?: string | null
