@@ -2,134 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Professional Light Design System - نظام التصميم الاحترافي الفاتح */
+/* Royal Golden Dark Design System - نظام التصميم الذهبي الفاخر */
 
 @layer base {
   :root {
-    /* خلفية فاتحة نظيفة */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* خلفية داكنة فاخرة */
+    --background: 220 25% 8%;
+    --foreground: 45 30% 96%;
     
-    /* البطاقات بيضاء مع ظل خفيف */
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    /* البطاقات بلون داكن مع لمسة ذهبية */
+    --card: 220 20% 12%;
+    --card-foreground: 45 30% 96%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 220 20% 14%;
+    --popover-foreground: 45 30% 96%;
     
-    /* اللون الأساسي - أزرق احترافي */
-    --primary: 217 91% 50%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 45%;
-    --primary-light: 217 91% 95%;
+    /* اللون الأساسي - ذهبي فاخر */
+    --primary: 45 85% 55%;
+    --primary-foreground: 220 25% 8%;
+    --primary-hover: 45 85% 50%;
+    --primary-light: 45 40% 20%;
     
-    /* الثانوي */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    /* الثانوي - نحاسي */
+    --secondary: 30 50% 25%;
+    --secondary-foreground: 45 30% 96%;
     
-    /* Accent - أزرق فاتح */
-    --accent: 217 91% 95%;
-    --accent-foreground: 217 91% 40%;
+    /* Accent - ذهبي وردي */
+    --accent: 35 60% 20%;
+    --accent-foreground: 45 80% 70%;
     
     /* ألوان الحالة */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+    --success: 160 60% 45%;
+    --success-foreground: 220 25% 8%;
     
-    --warning: 38 92% 50%;
-    --warning-foreground: 38 92% 10%;
+    --warning: 35 100% 55%;
+    --warning-foreground: 220 25% 8%;
     
-    --info: 217 91% 50%;
-    --info-foreground: 0 0% 100%;
+    --info: 200 80% 55%;
+    --info-foreground: 220 25% 8%;
     
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 45 15% 60%;
     
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 45 30% 96%;
     
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 50%;
+    --border: 45 30% 20%;
+    --input: 220 15% 18%;
+    --ring: 45 85% 55%;
     
-    --radius: 0.75rem;
+    --radius: 0.875rem;
     
     /* الشريط الجانبي */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 217 91% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 91% 95%;
-    --sidebar-accent-foreground: 217 91% 40%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 217 91% 50%;
+    --sidebar-background: 220 25% 6%;
+    --sidebar-foreground: 45 30% 96%;
+    --sidebar-primary: 45 85% 55%;
+    --sidebar-primary-foreground: 220 25% 8%;
+    --sidebar-accent: 35 60% 18%;
+    --sidebar-accent-foreground: 45 80% 80%;
+    --sidebar-border: 45 25% 15%;
+    --sidebar-ring: 45 85% 55%;
     
-    /* الظلال الناعمة */
-    --shadow-sm: 0 1px 2px 0 hsl(217 91% 11% / 0.05);
-    --shadow: 0 1px 3px 0 hsl(217 91% 11% / 0.1), 0 1px 2px -1px hsl(217 91% 11% / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(217 91% 11% / 0.1), 0 2px 4px -2px hsl(217 91% 11% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(217 91% 11% / 0.1), 0 4px 6px -4px hsl(217 91% 11% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(217 91% 11% / 0.1), 0 8px 10px -6px hsl(217 91% 11% / 0.1);
-    --shadow-glow: 0 0 20px hsl(217 91% 50% / 0.15);
-    --shadow-glow-blue: 0 0 20px hsl(217 91% 50% / 0.2);
+    /* الظلال الذهبية */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+    --shadow: 0 2px 8px 0 hsl(0 0% 0% / 0.5), 0 1px 3px -1px hsl(45 85% 55% / 0.1);
+    --shadow-md: 0 4px 12px -1px hsl(0 0% 0% / 0.5), 0 2px 6px -2px hsl(45 85% 55% / 0.15);
+    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.5), 0 6px 12px -4px hsl(45 85% 55% / 0.15);
+    --shadow-xl: 0 24px 40px -8px hsl(0 0% 0% / 0.5), 0 12px 20px -8px hsl(45 85% 55% / 0.15);
+    --shadow-glow: 0 0 30px hsl(45 85% 55% / 0.25), 0 0 60px hsl(45 85% 55% / 0.1);
+    --shadow-glow-gold: 0 0 40px hsl(45 85% 55% / 0.3);
   }
   
   .dark {
-    /* الوضع الداكن الاحترافي */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* نفس التصميم الذهبي */
+    --background: 220 25% 8%;
+    --foreground: 45 30% 96%;
     
-    --card: 223 47% 15%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 20% 12%;
+    --card-foreground: 45 30% 96%;
     
-    --popover: 223 47% 15%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 20% 14%;
+    --popover-foreground: 45 30% 96%;
     
-    --primary: 217 91% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 60%;
-    --primary-light: 217 50% 20%;
+    --primary: 45 85% 55%;
+    --primary-foreground: 220 25% 8%;
+    --primary-hover: 45 85% 50%;
+    --primary-light: 45 40% 20%;
     
-    --secondary: 223 47% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 30 50% 25%;
+    --secondary-foreground: 45 30% 96%;
     
-    --accent: 217 50% 25%;
-    --accent-foreground: 217 91% 75%;
+    --accent: 35 60% 20%;
+    --accent-foreground: 45 80% 70%;
     
-    --success: 142 65% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 160 60% 45%;
+    --success-foreground: 220 25% 8%;
     
-    --warning: 38 95% 50%;
-    --warning-foreground: 38 95% 10%;
+    --warning: 35 100% 55%;
+    --warning-foreground: 220 25% 8%;
     
-    --info: 217 91% 60%;
-    --info-foreground: 0 0% 100%;
+    --info: 200 80% 55%;
+    --info-foreground: 220 25% 8%;
     
-    --muted: 223 47% 20%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 45 15% 60%;
     
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 45 30% 96%;
     
-    --border: 223 47% 25%;
-    --input: 223 47% 25%;
-    --ring: 217 91% 55%;
+    --border: 45 30% 20%;
+    --input: 220 15% 18%;
+    --ring: 45 85% 55%;
     
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 50% 25%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 223 47% 25%;
-    --sidebar-ring: 217 91% 55%;
+    --sidebar-background: 220 25% 6%;
+    --sidebar-foreground: 45 30% 96%;
+    --sidebar-primary: 45 85% 55%;
+    --sidebar-primary-foreground: 220 25% 8%;
+    --sidebar-accent: 35 60% 18%;
+    --sidebar-accent-foreground: 45 80% 80%;
+    --sidebar-border: 45 25% 15%;
+    --sidebar-ring: 45 85% 55%;
     
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 25px hsl(217 91% 55% / 0.25);
-    --shadow-glow-blue: 0 0 25px hsl(217 91% 55% / 0.3);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.5);
+    --shadow: 0 2px 8px 0 hsl(0 0% 0% / 0.6), 0 1px 3px -1px hsl(45 85% 55% / 0.1);
+    --shadow-md: 0 4px 12px -1px hsl(0 0% 0% / 0.6), 0 2px 6px -2px hsl(45 85% 55% / 0.15);
+    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.6), 0 6px 12px -4px hsl(45 85% 55% / 0.15);
+    --shadow-xl: 0 24px 40px -8px hsl(0 0% 0% / 0.6), 0 12px 20px -8px hsl(45 85% 55% / 0.15);
+    --shadow-glow: 0 0 30px hsl(45 85% 55% / 0.3), 0 0 60px hsl(45 85% 55% / 0.12);
+    --shadow-glow-gold: 0 0 40px hsl(45 85% 55% / 0.35);
   }
 }
 
@@ -142,44 +142,48 @@
     @apply bg-background text-foreground antialiased;
     direction: rtl;
     font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.01em;
   }
 }
 
 @layer utilities {
-  /* Clean Card Effect - تأثير البطاقة النظيف */
+  /* Royal Card Effect - تأثير البطاقة الملكية */
   .glass {
-    @apply bg-card border border-border shadow-md;
+    @apply bg-card/90 backdrop-blur-xl border border-primary/20 shadow-lg;
   }
   
   .glass-card {
-    @apply bg-card border border-border shadow-md rounded-xl transition-all duration-300;
+    @apply bg-card/80 backdrop-blur-xl border border-primary/15 shadow-lg rounded-xl transition-all duration-300;
+    background: linear-gradient(145deg, hsl(220 20% 14% / 0.9), hsl(220 20% 10% / 0.95));
   }
   
   .glass-card:hover {
-    @apply shadow-lg border-primary/30;
+    @apply border-primary/40;
+    box-shadow: var(--shadow-glow);
   }
   
   .glass-effect {
-    @apply bg-card/95 backdrop-blur-sm border border-border;
+    @apply bg-card/70 backdrop-blur-xl border border-primary/10;
   }
   
-  /* Gradient Text - نص متدرج أزرق */
+  /* Golden Text - نص ذهبي متوهج */
   .gradient-text {
-    @apply bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent;
+    text-shadow: 0 0 30px hsl(45 85% 55% / 0.3);
   }
   
-  /* Gradient Background */
+  /* Golden Background */
   .gradient-bg {
-    @apply bg-gradient-to-br from-blue-600 via-blue-500 to-sky-500;
+    @apply bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600;
   }
   
-  /* Glow Effects - تأثيرات التوهج الخفيف */
+  /* Glow Effects - تأثيرات التوهج الذهبي */
   .glow {
     box-shadow: var(--shadow-glow);
   }
   
-  .glow-blue {
-    box-shadow: var(--shadow-glow-blue);
+  .glow-gold {
+    box-shadow: var(--shadow-glow-gold);
   }
   
   .glow-hover:hover {
@@ -188,40 +192,46 @@
   
   /* Hover Effects */
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-[1.02];
+    @apply transition-all duration-300 hover:scale-[1.02];
   }
   
   .stat-card-hover {
-    @apply transition-all duration-300 hover:border-primary/40 hover:shadow-lg;
+    @apply transition-all duration-300 hover:border-primary/50;
   }
   
-  /* Scrollbar نظيف */
+  .stat-card-hover:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+  }
+  
+  /* Royal Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-muted/50 rounded-full;
+    @apply bg-card/50 rounded-full;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/30 rounded-full;
+    @apply bg-primary/40 rounded-full border-2 border-transparent;
+    background-clip: padding-box;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/50;
+    @apply bg-primary/60;
   }
   
   /* Animations */
   .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
+    animation: fade-in 0.4s ease-out;
   }
   
   @keyframes fade-in {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(12px);
     }
     to {
       opacity: 1;
@@ -231,23 +241,38 @@
   
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
   
   @keyframes pulse-glow {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(45 85% 55% / 0.2);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(45 85% 55% / 0.4);
+    }
   }
   
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
   
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, hsl(45 85% 55% / 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+  }
+  
   .animate-pulse-glow {
     animation: pulse-glow 3s ease-in-out infinite;
   }
   
-  /* Card Border */
+  /* Golden Border */
   .border-gradient {
     position: relative;
   }
@@ -257,13 +282,13 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 60%), hsl(199 95% 50%));
+    padding: 1.5px;
+    background: linear-gradient(135deg, hsl(45 85% 65%), hsl(35 80% 50%), hsl(45 85% 55%));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0;
+    opacity: 0.6;
     transition: opacity 0.3s;
   }
   
@@ -271,26 +296,40 @@
     opacity: 1;
   }
   
-  /* Professional Button Variants */
+  /* Royal Button Variants */
   .btn-futuristic {
-    @apply bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 text-white transition-all duration-300 shadow-md;
+    @apply bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-background transition-all duration-300 font-bold;
+    box-shadow: 0 4px 20px hsl(45 85% 55% / 0.3);
   }
   
   .btn-futuristic:hover {
-    @apply from-blue-700 via-blue-600 to-sky-600 shadow-lg;
+    @apply from-amber-400 via-yellow-400 to-amber-500;
+    box-shadow: 0 6px 30px hsl(45 85% 55% / 0.5);
+    transform: translateY(-2px);
   }
   
-  /* Blue Button Variants */
-  .btn-blue {
-    @apply bg-primary hover:bg-primary-hover text-white transition-all duration-300 shadow-md;
+  /* Golden Button Variants */
+  .btn-gold {
+    @apply bg-primary hover:bg-primary-hover text-background transition-all duration-300 font-bold;
+    box-shadow: 0 4px 15px hsl(45 85% 55% / 0.25);
   }
   
-  .btn-blue:hover {
-    @apply shadow-lg;
+  .btn-gold:hover {
+    box-shadow: 0 6px 25px hsl(45 85% 55% / 0.4);
+    transform: translateY(-1px);
   }
   
-  .btn-blue-outline {
-    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors;
+  .btn-gold-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-background transition-all duration-300 font-semibold;
+  }
+  
+  /* Text enhancements for readability */
+  .text-gold {
+    color: hsl(45 85% 60%);
+  }
+  
+  .text-gold-light {
+    color: hsl(45 70% 75%);
   }
 }
 
