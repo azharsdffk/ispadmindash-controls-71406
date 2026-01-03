@@ -48,21 +48,21 @@ export const AppSidebar = () => {
 
   if (isLoading) {
     return (
-      <aside className="w-64 bg-sidebar/80 backdrop-blur-xl border-l border-white/[0.06] flex-shrink-0 overflow-y-auto h-screen sticky top-0">
+      <aside className="w-64 bg-sidebar border-l border-primary/15 flex-shrink-0 overflow-y-auto h-screen sticky top-0">
         {/* الخلفية المتحركة */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-40 -left-10 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl" />
+          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-40 -left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
         </div>
         <nav className="relative z-10 p-4 space-y-6">
           <div className="space-y-1">
-            <h3 className="px-4 text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <h3 className="px-4 text-[10px] font-bold text-primary/50 uppercase tracking-widest mb-3 flex items-center gap-2">
               <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
               جاري التحميل...
             </h3>
             <div className="animate-pulse space-y-2">
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="h-12 bg-white/[0.03] rounded-xl" />
+                <div key={i} className="h-12 bg-primary/5 rounded-xl" />
               ))}
             </div>
           </div>
@@ -74,13 +74,13 @@ export const AppSidebar = () => {
   // إذا لم يكن هناك أدوار، عرض رسالة مناسبة
   if (roles.length === 0) {
     return (
-      <aside className="w-64 bg-sidebar/80 backdrop-blur-xl border-l border-white/[0.06] flex-shrink-0 overflow-y-auto h-screen sticky top-0">
+      <aside className="w-64 bg-sidebar border-l border-primary/15 flex-shrink-0 overflow-y-auto h-screen sticky top-0">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
         </div>
         <nav className="relative z-10 p-4 space-y-6">
           <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-destructive/80 text-center">لم يتم تعيين صلاحيات لحسابك</p>
+            <p className="text-sm text-destructive text-center">لم يتم تعيين صلاحيات لحسابك</p>
             <p className="text-xs text-muted-foreground text-center mt-2">يرجى التواصل مع المدير</p>
           </div>
         </nav>
@@ -104,25 +104,25 @@ export const AppSidebar = () => {
         className={({ isActive }) =>
           cn(
             "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
-            "text-white/60 hover:text-white hover:bg-white/[0.06]",
-            isActive && "bg-gradient-to-r from-primary/20 to-violet-500/20 text-white font-semibold border border-primary/30"
+            "text-foreground/70 hover:text-primary hover:bg-primary/10",
+            isActive && "bg-gradient-to-r from-primary/20 to-primary/10 text-primary font-bold border border-primary/30"
           )
         }
       >
         {({ isActive }) => (
           <>
             {isActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
             )}
             <div className={cn(
               "relative z-10 p-1.5 rounded-lg transition-all duration-300",
-              isActive ? "bg-primary/20 text-primary" : "text-white/50 group-hover:text-white/80"
+              isActive ? "bg-primary/20 text-primary" : "text-foreground/50 group-hover:text-primary"
             )}>
               <item.icon className="h-5 w-5" />
             </div>
             <span className="relative z-10">{item.label}</span>
             {isActive && (
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
             )}
           </>
         )}
@@ -131,18 +131,18 @@ export const AppSidebar = () => {
   };
 
   const renderSectionTitle = (title: string) => (
-    <h3 className="px-4 text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3 flex items-center gap-2">
+    <h3 className="px-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3 flex items-center gap-2">
       <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
       {title}
     </h3>
   );
 
   return (
-    <aside className="w-64 bg-sidebar/80 backdrop-blur-xl border-l border-white/[0.06] flex-shrink-0 overflow-y-auto h-screen sticky top-0 custom-scrollbar">
+    <aside className="w-64 bg-sidebar border-l border-primary/15 flex-shrink-0 overflow-y-auto h-screen sticky top-0 custom-scrollbar">
       {/* الخلفية المتحركة */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-40 -left-10 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-40 -left-10 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl" />
       </div>
       
       <nav className="relative z-10 p-4 space-y-6">
@@ -191,25 +191,25 @@ export const AppSidebar = () => {
               className={({ isActive }) =>
                 cn(
                   "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
-                  "text-white/60 hover:text-white hover:bg-white/[0.06]",
-                  isActive && "bg-gradient-to-r from-primary/20 to-violet-500/20 text-white font-semibold border border-primary/30"
+                  "text-foreground/70 hover:text-primary hover:bg-primary/10",
+                  isActive && "bg-gradient-to-r from-primary/20 to-primary/10 text-primary font-bold border border-primary/30"
                 )
               }
             >
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
                   )}
                   <div className={cn(
                     "relative z-10 p-1.5 rounded-lg transition-all duration-300",
-                    isActive ? "bg-primary/20 text-primary" : "text-white/50 group-hover:text-white/80"
+                    isActive ? "bg-primary/20 text-primary" : "text-foreground/50 group-hover:text-primary"
                   )}>
                     <FileCheck className="h-5 w-5" />
                   </div>
                   <span className="relative z-10">صلاحياتي</span>
                   {isActive && (
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
                   )}
                 </>
               )}
@@ -219,7 +219,7 @@ export const AppSidebar = () => {
         
         {/* إدارة متقدمة - للمدراء فقط */}
         {isAdmin && (
-          <div className="space-y-1 border-t border-white/[0.06] pt-4">
+          <div className="space-y-1 border-t border-primary/15 pt-4">
             {renderSectionTitle("إدارة متقدمة")}
             {[
               { path: "/agents", icon: Building2, label: "إدارة الوكلاء" },
@@ -233,25 +233,25 @@ export const AppSidebar = () => {
                 className={({ isActive }) =>
                   cn(
                     "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
-                    "text-white/60 hover:text-white hover:bg-white/[0.06]",
-                    isActive && "bg-gradient-to-r from-primary/20 to-violet-500/20 text-white font-semibold border border-primary/30"
+                    "text-foreground/70 hover:text-primary hover:bg-primary/10",
+                    isActive && "bg-gradient-to-r from-primary/20 to-primary/10 text-primary font-bold border border-primary/30"
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
                     )}
                     <div className={cn(
                       "relative z-10 p-1.5 rounded-lg transition-all duration-300",
-                      isActive ? "bg-primary/20 text-primary" : "text-white/50 group-hover:text-white/80"
+                      isActive ? "bg-primary/20 text-primary" : "text-foreground/50 group-hover:text-primary"
                     )}>
                       <item.icon className="h-5 w-5" />
                     </div>
                     <span className="relative z-10">{item.label}</span>
                     {isActive && (
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
                     )}
                   </>
                 )}
@@ -261,13 +261,13 @@ export const AppSidebar = () => {
         )}
         
         {/* التذييل */}
-        <div className="pt-4 border-t border-white/[0.06]">
-          <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-primary/10 to-violet-500/10 border border-primary/20">
+        <div className="pt-4 border-t border-primary/15">
+          <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-primary/15 to-amber-500/10 border border-primary/20">
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold text-white/80">ISP Pro</span>
+              <span className="text-xs font-bold text-foreground">ISP Pro</span>
             </div>
-            <p className="text-[10px] text-white/40">نظام إدارة متكامل</p>
+            <p className="text-[10px] text-muted-foreground">نظام إدارة متكامل</p>
           </div>
         </div>
       </nav>

@@ -96,21 +96,21 @@ const Auth = () => {
 
   if (isForgotPassword) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#030014]" dir="rtl">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background" dir="rtl">
         <PasswordRecovery onBack={() => setIsForgotPassword(false)} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#030014]" dir="rtl">
+    <div className="min-h-screen relative overflow-hidden bg-background" dir="rtl">
       {/* الخلفية المتحركة الديناميكية */}
       <div className="absolute inset-0">
         {/* الشبكة السداسية */}
         <div 
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.32v34.64L30 60 0 51.96V17.32L30 0z' fill='none' stroke='%233b82f6' stroke-width='1'/%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.32v34.64L30 60 0 51.96V17.32L30 0z' fill='none' stroke='%23d4a853' stroke-width='1'/%3E%3C/svg%3E")`,
             backgroundSize: '60px 60px',
           }}
         />
@@ -121,30 +121,30 @@ const Auth = () => {
           style={{
             background: `
               radial-gradient(ellipse at ${mousePosition.x}% ${mousePosition.y}%, 
-                rgba(59, 130, 246, 0.15) 0%,
+                hsl(45 85% 55% / 0.12) 0%,
                 transparent 50%),
               radial-gradient(ellipse at 80% 20%, 
-                rgba(139, 92, 246, 0.1) 0%,
+                hsl(35 80% 50% / 0.08) 0%,
                 transparent 40%),
               radial-gradient(ellipse at 20% 80%, 
-                rgba(6, 182, 212, 0.08) 0%,
+                hsl(45 85% 60% / 0.06) 0%,
                 transparent 40%)
             `,
           }}
         />
         
         {/* الجسيمات العائمة */}
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full animate-pulse"
+            className="absolute rounded-full"
             style={{
               width: `${Math.random() * 4 + 2}px`,
               height: `${Math.random() * 4 + 2}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              background: `hsl(${210 + Math.random() * 60}, 90%, 60%)`,
-              boxShadow: `0 0 ${Math.random() * 10 + 5}px currentColor`,
+              background: `hsl(${40 + Math.random() * 20}, 85%, 55%)`,
+              boxShadow: `0 0 ${Math.random() * 10 + 5}px hsl(45 85% 55% / 0.5)`,
               animation: `float ${Math.random() * 10 + 10}s ease-in-out infinite`,
               animationDelay: `${Math.random() * 5}s`,
             }}
@@ -152,16 +152,16 @@ const Auth = () => {
         ))}
 
         {/* الأشكال الهندسية الدوارة */}
-        <div className="absolute top-[15%] right-[10%] text-blue-500/10 animate-spin-slow">
+        <div className="absolute top-[15%] right-[10%] text-primary/15 animate-spin-slow">
           <Hexagon size={120} strokeWidth={0.5} />
         </div>
-        <div className="absolute bottom-[20%] left-[15%] text-violet-500/10 animate-spin-reverse">
+        <div className="absolute bottom-[20%] left-[15%] text-amber-500/10 animate-spin-reverse">
           <Triangle size={80} strokeWidth={0.5} />
         </div>
-        <div className="absolute top-[60%] right-[80%] text-cyan-500/10 animate-pulse">
+        <div className="absolute top-[60%] right-[80%] text-primary/10 animate-pulse">
           <Circle size={60} strokeWidth={0.5} />
         </div>
-        <div className="absolute top-[30%] left-[5%] text-blue-400/10 animate-bounce-slow">
+        <div className="absolute top-[30%] left-[5%] text-amber-400/15 animate-bounce-slow">
           <Sparkles size={40} />
         </div>
       </div>
@@ -173,24 +173,24 @@ const Auth = () => {
           <div className="relative group">
             {/* الهالة المتوهجة */}
             <div 
-              className="absolute -inset-1 rounded-3xl opacity-75 blur-xl transition-all duration-500 group-hover:opacity-100"
+              className="absolute -inset-1 rounded-3xl opacity-60 blur-xl transition-all duration-500 group-hover:opacity-80"
               style={{
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.4), rgba(6, 182, 212, 0.4))',
+                background: 'linear-gradient(135deg, hsl(45 85% 55% / 0.4), hsl(35 80% 50% / 0.3), hsl(45 85% 60% / 0.4))',
               }}
             />
             
-            {/* البطاقة الزجاجية */}
-            <div className="relative bg-[#0a0a1a]/80 backdrop-blur-2xl rounded-3xl border border-white/[0.08] p-8 sm:p-10 shadow-2xl">
+            {/* البطاقة */}
+            <div className="relative bg-card/95 backdrop-blur-xl rounded-3xl border border-primary/20 p-8 sm:p-10 shadow-2xl">
               {/* الخط المتوهج العلوي */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
               
               {/* الشعار */}
               <div className="text-center mb-10">
                 <div className="relative inline-flex">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 rounded-2xl blur-lg opacity-50 animate-pulse" />
-                  <div className="relative p-4 bg-gradient-to-br from-blue-600 via-violet-600 to-cyan-600 rounded-2xl shadow-xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-2xl blur-lg opacity-50 animate-pulse" />
+                  <div className="relative p-4 bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 rounded-2xl shadow-xl">
                     <div className="w-12 h-12 flex items-center justify-center">
-                      <svg viewBox="0 0 24 24" className="w-full h-full text-white" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <svg viewBox="0 0 24 24" className="w-full h-full text-background" fill="none" stroke="currentColor" strokeWidth="1.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
                       </svg>
                     </div>
@@ -198,24 +198,24 @@ const Auth = () => {
                 </div>
                 
                 <h1 className="mt-6 text-3xl sm:text-4xl font-bold">
-                  <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
                     نظام ISP Pro
                   </span>
                 </h1>
-                <p className="mt-2 text-white/40 text-sm">
+                <p className="mt-2 text-muted-foreground text-sm">
                   منصة إدارة شبكات الإنترنت المتقدمة
                 </p>
               </div>
 
               {/* علامات التبويب */}
               <div className="relative mb-8">
-                <div className="flex bg-white/[0.03] rounded-xl p-1 border border-white/[0.05]">
+                <div className="flex bg-card/80 rounded-xl p-1 border border-primary/15">
                   <button
                     onClick={() => setIsLogin(true)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-bold transition-all duration-300 ${
                       isLogin 
-                        ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-lg shadow-blue-500/25' 
-                        : 'text-white/50 hover:text-white/80'
+                        ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-background shadow-lg' 
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <LogIn size={18} />
@@ -223,10 +223,10 @@ const Auth = () => {
                   </button>
                   <button
                     onClick={() => setIsLogin(false)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-bold transition-all duration-300 ${
                       !isLogin 
-                        ? 'bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-lg shadow-blue-500/25' 
-                        : 'text-white/50 hover:text-white/80'
+                        ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-background shadow-lg' 
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <UserPlus size={18} />
@@ -240,34 +240,34 @@ const Auth = () => {
                 {!isLogin && (
                   <>
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">الاسم الكامل</Label>
+                      <Label className="text-foreground/80 text-sm font-semibold">الاسم الكامل</Label>
                       <div className="relative group/input">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-amber-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
                         <div className="relative">
-                          <User className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
+                          <User className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                           <Input
                             type="text"
                             required={!isLogin}
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                             placeholder="أدخل الاسم الكامل"
-                            className="pr-12 h-13 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-white/30 rounded-xl focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="pr-12 h-13"
                           />
                         </div>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">رقم الهاتف</Label>
+                      <Label className="text-foreground/80 text-sm font-semibold">رقم الهاتف</Label>
                       <div className="relative group/input">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-amber-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
                         <div className="relative">
-                          <Phone className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
+                          <Phone className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                           <Input
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             placeholder="07xxxxxxxx"
-                            className="pr-12 h-13 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-white/30 rounded-xl focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="pr-12 h-13"
                           />
                         </div>
                       </div>
@@ -276,29 +276,29 @@ const Auth = () => {
                 )}
                 
                 <div className="space-y-2">
-                  <Label className="text-white/70 text-sm">البريد الإلكتروني</Label>
+                  <Label className="text-foreground/80 text-sm font-semibold">البريد الإلكتروني</Label>
                   <div className="relative group/input">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-amber-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
                     <div className="relative">
-                      <Mail className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
+                      <Mail className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         type="email"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="example@email.com"
-                        className="pr-12 h-13 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-white/30 rounded-xl focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        className="pr-12 h-13"
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-white/70 text-sm">كلمة المرور</Label>
+                  <Label className="text-foreground/80 text-sm font-semibold">كلمة المرور</Label>
                   <div className="relative group/input">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-amber-500/20 rounded-xl blur opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
                     <div className="relative">
-                      <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
+                      <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         type={showPassword ? 'text' : 'password'}
                         required
@@ -306,12 +306,12 @@ const Auth = () => {
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         placeholder="••••••••"
                         minLength={6}
-                        className="pr-12 pl-12 h-13 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-white/30 rounded-xl focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        className="pr-12 pl-12 h-13"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                       >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
@@ -329,7 +329,7 @@ const Auth = () => {
                     <button
                       type="button"
                       onClick={() => setIsForgotPassword(true)}
-                      className="text-sm text-blue-400/80 hover:text-blue-400 transition-colors"
+                      className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold"
                     >
                       نسيت كلمة المرور؟
                     </button>
@@ -338,13 +338,13 @@ const Auth = () => {
 
                 <Button 
                   type="submit" 
-                  className="relative w-full h-13 text-base font-semibold bg-gradient-to-r from-blue-600 via-violet-600 to-cyan-600 hover:from-blue-500 hover:via-violet-500 hover:to-cyan-500 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 overflow-hidden group/btn" 
+                  className="relative w-full h-13 text-base overflow-hidden group/btn" 
                   disabled={loading}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
                   {loading ? (
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
                       <span>جارٍ التحميل...</span>
                     </div>
                   ) : (
@@ -359,10 +359,10 @@ const Auth = () => {
               {/* الفاصل */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/[0.06]" />
+                  <div className="w-full border-t border-primary/15" />
                 </div>
                 <div className="relative flex justify-center">
-                  <div className="px-4 bg-[#0a0a1a] text-xs text-white/30">
+                  <div className="px-4 bg-card text-xs text-muted-foreground">
                     أو
                   </div>
                 </div>
@@ -371,7 +371,7 @@ const Auth = () => {
               {/* تسجيل الدخول بالهاتف */}
               <a
                 href="/phone-auth"
-                className="flex items-center justify-center gap-3 w-full h-13 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.15] text-white/80 rounded-xl transition-all duration-300"
+                className="flex items-center justify-center gap-3 w-full h-13 bg-card/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 text-foreground rounded-xl transition-all duration-300"
               >
                 <Phone className="h-5 w-5" />
                 <span>تسجيل الدخول برقم الهاتف (OTP)</span>
@@ -380,7 +380,7 @@ const Auth = () => {
               {/* الفاصل الثاني */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/[0.04]" />
+                  <div className="w-full border-t border-primary/10" />
                 </div>
               </div>
 
@@ -393,26 +393,26 @@ const Auth = () => {
                 ].map((item, i) => (
                   <div 
                     key={i}
-                    className="flex flex-col items-center gap-2 py-3 px-2 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-blue-500/30 hover:bg-white/[0.04] transition-all"
+                    className="flex flex-col items-center gap-2 py-3 px-2 rounded-xl bg-card/50 border border-primary/15 hover:border-primary/30 hover:bg-primary/5 transition-all"
                   >
                     <span className="text-xl">{item.icon}</span>
-                    <span className="text-xs text-white/40">{item.label}</span>
+                    <span className="text-xs text-muted-foreground">{item.label}</span>
                   </div>
                 ))}
               </div>
 
               {/* Footer */}
-              <p className="mt-8 text-center text-xs text-white/25">
+              <p className="mt-8 text-center text-xs text-muted-foreground/60">
                 بتسجيل الدخول، أنت توافق على{' '}
-                <span className="text-blue-400/60 hover:text-blue-400 cursor-pointer transition-colors">شروط الاستخدام</span>
+                <span className="text-primary/80 hover:text-primary cursor-pointer transition-colors">شروط الاستخدام</span>
                 {' '}و{' '}
-                <span className="text-blue-400/60 hover:text-blue-400 cursor-pointer transition-colors">سياسة الخصوصية</span>
+                <span className="text-primary/80 hover:text-primary cursor-pointer transition-colors">سياسة الخصوصية</span>
               </p>
             </div>
           </div>
 
           {/* حقوق الملكية */}
-          <p className="mt-8 text-center text-xs text-white/20">
+          <p className="mt-8 text-center text-xs text-muted-foreground/50">
             © 2024 ISP Pro System • جميع الحقوق محفوظة
           </p>
         </div>
