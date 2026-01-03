@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Phone, Mail, MapPin, CreditCard, Calendar, FileText, Hash, Globe } from "lucide-react";
+import { User, Phone, Mail, MapPin, CreditCard, Calendar, FileText, Hash, Globe, Wifi } from "lucide-react";
+import { MacAddressManager } from "@/components/subscribers/MacAddressManager";
 
 interface SubscriberDetailsModalProps {
   open: boolean;
@@ -23,13 +24,17 @@ interface SubscriberDetailsModalProps {
     created_at?: string;
     updated_at?: string;
     created_by?: string;
+    mac_address?: string | null;
+    mac_locked?: boolean;
   } | null;
+  onUpdate?: () => void;
 }
 
 export const SubscriberDetailsModal = ({
   open,
   onOpenChange,
   subscriber,
+  onUpdate,
 }: SubscriberDetailsModalProps) => {
   if (!subscriber) return null;
 
@@ -220,11 +225,27 @@ export const SubscriberDetailsModal = ({
                   className="text-sm text-primary hover:underline inline-flex items-center gap-1"
                 >
                   <MapPin className="h-3 w-3" />
-                  عرض على الخريطة
-                </a>
-              </div>
-            </>
-          )}
+                عرض على الخريطة
+              </a>
+            </div>
+          </>
+        )}
+
+        {/* MAC Address Management */}
+        <Separator />
+        <div className="space-y-3">
+          <h4 className="font-semibold flex items-center gap-2">
+            <Wifi className="h-4 w-4 text-primary" />
+            قفل MAC Address
+          </h4>
+          <MacAddressManager
+            subscriberId={subscriber.id}
+            subscriberName={subscriber.name}
+            currentMac={subscriber.mac_address}
+            isLocked={subscriber.mac_locked}
+            onUpdate={onUpdate}
+          />
+        </div>
 
           {/* Created By Info */}
           {subscriber.created_by && (
