@@ -38,9 +38,9 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   };
   
   return (
-    <header className="sticky top-0 z-50 bg-card/60 backdrop-blur-2xl border-b border-white/[0.06]">
+    <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-primary/15">
       {/* الخط المتوهج العلوي */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
       
       <div className="flex items-center justify-between h-16 px-6 animate-fade-in">
         <div className="flex items-center gap-4">
@@ -50,7 +50,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
               variant="ghost"
               size="icon"
               onClick={handleGoBack}
-              className="hover:bg-white/[0.06] hover:scale-110 transition-all rounded-xl border border-transparent hover:border-white/[0.08] group"
+              className="hover:bg-primary/10 hover:scale-110 transition-all rounded-xl border border-transparent hover:border-primary/20 group"
               title="رجوع"
             >
               <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -58,14 +58,14 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
           )}
           {/* الشعار */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-            <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 via-violet-600 to-cyan-600 flex items-center justify-center shadow-lg">
-              <Wifi className="h-6 w-6 text-white" />
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+            <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 flex items-center justify-center shadow-lg">
+              <Wifi className="h-6 w-6 text-background" />
             </div>
           </div>
           
           <div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+            <h1 className="text-lg font-bold bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
               نظام ISP Pro
             </h1>
             <p className="text-xs text-muted-foreground">منصة إدارة شبكات الإنترنت</p>
@@ -84,7 +84,7 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="hover:bg-white/[0.06] hover:scale-110 transition-all rounded-xl border border-transparent hover:border-white/[0.08]"
+            className="hover:bg-primary/10 hover:scale-110 transition-all rounded-xl border border-transparent hover:border-primary/20"
             onClick={() => setSettingsOpen(true)}
             title="الإعدادات (Alt+S)"
           >
@@ -96,40 +96,40 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-white/[0.06] hover:scale-110 transition-all rounded-xl border border-transparent hover:border-white/[0.08] overflow-hidden group"
+                className="relative hover:bg-primary/10 hover:scale-110 transition-all rounded-xl border border-transparent hover:border-primary/20 overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors relative z-10" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-white/[0.08]">
+            <DropdownMenuContent align="end" className="w-56 bg-card border-primary/20">
               <DropdownMenuLabel>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
-                    <span>حسابي</span>
+                    <span className="text-foreground">حسابي</span>
                   </div>
                   {user?.email && (
                     <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
                   )}
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
+              <DropdownMenuSeparator className="bg-primary/15" />
               <DropdownMenuItem 
                 onClick={() => setProfileOpen(true)} 
-                className="hover:bg-white/[0.06] cursor-pointer"
+                className="hover:bg-primary/10 cursor-pointer text-foreground"
               >
                 <User className="ml-2 h-4 w-4" />
                 الملف الشخصي
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setSettingsOpen(true)} 
-                className="hover:bg-white/[0.06] cursor-pointer"
+                className="hover:bg-primary/10 cursor-pointer text-foreground"
               >
                 <Settings className="ml-2 h-4 w-4" />
                 الإعدادات
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-white/[0.06]" />
+              <DropdownMenuSeparator className="bg-primary/15" />
               <DropdownMenuItem 
                 onClick={signOut} 
                 className="text-destructive hover:bg-destructive/10 cursor-pointer"
