@@ -412,13 +412,13 @@ const TechnicianDashboard = () => {
 
                         <div className="grid grid-cols-2 gap-3">
                           <Button 
-                            variant="glass"
+                            variant="outline"
                             onClick={() => window.open(`https://www.google.com/maps?q=${currentLocation.lat},${currentLocation.lng}`, '_blank')}
                           >
                             🗺️ Google Maps
                           </Button>
                           <Button 
-                            variant="glass"
+                            variant="outline"
                             onClick={() => window.open(`https://waze.com/ul?ll=${currentLocation.lat},${currentLocation.lng}&navigate=yes`, '_blank')}
                           >
                             🧭 Waze

@@ -2,36 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Futuristic Dark Design System - نظام التصميم الفضائي المظلم */
+/* Professional Light Design System - نظام التصميم الاحترافي الفاتح */
 
 @layer base {
   :root {
-    /* خلفية فضائية مظلمة */
-    --background: 240 20% 3%;
-    --foreground: 0 0% 96%;
+    /* خلفية فاتحة نظيفة */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     
-    /* البطاقات زجاجية شفافة */
-    --card: 240 15% 6%;
-    --card-foreground: 0 0% 96%;
+    /* البطاقات بيضاء مع ظل خفيف */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
     
-    --popover: 240 15% 8%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
     
-    /* اللون الأساسي - أزرق متوهج */
-    --primary: 217 91% 55%;
+    /* اللون الأساسي - أزرق احترافي */
+    --primary: 217 91% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 50%;
-    --primary-light: 217 50% 20%;
+    --primary-hover: 217 91% 45%;
+    --primary-light: 217 91% 95%;
     
     /* الثانوي */
-    --secondary: 240 15% 10%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
     
-    /* Accent - بنفسجي/سيان */
-    --accent: 250 50% 15%;
-    --accent-foreground: 250 91% 75%;
+    /* Accent - أزرق فاتح */
+    --accent: 217 91% 95%;
+    --accent-foreground: 217 91% 40%;
     
     /* ألوان الحالة */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 10%;
+    
+    --info: 217 91% 50%;
+    --info-foreground: 0 0% 100%;
+    
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 50%;
+    
+    --radius: 0.75rem;
+    
+    /* الشريط الجانبي */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 217 91% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 91% 95%;
+    --sidebar-accent-foreground: 217 91% 40%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 217 91% 50%;
+    
+    /* الظلال الناعمة */
+    --shadow-sm: 0 1px 2px 0 hsl(217 91% 11% / 0.05);
+    --shadow: 0 1px 3px 0 hsl(217 91% 11% / 0.1), 0 1px 2px -1px hsl(217 91% 11% / 0.1);
+    --shadow-md: 0 4px 6px -1px hsl(217 91% 11% / 0.1), 0 2px 4px -2px hsl(217 91% 11% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(217 91% 11% / 0.1), 0 4px 6px -4px hsl(217 91% 11% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(217 91% 11% / 0.1), 0 8px 10px -6px hsl(217 91% 11% / 0.1);
+    --shadow-glow: 0 0 20px hsl(217 91% 50% / 0.15);
+    --shadow-glow-blue: 0 0 20px hsl(217 91% 50% / 0.2);
+  }
+  
+  .dark {
+    /* الوضع الداكن الاحترافي */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    
+    --card: 223 47% 15%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 223 47% 15%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 217 91% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 60%;
+    --primary-light: 217 50% 20%;
+    
+    --secondary: 223 47% 20%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --accent: 217 50% 25%;
+    --accent-foreground: 217 91% 75%;
+    
     --success: 142 65% 45%;
     --success-foreground: 0 0% 100%;
     
@@ -41,95 +104,32 @@
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
     
-    --muted: 240 15% 12%;
-    --muted-foreground: 240 10% 55%;
+    --muted: 223 47% 20%;
+    --muted-foreground: 215 20% 65%;
     
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 240 15% 12%;
-    --input: 240 15% 12%;
+    --border: 223 47% 25%;
+    --input: 223 47% 25%;
     --ring: 217 91% 55%;
     
-    --radius: 0.75rem;
-    
-    /* الشريط الجانبي */
-    --sidebar-background: 240 20% 4%;
-    --sidebar-foreground: 0 0% 96%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217 91% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 15% 10%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 240 15% 8%;
+    --sidebar-accent: 217 50% 25%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 223 47% 25%;
     --sidebar-ring: 217 91% 55%;
     
-    /* الظلال المتوهجة */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
     --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 30px hsl(217 91% 55% / 0.3);
-    --shadow-glow-violet: 0 0 30px hsl(250 91% 55% / 0.25);
-  }
-  
-  .dark {
-    /* نفس التصميم الفضائي */
-    --background: 240 20% 3%;
-    --foreground: 0 0% 96%;
-    
-    --card: 240 15% 6%;
-    --card-foreground: 0 0% 96%;
-    
-    --popover: 240 15% 8%;
-    --popover-foreground: 0 0% 96%;
-    
-    --primary: 217 91% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 50%;
-    --primary-light: 217 50% 20%;
-    
-    --secondary: 240 15% 10%;
-    --secondary-foreground: 0 0% 96%;
-    
-    --accent: 250 50% 15%;
-    --accent-foreground: 250 91% 75%;
-    
-    --success: 142 65% 45%;
-    --success-foreground: 0 0% 100%;
-    
-    --warning: 38 95% 50%;
-    --warning-foreground: 38 95% 10%;
-    
-    --info: 217 91% 60%;
-    --info-foreground: 0 0% 100%;
-    
-    --muted: 240 15% 12%;
-    --muted-foreground: 240 10% 55%;
-    
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 240 15% 12%;
-    --input: 240 15% 12%;
-    --ring: 217 91% 55%;
-    
-    --sidebar-background: 240 20% 4%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 217 91% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 15% 10%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 240 15% 8%;
-    --sidebar-ring: 217 91% 55%;
-    
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
-    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.5), 0 1px 2px -1px hsl(0 0% 0% / 0.5);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.5), 0 2px 4px -2px hsl(0 0% 0% / 0.5);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.5);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 8px 10px -6px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 30px hsl(217 91% 55% / 0.35);
-    --shadow-glow-violet: 0 0 30px hsl(250 91% 55% / 0.3);
+    --shadow-glow: 0 0 25px hsl(217 91% 55% / 0.25);
+    --shadow-glow-blue: 0 0 25px hsl(217 91% 55% / 0.3);
   }
 }
 
@@ -146,41 +146,40 @@
 }
 
 @layer utilities {
-  /* Glass Effect - تأثير زجاجي فضائي */
+  /* Clean Card Effect - تأثير البطاقة النظيف */
   .glass {
-    @apply bg-card/80 backdrop-blur-xl border border-white/[0.08] shadow-lg;
+    @apply bg-card border border-border shadow-md;
   }
   
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-white/[0.06] shadow-lg rounded-xl transition-all duration-300;
+    @apply bg-card border border-border shadow-md rounded-xl transition-all duration-300;
   }
   
   .glass-card:hover {
-    @apply shadow-xl border-primary/30;
-    box-shadow: var(--shadow-glow);
+    @apply shadow-lg border-primary/30;
   }
   
   .glass-effect {
-    @apply bg-card/50 backdrop-blur-xl border border-white/[0.05];
+    @apply bg-card/95 backdrop-blur-sm border border-border;
   }
   
-  /* Gradient Text - نص متدرج متوهج */
+  /* Gradient Text - نص متدرج أزرق */
   .gradient-text {
-    @apply bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent;
   }
   
   /* Gradient Background */
   .gradient-bg {
-    @apply bg-gradient-to-br from-blue-600 via-violet-600 to-cyan-600;
+    @apply bg-gradient-to-br from-blue-600 via-blue-500 to-sky-500;
   }
   
-  /* Glow Effects - تأثيرات التوهج */
+  /* Glow Effects - تأثيرات التوهج الخفيف */
   .glow {
     box-shadow: var(--shadow-glow);
   }
   
-  .glow-violet {
-    box-shadow: var(--shadow-glow-violet);
+  .glow-blue {
+    box-shadow: var(--shadow-glow-blue);
   }
   
   .glow-hover:hover {
@@ -193,29 +192,25 @@
   }
   
   .stat-card-hover {
-    @apply transition-all duration-300 hover:border-primary/40;
+    @apply transition-all duration-300 hover:border-primary/40 hover:shadow-lg;
   }
   
-  .stat-card-hover:hover {
-    box-shadow: var(--shadow-glow);
-  }
-  
-  /* Scrollbar فضائي */
+  /* Scrollbar نظيف */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-white/[0.03] rounded-full;
+    @apply bg-muted/50 rounded-full;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/40 rounded-full;
+    @apply bg-primary/30 rounded-full;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/60;
+    @apply bg-primary/50;
   }
   
   /* Animations */
@@ -252,7 +247,7 @@
     animation: pulse-glow 3s ease-in-out infinite;
   }
   
-  /* Card Border Gradients */
+  /* Card Border */
   .border-gradient {
     position: relative;
   }
@@ -263,7 +258,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, hsl(217 91% 55%), hsl(250 91% 55%), hsl(180 91% 50%));
+    background: linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 60%), hsl(199 95% 50%));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -276,29 +271,26 @@
     opacity: 1;
   }
   
-  /* Futuristic Button Variants */
+  /* Professional Button Variants */
   .btn-futuristic {
-    @apply bg-gradient-to-r from-blue-600 via-violet-600 to-cyan-600 text-white transition-all duration-300;
-    box-shadow: 0 0 20px hsl(217 91% 55% / 0.3);
+    @apply bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 text-white transition-all duration-300 shadow-md;
   }
   
   .btn-futuristic:hover {
-    @apply from-blue-500 via-violet-500 to-cyan-500;
-    box-shadow: 0 0 30px hsl(217 91% 55% / 0.5);
+    @apply from-blue-700 via-blue-600 to-sky-600 shadow-lg;
   }
   
   /* Blue Button Variants */
   .btn-blue {
-    @apply bg-blue-600 hover:bg-blue-500 text-white transition-all duration-300;
-    box-shadow: 0 0 15px hsl(217 91% 55% / 0.25);
+    @apply bg-primary hover:bg-primary-hover text-white transition-all duration-300 shadow-md;
   }
   
   .btn-blue:hover {
-    box-shadow: 0 0 25px hsl(217 91% 55% / 0.4);
+    @apply shadow-lg;
   }
   
   .btn-blue-outline {
-    @apply border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors;
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors;
   }
 }
 
