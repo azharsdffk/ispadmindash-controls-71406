@@ -97,9 +97,9 @@ export const ticketsApi = {
       .select(`
         *,
         subscribers (id, name, phone, address, latitude, longitude),
-        technicians (name, phone)
+      technicians (name, phone)
       `)
-      .in('status', ['open', 'in_progress'])
+      .in('status', ['new', 'open', 'accepted_by_agent', 'tech_assigned', 'tech_on_the_way', 'tech_arrived', 'in_progress'])
       .order('priority', { ascending: false })
       .order('created_at', { ascending: false });
     
@@ -159,13 +159,42 @@ export const ticketsApi = {
   },
 
   async countByStatus() {
-    const [open, inProgress, resolved, closed] = await Promise.all([
+    const [newCount, open, acceptedByAgent, techAssigned, techOnTheWay, techArrived, inProgress, resolved, closed] = await Promise.all([
+      this.count('new'),
       this.count('open'),
+      this.count('accepted_by_agent'),
+      this.count('tech_assigned'),
+      this.count('tech_on_the_way'),
+      this.count('tech_arrived'),
       this.count('in_progress'),
       this.count('resolved'),
       this.count('closed')
     ]);
     
-    return { open, inProgress, resolved, closed, total: open + inProgress + resolved + closed };
+    const active = newCount + open + acceptedByAgent + techAssigned + techOnTheWay + techArrived + inProgress;
+    return { 
+      new: newCount, 
+      open, 
+      acceptedByAgent, 
+      techAssigned, 
+      techOnTheWay, 
+      techArrived, 
+      inProgress, 
+      resolved, 
+      closed, 
+      active,
+      total: active + resolved + closed 
+    };
+  },
+
+  async updateStatus(id: string, status: TicketStatus) {
+    return this.update(id, { status });
+  },
+
+  async assignTechnician(id: string, technicianId: string) {
+    return this.update(id, { 
+      technician_id: technicianId,
+      status: 'tech_assigned'
+    });
   }
 };

@@ -42,6 +42,7 @@ import Auth from "./pages/Auth";
 import PendingApproval from "./pages/PendingApproval";
 import PhoneAuth from "./pages/PhoneAuth";
 import Features from "./pages/Features";
+import CustomerTicketTracking from "./pages/CustomerTicketTracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,12 @@ const App = () => (
               <Route path="/my-portal" element={
                 <ProtectedRoute allowedRoles={['client']}>
                   <CustomerContact />
+                </ProtectedRoute>
+              } />
+              {/* صفحة تتبع الطلب للعميل */}
+              <Route path="/ticket/:ticketId" element={
+                <ProtectedRoute allowedRoles={['client']}>
+                  <CustomerTicketTracking />
                 </ProtectedRoute>
               } />
               {/* إدارة الوكلاء - للمدير فقط */}

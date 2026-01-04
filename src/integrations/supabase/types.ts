@@ -2207,6 +2207,70 @@ export type Database = {
           },
         ]
       }
+      technician_locations: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          speed: number | null
+          status: string | null
+          technician_id: string
+          ticket_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          speed?: number | null
+          status?: string | null
+          technician_id: string
+          ticket_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          speed?: number | null
+          status?: string | null
+          technician_id?: string
+          ticket_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_locations_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: true
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_locations_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: true
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_locations_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       technician_ratings: {
         Row: {
           created_at: string | null
@@ -2347,6 +2411,47 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_events_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_dashboard_layout: {
         Row: {
           created_at: string
@@ -2421,6 +2526,97 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visit_logs: {
+        Row: {
+          actual_travel_minutes: number | null
+          actual_work_minutes: number | null
+          after_photos: string[] | null
+          arrival_location: Json | null
+          arrived_at: string | null
+          before_photos: string[] | null
+          completed_at: string | null
+          completion_location: Json | null
+          created_at: string
+          customer_feedback: string | null
+          customer_rating: number | null
+          departed_at: string | null
+          departure_location: Json | null
+          eta_minutes: number | null
+          id: string
+          notes: string | null
+          technician_id: string
+          ticket_id: string
+          updated_at: string
+          work_started_at: string | null
+        }
+        Insert: {
+          actual_travel_minutes?: number | null
+          actual_work_minutes?: number | null
+          after_photos?: string[] | null
+          arrival_location?: Json | null
+          arrived_at?: string | null
+          before_photos?: string[] | null
+          completed_at?: string | null
+          completion_location?: Json | null
+          created_at?: string
+          customer_feedback?: string | null
+          customer_rating?: number | null
+          departed_at?: string | null
+          departure_location?: Json | null
+          eta_minutes?: number | null
+          id?: string
+          notes?: string | null
+          technician_id: string
+          ticket_id: string
+          updated_at?: string
+          work_started_at?: string | null
+        }
+        Update: {
+          actual_travel_minutes?: number | null
+          actual_work_minutes?: number | null
+          after_photos?: string[] | null
+          arrival_location?: Json | null
+          arrived_at?: string | null
+          before_photos?: string[] | null
+          completed_at?: string | null
+          completion_location?: Json | null
+          created_at?: string
+          customer_feedback?: string | null
+          customer_rating?: number | null
+          departed_at?: string | null
+          departure_location?: Json | null
+          eta_minutes?: number | null
+          id?: string
+          notes?: string | null
+          technician_id?: string
+          ticket_id?: string
+          updated_at?: string
+          work_started_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_logs_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_logs_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_logs_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vouchers: {
         Row: {
