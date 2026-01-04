@@ -62,8 +62,14 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               {/* صفحة الميزات - عامة */}
               <Route path="/features" element={<Features />} />
-              {/* صفحة تواصل الزبون - عامة */}
+              {/* بوابة العميل - عامة للبحث أو محمية للعملاء */}
               <Route path="/contact" element={<CustomerContact />} />
+              {/* بوابة العميل المحمية */}
+              <Route path="/my-portal" element={
+                <ProtectedRoute allowedRoles={['client']}>
+                  <CustomerContact />
+                </ProtectedRoute>
+              } />
               {/* إدارة الوكلاء - للمدير فقط */}
               <Route path="/agents" element={
                 <ProtectedRoute allowedRoles={['admin']}>

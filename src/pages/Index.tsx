@@ -89,7 +89,7 @@ interface RecentActivity {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isAccountant, isAdmin, isTechnician, loading } = useUserRole();
+  const { isAccountant, isAdmin, isTechnician, isClient, loading } = useUserRole();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addSubscriberOpen, setAddSubscriberOpen] = useState(false);
   const [issueInvoiceOpen, setIssueInvoiceOpen] = useState(false);
@@ -120,15 +120,18 @@ const Index = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   // توجيه المستخدمين تلقائياً إلى لوحاتهم الخاصة
+  
   useEffect(() => {
     if (!loading) {
-      if (isTechnician && !isAdmin) {
+      if (isClient && !isAdmin) {
+        navigate('/my-portal');
+      } else if (isTechnician && !isAdmin) {
         navigate('/technician');
       } else if (isAccountant && !isAdmin) {
         navigate('/accountant');
       }
     }
-  }, [isTechnician, isAccountant, isAdmin, loading, navigate]);
+  }, [isClient, isTechnician, isAccountant, isAdmin, loading, navigate]);
 
   // جلب الإحصائيات
   const fetchStats = async () => {
