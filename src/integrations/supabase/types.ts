@@ -2838,7 +2838,16 @@ export type Database = {
       invoice_status: "pending" | "paid" | "overdue" | "cancelled"
       payment_method: "cash" | "bank_transfer" | "card" | "other"
       ticket_priority: "low" | "medium" | "high" | "urgent"
-      ticket_status: "open" | "in_progress" | "resolved" | "closed"
+      ticket_status:
+        | "open"
+        | "in_progress"
+        | "resolved"
+        | "closed"
+        | "new"
+        | "accepted_by_agent"
+        | "tech_assigned"
+        | "tech_on_the_way"
+        | "tech_arrived"
       voucher_type: "receipt" | "expense"
     }
     CompositeTypes: {
@@ -2979,7 +2988,17 @@ export const Constants = {
       invoice_status: ["pending", "paid", "overdue", "cancelled"],
       payment_method: ["cash", "bank_transfer", "card", "other"],
       ticket_priority: ["low", "medium", "high", "urgent"],
-      ticket_status: ["open", "in_progress", "resolved", "closed"],
+      ticket_status: [
+        "open",
+        "in_progress",
+        "resolved",
+        "closed",
+        "new",
+        "accepted_by_agent",
+        "tech_assigned",
+        "tech_on_the_way",
+        "tech_arrived",
+      ],
       voucher_type: ["receipt", "expense"],
     },
   },
