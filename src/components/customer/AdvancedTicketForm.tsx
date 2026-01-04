@@ -25,6 +25,7 @@ import {
 
 interface AdvancedTicketFormProps {
   subscriberId: string;
+  agentId?: string | null;
   onSuccess: () => void;
 }
 
@@ -38,7 +39,7 @@ const ticketTypes = [
   { value: 'other', label: 'أخرى' },
 ];
 
-export function AdvancedTicketForm({ subscriberId, onSuccess }: AdvancedTicketFormProps) {
+export function AdvancedTicketForm({ subscriberId, agentId, onSuccess }: AdvancedTicketFormProps) {
   const [ticketType, setTicketType] = useState('');
   const [description, setDescription] = useState('');
   const [preferredTime, setPreferredTime] = useState('');
@@ -90,6 +91,7 @@ export function AdvancedTicketForm({ subscriberId, onSuccess }: AdvancedTicketFo
         .from('maintenance_tickets')
         .insert({
           subscriber_id: subscriberId,
+          agent_id: agentId || null,
           ticket_number: ticketNum,
           issue_type: ticketType,
           issue_description: description,

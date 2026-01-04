@@ -538,6 +538,7 @@ export default function CustomerContact() {
                   {/* Create Ticket Quick Access */}
                   <AdvancedTicketForm 
                     subscriberId={subscriber.id}
+                    agentId={subscriber.agent_id}
                     onSuccess={refreshData}
                   />
                 </TabsContent>
@@ -547,6 +548,7 @@ export default function CustomerContact() {
                   {/* Create New Ticket */}
                   <AdvancedTicketForm 
                     subscriberId={subscriber.id}
+                    agentId={subscriber.agent_id}
                     onSuccess={refreshData}
                   />
 
