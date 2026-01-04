@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +31,8 @@ import {
   Settings,
   Home,
   History,
-  Eye
+  Eye,
+  Navigation
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { CustomerDashboardStats } from '@/components/customer/CustomerDashboardStats';
@@ -102,11 +104,16 @@ interface Invoice {
   currency: string;
 }
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  open: { label: 'مفتوح', color: 'bg-amber-500' },
-  in_progress: { label: 'قيد العمل', color: 'bg-blue-500' },
-  resolved: { label: 'تم الحل', color: 'bg-emerald-500' },
-  closed: { label: 'مغلق', color: 'bg-muted' },
+const statusConfig: Record<string, { label: string; color: string; showTracking?: boolean }> = {
+  new: { label: 'جديد', color: 'bg-gray-500', showTracking: false },
+  open: { label: 'مفتوح', color: 'bg-amber-500', showTracking: false },
+  accepted_by_agent: { label: 'قيد المراجعة', color: 'bg-blue-500', showTracking: true },
+  tech_assigned: { label: 'تم تعيين فني', color: 'bg-indigo-500', showTracking: true },
+  tech_on_the_way: { label: 'الفني في الطريق', color: 'bg-orange-500', showTracking: true },
+  tech_arrived: { label: 'وصل الفني', color: 'bg-cyan-500', showTracking: true },
+  in_progress: { label: 'قيد العمل', color: 'bg-purple-500', showTracking: true },
+  resolved: { label: 'تم الحل', color: 'bg-emerald-500', showTracking: false },
+  closed: { label: 'مغلق', color: 'bg-muted', showTracking: false },
 };
 
 const issueTypeLabels: Record<string, string> = {
@@ -122,6 +129,7 @@ const issueTypeLabels: Record<string, string> = {
 
 export default function CustomerContact() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null);
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -609,10 +617,33 @@ export default function CustomerContact() {
                                         </div>
                                       )}
                                     </div>
-                                    <Button variant="ghost" size="sm" className="w-full mt-2">
-                                      <Eye className="h-4 w-4 ml-1" />
-                                      عرض التفاصيل
-                                    </Button>
+                                    <div className="flex gap-2 mt-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="flex-1"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedTicket(ticket);
+                                        }}
+                                      >
+                                        <Eye className="h-4 w-4 ml-1" />
+                                        تفاصيل
+                                      </Button>
+                                      {status.showTracking && (
+                                        <Button 
+                                          size="sm" 
+                                          className="flex-1 bg-orange-500 hover:bg-orange-600"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/ticket/${ticket.id}`);
+                                          }}
+                                        >
+                                          <MapPin className="h-4 w-4 ml-1" />
+                                          تتبع مباشر
+                                        </Button>
+                                      )}
+                                    </div>
                                   </CardContent>
                                 </Card>
                               );
