@@ -78,3 +78,50 @@ export const getStrengthText = (strength: PasswordStrength): string => {
       return 'قوية';
   }
 };
+
+/**
+ * Check if password has been leaked using HaveIBeenPwned API (k-anonymity method)
+ * This method is secure and doesn't send the full password to the API
+ */
+export const checkPasswordLeaked = async (password: string): Promise<{ isLeaked: boolean; count: number }> => {
+  try {
+    // Create SHA-1 hash of the password
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    
+    // Get first 5 characters (prefix) and the rest (suffix)
+    const prefix = hashHex.substring(0, 5);
+    const suffix = hashHex.substring(5);
+    
+    // Query HaveIBeenPwned API with k-anonymity
+    const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+      headers: {
+        'Add-Padding': 'true' // Add padding to prevent timing attacks
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn('Failed to check password against breach database');
+      return { isLeaked: false, count: 0 };
+    }
+    
+    const text = await response.text();
+    const lines = text.split('\n');
+    
+    // Check if our suffix is in the returned list
+    for (const line of lines) {
+      const [hashSuffix, count] = line.split(':');
+      if (hashSuffix.trim() === suffix) {
+        return { isLeaked: true, count: parseInt(count.trim(), 10) };
+      }
+    }
+    
+    return { isLeaked: false, count: 0 };
+  } catch (error) {
+    console.error('Error checking password breach:', error);
+    return { isLeaked: false, count: 0 };
+  }
+};
