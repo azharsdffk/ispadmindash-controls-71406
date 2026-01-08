@@ -8,6 +8,7 @@ import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Sparkles, Hexago
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
 import { signupSchema, loginSchema, sanitizeInput } from '@/utils/inputValidation';
+import { checkPasswordLeaked } from '@/utils/passwordStrength';
 
 const Auth = () => {
   const { signIn, signUp } = useAuth();
@@ -64,6 +65,20 @@ const Auth = () => {
           fullName: sanitizeInput(formData.fullName),
           phone: formData.phone ? sanitizeInput(formData.phone) : undefined,
         });
+        
+        // Check if password has been leaked
+        toast.loading('جارٍ التحقق من أمان كلمة المرور...');
+        const { isLeaked, count } = await checkPasswordLeaked(validatedData.password);
+        toast.dismiss();
+        
+        if (isLeaked) {
+          toast.error(
+            `⚠️ تحذير: كلمة المرور هذه تم تسريبها في ${count.toLocaleString()} اختراق سابق. الرجاء اختيار كلمة مرور مختلفة.`,
+            { duration: 8000 }
+          );
+          setLoading(false);
+          return;
+        }
         
         const { error } = await signUp(
           validatedData.email, 
