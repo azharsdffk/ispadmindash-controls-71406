@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_pii_access_logs: {
+        Row: {
+          access_reason: string | null
+          accessed_fields: string[] | null
+          accessed_record_id: string | null
+          accessed_table: string
+          admin_id: string
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          user_agent: string | null
+        }
+        Insert: {
+          access_reason?: string | null
+          accessed_fields?: string[] | null
+          accessed_record_id?: string | null
+          accessed_table: string
+          admin_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+        }
+        Update: {
+          access_reason?: string | null
+          accessed_fields?: string[] | null
+          accessed_record_id?: string | null
+          accessed_table?: string
+          admin_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       agents: {
         Row: {
           active: boolean | null
@@ -2961,6 +2997,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_admin_pii_access: {
+        Args: {
+          p_access_reason?: string
+          p_accessed_fields: string[]
+          p_accessed_record_id: string
+          p_accessed_table: string
+        }
+        Returns: string
       }
       log_employee_location_access: {
         Args: {
