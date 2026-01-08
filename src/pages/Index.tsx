@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { PendingUsersManager } from "@/components/admin/PendingUsersManager";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { SettingsModal } from "@/components/modals/SettingsModal";
@@ -479,6 +480,11 @@ const Index = () => {
                       </CardContent>
                     </Card>
                   </div>
+                )}
+
+                {/* قسم المستخدمين المنتظرين الموافقة - للمدير فقط */}
+                {isAdmin && (
+                  <PendingUsersManager />
                 )}
 
                 {/* بطاقات الإحصائيات الرئيسية */}
