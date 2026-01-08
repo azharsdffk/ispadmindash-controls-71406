@@ -2998,6 +2998,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_login_attempt: {
+        Args: {
+          p_email: string
+          p_error_message?: string
+          p_ip_address: unknown
+          p_success: boolean
+          p_user_agent: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      insert_sms_log: {
+        Args: {
+          p_message: string
+          p_phone: string
+          p_status?: string
+          p_subscriber_id?: string
+          p_template_id?: string
+        }
+        Returns: string
+      }
       log_admin_pii_access: {
         Args: {
           p_access_reason?: string
@@ -3065,6 +3086,10 @@ export type Database = {
           permission_description: string
           permission_name: string
         }[]
+      }
+      update_sms_log_status: {
+        Args: { p_id: string; p_provider_response?: Json; p_status: string }
+        Returns: boolean
       }
     }
     Enums: {
