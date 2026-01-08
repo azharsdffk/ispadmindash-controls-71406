@@ -3063,6 +3063,24 @@ export type Database = {
         }
         Returns: string
       }
+      manage_otp_rate_limit: {
+        Args: { p_action: string; p_phone: string }
+        Returns: Json
+      }
+      manage_password_reset_token: {
+        Args: { p_action: string; p_token_hash: string; p_user_id: string }
+        Returns: Json
+      }
+      manage_session: {
+        Args: {
+          p_action: string
+          p_ip_address?: unknown
+          p_session_token: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       process_payment_transaction: {
         Args: {
           p_amount: number
