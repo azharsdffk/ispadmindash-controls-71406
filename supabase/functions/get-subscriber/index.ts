@@ -1,14 +1,57 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
+// Secure CORS configuration - use environment variable or default to project URL
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
+const ALLOWED_ORIGINS = [
+  'https://lovable.dev',
+  'https://*.lovable.dev',
+  'https://*.lovableproject.com',
+  SUPABASE_URL.replace('supabase.co', 'lovableproject.com'),
+].filter(Boolean);
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const getCorsHeaders = (origin: string | null) => {
+  // Check if origin is allowed
+  const isAllowed = origin && ALLOWED_ORIGINS.some(allowed => {
+    if (allowed.includes('*')) {
+      const pattern = new RegExp('^' + allowed.replace(/\*/g, '.*') + '$');
+      return pattern.test(origin);
+    }
+    return allowed === origin;
+  });
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0] || '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+};
+
+/**
+ * Sanitize search input for ILIKE queries to prevent pattern injection
+ * Escapes special ILIKE characters: %, _, \
+ */
+const sanitizeSearchInput = (input: string): string => {
+  if (!input) return '';
+  
+  // Limit input length to prevent DoS
+  const maxLength = 100;
+  let sanitized = input.substring(0, maxLength);
+  
+  // Escape ILIKE special characters
+  sanitized = sanitized.replace(/\\/g, '\\\\'); // Escape backslashes first
+  sanitized = sanitized.replace(/%/g, '\\%');   // Escape percent
+  sanitized = sanitized.replace(/_/g, '\\_');   // Escape underscore
+  
+  // Remove any null bytes or other control characters
+  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  
+  return sanitized;
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -61,7 +104,9 @@ serve(async (req) => {
       query = query.eq('phone', phone);
     } else if (search) {
       // General search - search in name, phone, username, address
-      query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,username.ilike.%${search}%,address.ilike.%${search}%`);
+      // Sanitize input to prevent ILIKE pattern injection
+      const sanitizedSearch = sanitizeSearchInput(search);
+      query = query.or(`name.ilike.%${sanitizedSearch}%,phone.ilike.%${sanitizedSearch}%,username.ilike.%${sanitizedSearch}%,address.ilike.%${sanitizedSearch}%`);
     } else {
       return new Response(
         JSON.stringify({ 
