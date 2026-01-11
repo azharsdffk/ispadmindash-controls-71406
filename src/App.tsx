@@ -65,10 +65,10 @@ const App = () => (
               <Route path="/features" element={<Features />} />
               {/* بوابة العميل - عامة للبحث أو محمية للعملاء */}
               <Route path="/contact" element={<CustomerContact />} />
-              {/* بوابة العميل المحمية */}
+              {/* الصفحة الرئيسية للعميل والمدير */}
               <Route path="/my-portal" element={
                 <ProtectedRoute allowedRoles={['client', 'admin']}>
-                  <CustomerContact />
+                  <Index />
                 </ProtectedRoute>
               } />
               {/* صفحة تتبع الطلب للعميل */}
