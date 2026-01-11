@@ -67,7 +67,7 @@ const App = () => (
               <Route path="/contact" element={<CustomerContact />} />
               {/* بوابة العميل المحمية */}
               <Route path="/my-portal" element={
-                <ProtectedRoute allowedRoles={['client']}>
+                <ProtectedRoute allowedRoles={['client', 'admin']}>
                   <CustomerContact />
                 </ProtectedRoute>
               } />
