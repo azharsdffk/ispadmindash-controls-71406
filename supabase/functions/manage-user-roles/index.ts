@@ -42,14 +42,26 @@ serve(async (req) => {
       throw new Error('فشل التحقق من المستخدم');
     }
 
-    // Check if user is admin
+    // Check if user is admin - using service role to bypass RLS
     const { data: roles, error: rolesError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
 
-    if (rolesError || !roles?.some(r => r.role === 'admin')) {
-      throw new Error('ليس لديك صلاحية الوصول');
+    console.log('User ID:', user.id);
+    console.log('Roles found:', roles);
+    console.log('Roles error:', rolesError);
+
+    if (rolesError) {
+      console.error('Error fetching roles:', rolesError);
+      throw new Error('فشل في التحقق من الصلاحيات');
+    }
+
+    const isAdmin = roles?.some(r => r.role === 'admin');
+    console.log('Is Admin:', isAdmin);
+
+    if (!isAdmin) {
+      throw new Error('ليس لديك صلاحية الوصول - يجب أن تكون مديراً');
     }
 
     const body: RequestBody = await req.json();
