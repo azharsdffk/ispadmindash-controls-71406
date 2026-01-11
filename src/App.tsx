@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -173,6 +173,8 @@ const App = () => (
               <Route path="/roles" element={<ProtectedRoute allowedRoles={['admin']}><RoleManagement /></ProtectedRoute>} />
               <Route path="/permissions" element={<ProtectedRoute allowedRoles={['admin']}><PermissionsManagement /></ProtectedRoute>} />
               <Route path="/accounts" element={<ProtectedRoute allowedRoles={['admin']}><UserAccountsManagement /></ProtectedRoute>} />
+              {/* توافق مع رابط قديم */}
+              <Route path="/user-accounts" element={<Navigate to="/accounts" replace />} />
               <Route path="/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
