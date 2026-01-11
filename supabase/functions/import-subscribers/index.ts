@@ -350,13 +350,13 @@ function extractFromHtmlContent(html: string): any {
   // Try to find phone
   const phoneMatch = html.match(/(?:07[3-9]\d{8}|\+9647[3-9]\d{8})/);
   if (phoneMatch) {
-    subscriber.phone = phoneMatch[0];
+    subscriber.phone = sanitizeCSVValue(phoneMatch[0]);
   }
   
   // Try to find email
   const emailMatch = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   if (emailMatch) {
-    subscriber.email = emailMatch[0];
+    subscriber.email = sanitizeCSVValue(emailMatch[0]);
   }
   
   // Try to find name
@@ -368,10 +368,15 @@ function extractFromHtmlContent(html: string): any {
   for (const pattern of namePatterns) {
     const match = html.match(pattern);
     if (match && match[1]) {
-      subscriber.name = match[1].trim();
+      subscriber.name = sanitizeCSVValue(match[1].trim());
       break;
     }
   }
+  
+  // Ensure all values are sanitized before returning
+  subscriber.name = subscriber.name ? sanitizeCSVValue(String(subscriber.name)) : '';
+  subscriber.phone = subscriber.phone ? sanitizeCSVValue(String(subscriber.phone)) : '';
+  subscriber.email = subscriber.email ? sanitizeCSVValue(String(subscriber.email)) : '';
   
   return subscriber;
 }
