@@ -12,7 +12,7 @@ import { ar } from 'date-fns/locale';
 import { 
   Shield, Monitor, Smartphone, Laptop, Clock, 
   MapPin, LogOut, Fingerprint, Loader2, RefreshCw,
-  Activity, CheckCircle, XCircle, AlertTriangle
+  Activity, CheckCircle, XCircle, AlertTriangle, Settings
 } from "lucide-react";
 import {
   AlertDialog,
@@ -24,6 +24,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { TwoFactorSetup } from "@/components/auth/TwoFactorSetup";
 
 interface Session {
   id: string;
@@ -44,10 +51,13 @@ export const SecuritySettingsTab = () => {
   });
   const [sessionToRevoke, setSessionToRevoke] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showMFASetup, setShowMFASetup] = useState(false);
+  const [mfaStatus, setMfaStatus] = useState<'loading' | 'enabled' | 'disabled'>('loading');
 
   useEffect(() => {
     if (user) {
       fetchData();
+      checkMFAStatus();
     }
   }, [user]);
 
@@ -55,6 +65,24 @@ export const SecuritySettingsTab = () => {
     setLoading(true);
     await Promise.all([fetchSessions(), fetchSettings()]);
     setLoading(false);
+  };
+
+  const checkMFAStatus = async () => {
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      
+      const verifiedFactor = data.totp.find(f => f.status === 'verified');
+      if (verifiedFactor) {
+        setMfaStatus('enabled');
+        setSettings(prev => ({ ...prev, two_factor_enabled: true }));
+      } else {
+        setMfaStatus('disabled');
+      }
+    } catch (error) {
+      console.error('Error checking MFA status:', error);
+      setMfaStatus('disabled');
+    }
   };
 
   const fetchSessions = async () => {
@@ -193,15 +221,35 @@ export const SecuritySettingsTab = () => {
               <div>
                 <Label>المصادقة الثنائية (2FA)</Label>
                 <p className="text-sm text-muted-foreground">
-                  طبقة حماية إضافية لحسابك
+                  طبقة حماية إضافية لحسابك باستخدام Google Authenticator
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-warning border-warning/30">
-                قريباً
-              </Badge>
-              <Switch disabled checked={settings.two_factor_enabled} />
+              {mfaStatus === 'loading' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : mfaStatus === 'enabled' ? (
+                <>
+                  <Badge variant="default" className="bg-success text-success-foreground">
+                    مُفعّل
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setShowMFASetup(true)}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowMFASetup(true)}
+                >
+                  تفعيل
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -297,6 +345,22 @@ export const SecuritySettingsTab = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* MFA Setup Dialog */}
+      <Dialog open={showMFASetup} onOpenChange={setShowMFASetup}>
+        <DialogContent className="max-w-lg" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>إعداد المصادقة الثنائية</DialogTitle>
+          </DialogHeader>
+          <TwoFactorSetup 
+            onComplete={() => {
+              setShowMFASetup(false);
+              checkMFAStatus();
+            }}
+            onCancel={() => setShowMFASetup(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
