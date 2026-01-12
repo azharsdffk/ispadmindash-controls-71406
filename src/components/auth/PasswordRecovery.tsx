@@ -60,19 +60,27 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
 
     setLoading(true);
     try {
-      // Call edge function to send SMS
-      const { data, error } = await supabase.functions.invoke('send-sms', {
+      // Format phone number
+      let formattedPhone = phone.replace(/\D/g, '');
+      if (formattedPhone.startsWith('0')) {
+        formattedPhone = '964' + formattedPhone.substring(1);
+      } else if (!formattedPhone.startsWith('964')) {
+        formattedPhone = '964' + formattedPhone;
+      }
+
+      // Call send-otp edge function (doesn't require authentication)
+      const { data, error } = await supabase.functions.invoke('send-otp', {
         body: {
-          phone: phone,
-          type: 'password_reset',
-          generateCode: true
+          phone: formattedPhone
         }
       });
 
       if (error) {
         toast.error('فشل إرسال رمز التحقق: ' + error.message);
+      } else if (data?.error) {
+        toast.error('فشل إرسال رمز التحقق: ' + data.error);
       } else {
-        setSentTo(phone);
+        setSentTo(formattedPhone);
         setStep('verify');
         toast.success('تم إرسال رمز التحقق إلى رقم هاتفك');
       }
@@ -91,28 +99,34 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
 
     setLoading(true);
     try {
-      // Verify the code
-      const { data, error } = await supabase.functions.invoke('send-sms', {
+      // For email recovery, the code is verified via the link
+      if (sentTo.includes('@')) {
+        setStep('newPassword');
+        toast.success('تم التحقق بنجاح');
+        setLoading(false);
+        return;
+      }
+
+      // Verify the OTP code using verify-otp edge function
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
         body: {
           phone: sentTo,
-          type: 'verify_code',
-          code: verificationCode
+          otp: verificationCode
         }
       });
 
-      if (error || !data?.valid) {
-        toast.error('رمز التحقق غير صحيح');
-      } else {
+      if (error) {
+        toast.error('رمز التحقق غير صحيح: ' + error.message);
+      } else if (data?.error) {
+        toast.error('رمز التحقق غير صحيح: ' + data.error);
+      } else if (data?.success) {
         setStep('newPassword');
         toast.success('تم التحقق بنجاح');
-      }
-    } catch (error: any) {
-      // For email recovery, move to new password step
-      if (sentTo.includes('@')) {
-        setStep('newPassword');
       } else {
         toast.error('رمز التحقق غير صحيح');
       }
+    } catch (error: any) {
+      toast.error('حدث خطأ في التحقق');
     } finally {
       setLoading(false);
     }
