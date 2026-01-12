@@ -104,11 +104,45 @@ const EmployeeTracking = () => {
     try {
       setLoading(true);
       
+      // Fetch from employees table
       const { data: employeeData } = await supabase
         .from('employees')
         .select('user_id, full_name, position, phone');
 
-      if (!employeeData) {
+      // Fetch from technicians table
+      const { data: technicianData } = await supabase
+        .from('technicians')
+        .select('user_id, name, phone, specialization');
+
+      // Combine both sources
+      const allStaff: Array<{user_id: string; full_name: string; position: string | null; phone: string}> = [];
+      
+      if (employeeData) {
+        allStaff.push(...employeeData.map(e => ({
+          user_id: e.user_id,
+          full_name: e.full_name,
+          position: e.position,
+          phone: e.phone
+        })));
+      }
+      
+      if (technicianData) {
+        // Add technicians that are not already in employees
+        const existingUserIds = new Set(allStaff.map(e => e.user_id));
+        technicianData.forEach(t => {
+          if (t.user_id && !existingUserIds.has(t.user_id)) {
+            allStaff.push({
+              user_id: t.user_id,
+              full_name: t.name,
+              position: t.specialization || 'فني',
+              phone: t.phone
+            });
+          }
+        });
+      }
+
+      if (allStaff.length === 0) {
+        setLocations([]);
         setLoading(false);
         return;
       }
@@ -116,11 +150,11 @@ const EmployeeTracking = () => {
       const locationsWithEmployees: EmployeeLocation[] = [];
       const accessedUserIds: string[] = [];
 
-      for (const employee of employeeData) {
+      for (const staff of allStaff) {
         const { data: locationData } = await supabase
           .from('employee_locations')
           .select('*')
-          .eq('user_id', employee.user_id)
+          .eq('user_id', staff.user_id)
           .order('recorded_at', { ascending: false })
           .limit(1)
           .single();
@@ -129,12 +163,12 @@ const EmployeeTracking = () => {
           locationsWithEmployees.push({
             ...locationData,
             employee: {
-              full_name: employee.full_name,
-              position: employee.position,
-              phone: employee.phone,
+              full_name: staff.full_name,
+              position: staff.position,
+              phone: staff.phone,
             },
           });
-          accessedUserIds.push(employee.user_id);
+          accessedUserIds.push(staff.user_id);
         }
       }
 
