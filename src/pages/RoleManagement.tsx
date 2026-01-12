@@ -106,8 +106,8 @@ const RoleManagement = () => {
       const usersWithData = data.users.map((user: any) => ({
         id: user.id,
         email: user.email || 'لا يوجد',
-        full_name: user.profile?.full_name || 'غير محدد',
-        phone: user.profile?.phone || 'لا يوجد',
+        full_name: user.full_name || 'غير محدد',
+        phone: user.phone || 'لا يوجد',
         roles: user.roles || [],
         created_at: user.created_at,
         last_sign_in_at: user.last_sign_in_at
