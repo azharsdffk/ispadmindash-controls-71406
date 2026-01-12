@@ -20,6 +20,7 @@ import {
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { AddEmployeeModal } from "@/components/modals/AddEmployeeModal";
 import { EmployeeLocationTracker } from "@/components/employees/EmployeeLocationTracker";
+import { EmployeeDetailsModal } from "@/components/modals/EmployeeDetailsModal";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Navigate } from "react-router-dom";
@@ -103,6 +104,10 @@ const Employees = () => {
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Details modal
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
   const loadEmployees = useCallback(async () => {
     try {
@@ -614,7 +619,14 @@ const Employees = () => {
                       </TableHeader>
                       <TableBody>
                         {filteredEmployees.map((employee) => (
-                          <TableRow key={employee.id} className="hover:bg-muted/50">
+                          <TableRow 
+                            key={employee.id} 
+                            className="hover:bg-muted/50 cursor-pointer"
+                            onClick={() => {
+                              setSelectedEmployee(employee);
+                              setDetailsModalOpen(true);
+                            }}
+                          >
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className={`h-10 w-10 ${getRoleColor(employee.user_roles?.role)}`}>
@@ -727,7 +739,14 @@ const Employees = () => {
                 /* Grid View */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredEmployees.map((employee) => (
-                    <Card key={employee.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
+                    <Card 
+                      key={employee.id} 
+                      className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+                      onClick={() => {
+                        setSelectedEmployee(employee);
+                        setDetailsModalOpen(true);
+                      }}
+                    >
                       <div className={`h-2 ${employee.active ? 'bg-green-500' : 'bg-red-500'}`} />
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-4">
@@ -854,6 +873,11 @@ const Employees = () => {
           title="حذف موظف"
           description="هل أنت متأكد من حذف هذا الموظف؟ لا يمكن التراجع عن هذا الإجراء."
           itemName={employeeToDelete?.name}
+        />
+        <EmployeeDetailsModal
+          employee={selectedEmployee}
+          open={detailsModalOpen}
+          onOpenChange={setDetailsModalOpen}
         />
       </div>
     </SidebarProvider>
