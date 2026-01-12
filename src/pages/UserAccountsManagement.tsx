@@ -98,14 +98,23 @@ export default function UserAccountsManagement() {
     }
   }, [isAdmin]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (retryCount = 0) => {
+    const maxRetries = 3;
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('manage-user-roles', {
         body: { action: 'list_users' }
       });
 
-      if (error) throw error;
+      if (error) {
+        // إعادة المحاولة عند فشل الاتصال
+        if (error.message?.includes('Failed to fetch') && retryCount < maxRetries) {
+          console.log(`إعادة محاولة الاتصال... (${retryCount + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 1500 * (retryCount + 1)));
+          return fetchUsers(retryCount + 1);
+        }
+        throw error;
+      }
 
       const usersWithLoginInfo = await Promise.all(
         data.users.map(async (user: any) => {
@@ -376,7 +385,7 @@ export default function UserAccountsManagement() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={fetchUsers} disabled={loading}>
+                  <Button variant="outline" onClick={() => fetchUsers()} disabled={loading}>
                     <RefreshCw className={`h-4 w-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
                     تحديث
                   </Button>
