@@ -93,7 +93,8 @@ const RoleManagement = () => {
     }
   }, [isAdmin, roleLoading, navigate]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (retryCount = 0) => {
+    const maxRetries = 3;
     try {
       setLoading(true);
       
@@ -101,7 +102,15 @@ const RoleManagement = () => {
         body: { action: 'list_users' }
       });
 
-      if (error) throw error;
+      if (error) {
+        // إذا كان خطأ اتصال وما زال هناك محاولات متبقية
+        if (error.message?.includes('Failed to fetch') && retryCount < maxRetries) {
+          console.log(`إعادة محاولة الاتصال... (${retryCount + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return fetchUsers(retryCount + 1);
+        }
+        throw error;
+      }
 
       const usersWithData = data.users.map((user: any) => ({
         id: user.id,
@@ -115,6 +124,7 @@ const RoleManagement = () => {
 
       setUsers(usersWithData);
     } catch (error: any) {
+      console.error('Error fetching users:', error);
       toast.error("فشل تحميل المستخدمين: " + error.message);
     } finally {
       setLoading(false);
