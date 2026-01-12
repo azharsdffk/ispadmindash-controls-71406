@@ -180,17 +180,26 @@ serve(async (req) => {
     // Send SMS via Twilio
     const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
     const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+    const twilioPhoneNumberRaw = Deno.env.get('TWILIO_PHONE_NUMBER');
 
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
+    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumberRaw) {
       console.error('Twilio credentials not configured');
       throw new Error('خدمة الرسائل غير متوفرة حالياً');
+    }
+
+    // Normalize to E.164
+    const toE164 = `+${formattedPhone}`;
+    const fromE164 = twilioPhoneNumberRaw.startsWith('+') ? twilioPhoneNumberRaw : `+${twilioPhoneNumberRaw}`;
+
+    if (toE164 === fromE164) {
+      console.error('Twilio misconfiguration: TO and FROM are identical', { toE164, fromE164 });
+      throw new Error('إعدادات الرسائل غير صحيحة حالياً. يرجى تغيير رقم الإرسال (TWILIO_PHONE_NUMBER)');
     }
 
     const message = `رمز التحقق الخاص بك هو: ${otpCode}\nصالح لمدة 5 دقائق`;
 
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-    
+
     const response = await fetch(twilioUrl, {
       method: 'POST',
       headers: {
@@ -198,8 +207,8 @@ serve(async (req) => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        To: `+${formattedPhone}`,
-        From: twilioPhoneNumber,
+        To: toE164,
+        From: fromE164,
         Body: message,
       }),
     });
