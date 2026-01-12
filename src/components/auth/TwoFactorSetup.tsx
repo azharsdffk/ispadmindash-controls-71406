@@ -268,10 +268,11 @@ export const TwoFactorSetup = ({ onComplete, onCancel }: TwoFactorSetupProps) =>
             
             {qrCode ? (
               <div className="bg-white p-4 rounded-lg inline-block">
-                <QRCodeSVG 
-                  value={qrCode.replace('data:image/svg+xml;utf-8,', '')} 
-                  size={200}
-                  level="M"
+                <img 
+                  src={qrCode} 
+                  alt="QR Code for 2FA setup"
+                  width={200}
+                  height={200}
                 />
               </div>
             ) : (
