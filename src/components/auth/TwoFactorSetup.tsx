@@ -65,18 +65,26 @@ export const TwoFactorSetup = ({ onComplete, onCancel }: TwoFactorSetupProps) =>
   const enrollMFA = async () => {
     setLoading(true);
     try {
-      // First unenroll any unverified factors
+      // First check for existing factors
       const { data: factors } = await supabase.auth.mfa.listFactors();
-      const unverifiedFactors = factors?.totp.filter(f => f.status === 'unverified') || [];
+      const allTotpFactors = factors?.totp || [];
       
-      for (const factor of unverifiedFactors) {
-        await supabase.auth.mfa.unenroll({ factorId: factor.id });
+      // Unenroll ALL existing TOTP factors (both verified and unverified)
+      for (const factor of allTotpFactors) {
+        try {
+          await supabase.auth.mfa.unenroll({ factorId: factor.id });
+        } catch (unenrollError) {
+          console.log('Could not unenroll factor:', factor.id);
+        }
       }
+
+      // Generate a unique friendly name to avoid conflicts
+      const uniqueName = `Authenticator-${Date.now()}`;
 
       // Now enroll a new factor
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: 'ISP Pro Authenticator',
+        friendlyName: uniqueName,
       });
 
       if (error) throw error;
