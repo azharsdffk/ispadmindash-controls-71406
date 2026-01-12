@@ -28,7 +28,7 @@ import {
   AlertCircle, UserPlus, Shield, X, Users, UserCheck, UserX, Settings, Search,
   RefreshCw, Eye, Edit, Trash2, Key, Clock, Calendar, Mail, Activity, 
   Loader2, ShieldCheck, ShieldAlert, ShieldOff, User, Crown, Wrench, Calculator,
-  LayoutGrid, List, Copy, ExternalLink, Lock, Unlock, CheckCircle, XCircle
+  LayoutGrid, List, Copy, ExternalLink, Lock, Unlock, CheckCircle, XCircle, Building2
 } from 'lucide-react';
 import { AddUserModal } from '@/components/modals/AddUserModal';
 import { SettingsModal } from '@/components/modals/SettingsModal';
@@ -36,7 +36,7 @@ import { DeleteConfirmDialog } from '@/components/modals/DeleteConfirmDialog';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
-type AppRole = 'admin' | 'accountant' | 'technician' | 'client';
+type AppRole = 'admin' | 'accountant' | 'technician' | 'client' | 'agent';
 
 interface UserWithDetails {
   id: string;
@@ -214,6 +214,7 @@ export default function UserAccountsManagement() {
       admin: 'مدير',
       accountant: 'محاسب',
       technician: 'فني',
+      agent: 'وكيل',
       client: 'عميل'
     };
     return labels[role] || role;
@@ -224,6 +225,7 @@ export default function UserAccountsManagement() {
       admin: 'destructive',
       accountant: 'default',
       technician: 'secondary',
+      agent: 'default',
       client: 'outline'
     };
     return variants[role] || 'default';
@@ -234,6 +236,7 @@ export default function UserAccountsManagement() {
       case 'admin': return Crown;
       case 'accountant': return Calculator;
       case 'technician': return Wrench;
+      case 'agent': return Building2;
       case 'client': return User;
       default: return User;
     }
@@ -244,6 +247,7 @@ export default function UserAccountsManagement() {
       case 'admin': return { text: 'text-red-600', bg: 'bg-red-500/10', border: 'border-red-500/20' };
       case 'accountant': return { text: 'text-blue-600', bg: 'bg-blue-500/10', border: 'border-blue-500/20' };
       case 'technician': return { text: 'text-yellow-600', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' };
+      case 'agent': return { text: 'text-purple-600', bg: 'bg-purple-500/10', border: 'border-purple-500/20' };
       case 'client': return { text: 'text-green-600', bg: 'bg-green-500/10', border: 'border-green-500/20' };
       default: return { text: 'text-gray-600', bg: 'bg-gray-500/10', border: 'border-gray-500/20' };
     }

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { UserCheck, UserX, Clock, Shield, Calculator, Wrench, User } from 'lucide-react';
+import { UserCheck, UserX, Clock, Shield, Calculator, Wrench, User, Building2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PendingUser {
@@ -16,12 +16,13 @@ interface PendingUser {
   created_at: string;
 }
 
-type AppRole = 'admin' | 'accountant' | 'technician' | 'client';
+type AppRole = 'admin' | 'accountant' | 'technician' | 'client' | 'agent';
 
 const roleLabels: Record<AppRole, { label: string; icon: React.ReactNode; color: string }> = {
   admin: { label: 'مدير', icon: <Shield className="h-4 w-4" />, color: 'bg-red-500' },
   accountant: { label: 'محاسب', icon: <Calculator className="h-4 w-4" />, color: 'bg-blue-500' },
   technician: { label: 'فني', icon: <Wrench className="h-4 w-4" />, color: 'bg-green-500' },
+  agent: { label: 'وكيل', icon: <User className="h-4 w-4" />, color: 'bg-purple-500' },
   client: { label: 'عميل', icon: <User className="h-4 w-4" />, color: 'bg-gray-500' },
 };
 
@@ -99,13 +100,55 @@ export const PendingUsersManager = () => {
 
     setProcessing(userId);
     try {
-      const { error } = await supabase
+      // First, assign the role
+      const { error: roleError } = await supabase
         .from('user_roles')
         .insert({ user_id: userId, role });
 
-      if (error) throw error;
+      if (roleError) throw roleError;
 
-      toast.success('تم قبول المستخدم وتعيين الدور بنجاح');
+      // Get user profile info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('id', userId)
+        .single();
+
+      // If technician, add to technicians table
+      if (role === 'technician') {
+        const { error: techError } = await supabase
+          .from('technicians')
+          .insert({
+            user_id: userId,
+            name: profile?.full_name || 'فني جديد',
+            phone: profile?.phone || '',
+            active: true
+          });
+        
+        if (techError) {
+          console.error('Error adding technician:', techError);
+          // Don't fail the whole operation, just log it
+        }
+      }
+
+      // If agent, add to agents table
+      if (role === 'agent') {
+        const { error: agentError } = await supabase
+          .from('agents')
+          .insert({
+            name: profile?.full_name || 'وكيل جديد',
+            phone: profile?.phone || '',
+            region: 'غير محدد',
+            active: true
+          });
+        
+        if (agentError) {
+          console.error('Error adding agent:', agentError);
+          // Don't fail the whole operation, just log it
+        }
+      }
+
+      toast.success(`تم قبول المستخدم وتعيين دور "${roleLabels[role].label}" بنجاح`);
       setPendingUsers(prev => prev.filter(u => u.id !== userId));
     } catch (error) {
       console.error('Error approving user:', error);
