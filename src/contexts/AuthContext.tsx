@@ -3,16 +3,25 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
+interface MFARequiredState {
+  factorId: string;
+  email: string;
+  password: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   permissions: string[];
   roles: string[];
+  mfaRequired: MFARequiredState | null;
   refreshUserData: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; mfaRequired?: boolean }>;
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  completeMFASignIn: (factorId: string, code: string) => Promise<{ error: any }>;
+  clearMFARequired: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
+  const [mfaRequired, setMfaRequired] = useState<MFARequiredState | null>(null);
   const navigate = useNavigate();
 
   const fetchUserPermissions = async (userId: string) => {
@@ -113,50 +123,109 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
     
     if (!error && data.session) {
-      // إنشاء سجل للجلسة الجديدة
-      try {
-        const deviceName = navigator.platform || 'Unknown Device';
-        const userAgent = navigator.userAgent;
-        
-        // حساب تاريخ انتهاء الجلسة (7 أيام من الآن)
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
-        
-        await supabase.functions.invoke('manage-sessions', {
-          body: {
-            action: 'create',
-            sessionToken: data.session.access_token,
-            deviceName,
-            userAgent,
-            expiresAt: expiresAt.toISOString(),
-          },
+      // Check if MFA is required
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const verifiedFactor = factors?.totp.find(f => f.status === 'verified');
+      
+      if (verifiedFactor) {
+        // MFA is required
+        setMfaRequired({
+          factorId: verifiedFactor.id,
+          email,
+          password,
         });
-      } catch (sessionError) {
-        console.error('Error creating session record:', sessionError);
+        return { error: null, mfaRequired: true };
       }
       
-      // جلب دور المستخدم وتوجيهه للوحة المناسبة
-      const { data: userRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id);
-      
-      const userRolesList = userRoles?.map(r => r.role) || [];
-      
-      // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
-      if (userRolesList.length === 0) {
-        navigate('/pending-approval');
-      } else if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
-        navigate('/accountant');
-      } else if (userRolesList.includes('technician') && !userRolesList.includes('admin')) {
-        navigate('/technician');
-      } else if (userRolesList.includes('client') && !userRolesList.includes('admin')) {
-        navigate('/portal');
-      } else {
-        navigate('/');
-      }
+      // No MFA required, proceed with normal login
+      await completeSignIn(data);
     }
     return { error };
+  };
+
+  const completeSignIn = async (data: { session: Session; user: User }) => {
+    // إنشاء سجل للجلسة الجديدة
+    try {
+      const deviceName = navigator.platform || 'Unknown Device';
+      const userAgent = navigator.userAgent;
+      
+      // حساب تاريخ انتهاء الجلسة (7 أيام من الآن)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      
+      await supabase.functions.invoke('manage-sessions', {
+        body: {
+          action: 'create',
+          sessionToken: data.session.access_token,
+          deviceName,
+          userAgent,
+          expiresAt: expiresAt.toISOString(),
+        },
+      });
+    } catch (sessionError) {
+      console.error('Error creating session record:', sessionError);
+    }
+    
+    // جلب دور المستخدم وتوجيهه للوحة المناسبة
+    const { data: userRoles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', data.user.id);
+    
+    const userRolesList = userRoles?.map(r => r.role) || [];
+    
+    // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
+    if (userRolesList.length === 0) {
+      navigate('/pending-approval');
+    } else if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
+      navigate('/accountant');
+    } else if (userRolesList.includes('technician') && !userRolesList.includes('admin')) {
+      navigate('/technician');
+    } else if (userRolesList.includes('client') && !userRolesList.includes('admin')) {
+      navigate('/portal');
+    } else {
+      navigate('/');
+    }
+  };
+
+  const completeMFASignIn = async (factorId: string, code: string) => {
+    try {
+      // Create a challenge
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId,
+      });
+
+      if (challengeError) throw challengeError;
+
+      // Verify the challenge
+      const { data, error } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challengeData.id,
+        code,
+      });
+
+      if (error) throw error;
+
+      // Clear MFA required state
+      setMfaRequired(null);
+
+      // Get current session and complete sign in
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) {
+        await completeSignIn({ 
+          session: sessionData.session, 
+          user: sessionData.session.user 
+        });
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  };
+
+  const clearMFARequired = () => {
+    setMfaRequired(null);
   };
 
   const signUp = async (email: string, password: string, fullName: string, phone?: string) => {
@@ -231,10 +300,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading, 
       permissions, 
       roles,
+      mfaRequired,
       refreshUserData,
       signIn, 
       signUp, 
-      signOut 
+      signOut,
+      completeMFASignIn,
+      clearMFARequired,
     }}>
       {children}
     </AuthContext.Provider>

@@ -7,11 +7,12 @@ import { toast } from 'sonner';
 import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Sparkles, Hexagon, Triangle, Circle, Users } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
+import { TwoFactorVerify } from '@/components/auth/TwoFactorVerify';
 import { signupSchema, loginSchema, sanitizeInput } from '@/utils/inputValidation';
 import { checkPasswordLeaked } from '@/utils/passwordStrength';
 
 const Auth = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, mfaRequired, completeMFASignIn, clearMFARequired } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -56,13 +57,16 @@ const Auth = () => {
           password: formData.password,
         });
         
-        const { error } = await signIn(validatedData.email, validatedData.password);
+        const { error, mfaRequired: needsMFA } = await signIn(validatedData.email, validatedData.password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
           } else {
             toast.error('فشل تسجيل الدخول: ' + error.message);
           }
+        } else if (needsMFA) {
+          // MFA is required, the component will switch to MFA verification
+          toast.info('يرجى إدخال رمز التحقق من تطبيق المصادقة');
         } else {
           toast.success('تم تسجيل الدخول بنجاح');
         }
@@ -116,6 +120,25 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show MFA verification screen if required
+  if (mfaRequired) {
+    const handleMFASuccess = async () => {
+      toast.success('تم التحقق بنجاح');
+    };
+
+    const handleMFACancel = () => {
+      clearMFARequired();
+    };
+
+    return (
+      <TwoFactorVerify 
+        factorId={mfaRequired.factorId}
+        onSuccess={handleMFASuccess}
+        onCancel={handleMFACancel}
+      />
+    );
+  }
 
   if (isForgotPassword) {
     return (
