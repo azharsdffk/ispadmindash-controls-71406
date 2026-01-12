@@ -38,6 +38,7 @@ interface Employee {
   position: string | null;
   active: boolean;
   created_at: string;
+  source: 'employees' | 'technicians';
   profiles?: {
     full_name: string;
     phone: string | null;
@@ -106,15 +107,26 @@ const Employees = () => {
   const loadEmployees = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Load from employees table
+      const { data: employeesData, error: employeesError } = await supabase
         .from("employees")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (employeesError) throw employeesError;
 
+      // Load from technicians table
+      const { data: techniciansData, error: techniciansError } = await supabase
+        .from("technicians")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (techniciansError) throw techniciansError;
+
+      // Process employees
       const employeesWithDetails = await Promise.all(
-        (data || []).map(async (employee) => {
+        (employeesData || []).map(async (employee) => {
           const { data: profile } = await supabase
             .from("profiles")
             .select("full_name, phone, username")
@@ -129,13 +141,59 @@ const Employees = () => {
 
           return {
             ...employee,
+            source: 'employees' as const,
             profiles: profile,
             user_roles: role,
           };
         })
       );
 
-      setEmployees(employeesWithDetails);
+      // Process technicians and convert to employee format
+      const techniciansAsEmployees = await Promise.all(
+        (techniciansData || []).map(async (technician) => {
+          let profile = null;
+          let role = null;
+
+          if (technician.user_id) {
+            const { data: profileData } = await supabase
+              .from("profiles")
+              .select("full_name, phone, username")
+              .eq("id", technician.user_id)
+              .single();
+            profile = profileData;
+
+            const { data: roleData } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", technician.user_id)
+              .single();
+            role = roleData;
+          }
+
+          return {
+            id: technician.id,
+            user_id: technician.user_id || '',
+            employee_code: `TECH-${technician.id.slice(0, 6).toUpperCase()}`,
+            full_name: technician.name,
+            phone: technician.phone,
+            position: technician.specialization || 'فني صيانة',
+            active: technician.available ?? true,
+            created_at: technician.created_at,
+            source: 'technicians' as const,
+            profiles: profile,
+            user_roles: role || { role: 'technician' },
+          };
+        })
+      );
+
+      // Filter out technicians that are already in employees table (by user_id)
+      const employeeUserIds = new Set(employeesWithDetails.map(e => e.user_id).filter(Boolean));
+      const uniqueTechnicians = techniciansAsEmployees.filter(t => !t.user_id || !employeeUserIds.has(t.user_id));
+
+      // Combine both lists
+      const allEmployees = [...employeesWithDetails, ...uniqueTechnicians];
+      
+      setEmployees(allEmployees);
     } catch (error: any) {
       console.error("Error loading employees:", error);
       toast.error("فشل تحميل بيانات الموظفين");
@@ -217,14 +275,21 @@ const Employees = () => {
     return filtered;
   }, [employees, activeTab, searchQuery, roleFilter, statusFilter, sortBy]);
 
-  const toggleEmployeeStatus = async (id: string, currentStatus: boolean) => {
+  const toggleEmployeeStatus = async (id: string, currentStatus: boolean, source: 'employees' | 'technicians') => {
     try {
-      const { error } = await supabase
-        .from("employees")
-        .update({ active: !currentStatus })
-        .eq("id", id);
-
-      if (error) throw error;
+      if (source === 'employees') {
+        const { error } = await supabase
+          .from("employees")
+          .update({ active: !currentStatus })
+          .eq("id", id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("technicians")
+          .update({ available: !currentStatus })
+          .eq("id", id);
+        if (error) throw error;
+      }
 
       toast.success(`تم ${!currentStatus ? "تفعيل" : "تعطيل"} الموظف بنجاح`);
       loadEmployees();
@@ -609,7 +674,7 @@ const Employees = () => {
                                   <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem 
-                                    onClick={() => toggleEmployeeStatus(employee.id, employee.active)}
+                                    onClick={() => toggleEmployeeStatus(employee.id, employee.active, employee.source)}
                                   >
                                     {employee.active ? (
                                       <>
@@ -686,7 +751,7 @@ const Employees = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toggleEmployeeStatus(employee.id, employee.active)}>
+                              <DropdownMenuItem onClick={() => toggleEmployeeStatus(employee.id, employee.active, employee.source)}>
                                 {employee.active ? "تعطيل" : "تفعيل"}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
