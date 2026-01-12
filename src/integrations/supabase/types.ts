@@ -2428,6 +2428,7 @@ export type Database = {
           name: string
           phone: string
           specialization: string | null
+          user_id: string | null
         }
         Insert: {
           available?: boolean | null
@@ -2436,6 +2437,7 @@ export type Database = {
           name: string
           phone: string
           specialization?: string | null
+          user_id?: string | null
         }
         Update: {
           available?: boolean | null
@@ -2444,6 +2446,7 @@ export type Database = {
           name?: string
           phone?: string
           specialization?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
