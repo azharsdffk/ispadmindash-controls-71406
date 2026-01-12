@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Sparkles, Hexagon, Triangle, Circle } from 'lucide-react';
+import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Sparkles, Hexagon, Triangle, Circle, Users } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
 import { signupSchema, loginSchema, sanitizeInput } from '@/utils/inputValidation';
@@ -22,7 +22,15 @@ const Auth = () => {
     password: '',
     fullName: '',
     phone: '',
+    role: '' as 'client' | 'technician' | 'agent' | 'admin' | '',
   });
+
+  const roleOptions = [
+    { value: 'client', label: 'العميل', description: 'مستخدم عادي للخدمة' },
+    { value: 'technician', label: 'الفني', description: 'فني صيانة ودعم' },
+    { value: 'agent', label: 'الوكيل', description: 'وكيل مبيعات' },
+    { value: 'admin', label: 'المدير', description: 'مدير النظام' },
+  ];
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -285,6 +293,52 @@ const Auth = () => {
                             className="pr-12 h-13"
                           />
                         </div>
+                      </div>
+                    </div>
+                    
+                    {/* حقل اختيار الدور */}
+                    <div className="space-y-2">
+                      <Label className="text-foreground/80 text-sm font-semibold">نوع الحساب</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {roleOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, role: option.value as any })}
+                            className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-right ${
+                              formData.role === option.value
+                                ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
+                                : 'border-primary/20 bg-card/50 hover:border-primary/40 hover:bg-primary/5'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                formData.role === option.value
+                                  ? 'bg-gradient-to-br from-amber-500 to-yellow-600 text-background'
+                                  : 'bg-primary/10 text-primary'
+                              }`}>
+                                <Users size={20} />
+                              </div>
+                              <div>
+                                <p className={`font-bold text-sm ${
+                                  formData.role === option.value ? 'text-primary' : 'text-foreground'
+                                }`}>
+                                  {option.label}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {option.description}
+                                </p>
+                              </div>
+                            </div>
+                            {formData.role === option.value && (
+                              <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                <svg className="w-3 h-3 text-background" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </>
