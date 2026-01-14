@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Sparkles, Hexagon, Triangle, Circle, Users } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
-import { TwoFactorVerify } from '@/components/auth/TwoFactorVerify';
+import { MFAVerifyScreen } from '@/components/auth/MFAVerifyScreen';
 import { signupSchema, loginSchema, sanitizeInput } from '@/utils/inputValidation';
 import { checkPasswordLeaked } from '@/utils/passwordStrength';
 
@@ -123,7 +123,11 @@ const Auth = () => {
 
   // Show MFA verification screen if required
   if (mfaRequired) {
-    const handleMFASuccess = async () => {
+    const handleMFAVerify = async (code: string) => {
+      const { error } = await completeMFASignIn(mfaRequired.factorId, code);
+      if (error) {
+        throw error;
+      }
       toast.success('تم التحقق بنجاح');
     };
 
@@ -132,9 +136,9 @@ const Auth = () => {
     };
 
     return (
-      <TwoFactorVerify 
+      <MFAVerifyScreen 
         factorId={mfaRequired.factorId}
-        onSuccess={handleMFASuccess}
+        onVerify={handleMFAVerify}
         onCancel={handleMFACancel}
       />
     );
