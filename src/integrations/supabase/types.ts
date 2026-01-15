@@ -962,6 +962,7 @@ export type Database = {
           status: Database["public"]["Enums"]["invoice_status"] | null
           subscriber_id: string
           updated_at: string | null
+          version: number | null
         }
         Insert: {
           amount: number
@@ -977,6 +978,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["invoice_status"] | null
           subscriber_id: string
           updated_at?: string | null
+          version?: number | null
         }
         Update: {
           amount?: number
@@ -992,6 +994,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["invoice_status"] | null
           subscriber_id?: string
           updated_at?: string | null
+          version?: number | null
         }
         Relationships: [
           {
@@ -1203,6 +1206,7 @@ export type Database = {
           technician_id: string | null
           ticket_number: string
           updated_at: string | null
+          version: number | null
         }
         Insert: {
           agent_id?: string | null
@@ -1220,6 +1224,7 @@ export type Database = {
           technician_id?: string | null
           ticket_number: string
           updated_at?: string | null
+          version?: number | null
         }
         Update: {
           agent_id?: string | null
@@ -1237,6 +1242,7 @@ export type Database = {
           technician_id?: string | null
           ticket_number?: string
           updated_at?: string | null
+          version?: number | null
         }
         Relationships: [
           {
@@ -1934,6 +1940,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_operations_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          new_data: Json | null
+          old_data: Json | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          new_data?: Json | null
+          old_data?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          new_data?: Json | null
+          old_data?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string
@@ -2190,6 +2235,7 @@ export type Database = {
           status_comment: string | null
           updated_at: string | null
           username: string | null
+          version: number | null
         }
         Insert: {
           address?: string | null
@@ -2211,6 +2257,7 @@ export type Database = {
           status_comment?: string | null
           updated_at?: string | null
           username?: string | null
+          version?: number | null
         }
         Update: {
           address?: string | null
@@ -2232,6 +2279,7 @@ export type Database = {
           status_comment?: string | null
           updated_at?: string | null
           username?: string | null
+          version?: number | null
         }
         Relationships: [
           {
@@ -2973,6 +3021,14 @@ export type Database = {
           message: string
         }[]
       }
+      check_version: {
+        Args: {
+          p_expected_version: number
+          p_record_id: string
+          p_table_name: string
+        }
+        Returns: boolean
+      }
       cleanup_expired_otps: { Args: never; Returns: undefined }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       cleanup_old_data: { Args: never; Returns: undefined }
@@ -3063,6 +3119,18 @@ export type Database = {
           p_resource_type?: string
           p_user_agent?: string
           p_user_id: string
+        }
+        Returns: string
+      }
+      log_sensitive_operation: {
+        Args: {
+          p_action: string
+          p_ip_address?: unknown
+          p_new_data?: Json
+          p_old_data?: Json
+          p_resource_id?: string
+          p_resource_type: string
+          p_user_agent?: string
         }
         Returns: string
       }
