@@ -26,6 +26,7 @@ import {
 import { agentsApi, Agent } from '@/services/api/agents';
 import { supabase } from '@/integrations/supabase/client';
 import { DeleteConfirmDialog } from '@/components/modals/DeleteConfirmDialog';
+import { AgentDetailsModal } from '@/components/agents/AgentDetailsModal';
 import { Helmet } from 'react-helmet-async';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -678,186 +679,13 @@ export default function AgentsManagement() {
         </div>
       </SidebarProvider>
 
+
       {/* View Details Modal */}
-      <AlertDialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-        <AlertDialogContent className="max-w-2xl" dir="rtl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <span className="block">{selectedAgent?.name}</span>
-                <Badge variant={selectedAgent?.active ? 'default' : 'secondary'} className="mt-1">
-                  {selectedAgent?.active ? 'نشط' : 'غير نشط'}
-                </Badge>
-              </div>
-            </AlertDialogTitle>
-          </AlertDialogHeader>
-          
-          {selectedAgent && (
-            <div className="space-y-6">
-              {/* Stats Row */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <Building2 className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="text-2xl font-bold">{selectedAgent.subscribersCount || 0}</p>
-                      <p className="text-sm text-muted-foreground">مشترك</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <Activity className="h-8 w-8 text-orange-500" />
-                    <div>
-                      <p className="text-2xl font-bold">{selectedAgent.ticketsCount || 0}</p>
-                      <p className="text-sm text-muted-foreground">تذكرة</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Details */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">المنطقة</span>
-                  </div>
-                  <span className="font-medium">{selectedAgent.region}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">الهاتف</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium" dir="ltr">{selectedAgent.phone}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => copyToClipboard(selectedAgent.phone, 'رقم الهاتف')}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                {selectedAgent.whatsapp && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
-                    <div className="flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-muted-foreground">واتساب</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-green-600" dir="ltr">{selectedAgent.whatsapp}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => window.open(`https://wa.me/${selectedAgent.whatsapp?.replace(/\D/g, '')}`, '_blank')}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {selectedAgent.telegram && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                    <div className="flex items-center gap-2">
-                      <Send className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm text-muted-foreground">تلغرام</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-blue-600">{selectedAgent.telegram}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => window.open(`https://t.me/${selectedAgent.telegram?.replace('@', '')}`, '_blank')}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {selectedAgent.working_hours && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">أوقات العمل</span>
-                    </div>
-                    <span className="font-medium">{selectedAgent.working_hours}</span>
-                  </div>
-                )}
-
-                {selectedAgent.address && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">العنوان</span>
-                    </div>
-                    <span className="font-medium">{selectedAgent.address}</span>
-                  </div>
-                )}
-
-                {selectedAgent.latitude && selectedAgent.longitude && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">الموقع</span>
-                    </div>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="p-0 h-auto"
-                      onClick={() => window.open(`https://www.google.com/maps?q=${selectedAgent.latitude},${selectedAgent.longitude}`, '_blank')}
-                    >
-                      <span>عرض على الخريطة</span>
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                    </Button>
-                  </div>
-                )}
-
-                {selectedAgent.notes && (
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Briefcase className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">ملاحظات</span>
-                    </div>
-                    <p className="text-sm">{selectedAgent.notes}</p>
-                  </div>
-                )}
-
-                {selectedAgent.created_at && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">تاريخ الإنشاء</span>
-                    </div>
-                    <span className="text-sm">{format(new Date(selectedAgent.created_at), 'dd MMMM yyyy', { locale: ar })}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel>إغلاق</AlertDialogCancel>
-            <Button onClick={() => { setIsViewOpen(false); openEditModal(selectedAgent!); }}>
-              <Edit className="h-4 w-4 ml-2" />
-              تعديل
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
+      <AgentDetailsModal 
+        open={isViewOpen} 
+        onOpenChange={setIsViewOpen} 
+        agent={selectedAgent} 
+      />
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
