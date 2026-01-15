@@ -3121,6 +3121,9 @@ export type Database = {
         | "user"
         | "client"
         | "agent"
+        | "super_admin"
+        | "technical_manager"
+        | "finance_manager"
       contract_status:
         | "active"
         | "expired"
@@ -3276,6 +3279,9 @@ export const Constants = {
         "user",
         "client",
         "agent",
+        "super_admin",
+        "technical_manager",
+        "finance_manager",
       ],
       contract_status: [
         "active",
