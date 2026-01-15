@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { roles, loading: rolesLoading } = useUserRole();
+  const { roles, isSuperAdmin, isAdmin, loading: rolesLoading } = useUserRole();
 
   if (authLoading || rolesLoading) {
     return (
@@ -28,6 +28,11 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
   if (roles.length === 0) {
     return <Navigate to="/pending-approval" replace />;
+  }
+
+  // المدراء العامين والمديرين لديهم وصول لكل الصفحات
+  if (isSuperAdmin || isAdmin) {
+    return <>{children}</>;
   }
 
   // إذا كانت هناك أدوار محددة، تحقق من أن المستخدم لديه واحد منها على الأقل

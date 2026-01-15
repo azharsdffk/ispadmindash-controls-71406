@@ -29,7 +29,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 
-type AppRole = 'admin' | 'accountant' | 'technician' | 'client';
+type AppRole = 'admin' | 'accountant' | 'technician' | 'client' | 'super_admin' | 'technical_manager' | 'finance_manager';
 
 interface Permission {
   id: string;
@@ -39,7 +39,10 @@ interface Permission {
 }
 
 const ROLES: { value: AppRole; label: string; icon: React.ElementType; color: string; bgColor: string }[] = [
+  { value: 'super_admin', label: 'المدير العام', icon: ShieldCheck, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
   { value: 'admin', label: 'مدير النظام', icon: ShieldCheck, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30' },
+  { value: 'technical_manager', label: 'المدير الفني', icon: Wrench, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
+  { value: 'finance_manager', label: 'المدير المالي', icon: Wallet, color: 'text-indigo-600', bgColor: 'bg-indigo-100 dark:bg-indigo-900/30' },
   { value: 'accountant', label: 'محاسب', icon: Wallet, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
   { value: 'technician', label: 'فني', icon: Wrench, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30' },
   { value: 'client', label: 'عميل', icon: Users, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' }

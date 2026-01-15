@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-type AppRole = 'admin' | 'accountant' | 'technician' | 'client';
+type AppRole = 'admin' | 'accountant' | 'technician' | 'client' | 'super_admin' | 'technical_manager' | 'finance_manager';
 
 type UserWithRoles = {
   id: string;
@@ -54,7 +54,10 @@ interface Permission {
 }
 
 const ROLES: { value: AppRole; label: string; icon: React.ReactNode; color: string }[] = [
-  { value: 'admin', label: 'مدير', icon: <Crown className="h-4 w-4" />, color: 'bg-destructive text-destructive-foreground' },
+  { value: 'super_admin', label: 'المدير العام', icon: <Crown className="h-4 w-4" />, color: 'bg-amber-600 text-white' },
+  { value: 'admin', label: 'مدير النظام', icon: <Crown className="h-4 w-4" />, color: 'bg-destructive text-destructive-foreground' },
+  { value: 'technical_manager', label: 'المدير الفني', icon: <Wrench className="h-4 w-4" />, color: 'bg-emerald-600 text-white' },
+  { value: 'finance_manager', label: 'المدير المالي', icon: <Calculator className="h-4 w-4" />, color: 'bg-indigo-600 text-white' },
   { value: 'accountant', label: 'محاسب', icon: <Calculator className="h-4 w-4" />, color: 'bg-blue-500 text-white' },
   { value: 'technician', label: 'فني', icon: <Wrench className="h-4 w-4" />, color: 'bg-green-500 text-white' },
   { value: 'client', label: 'عميل', icon: <User className="h-4 w-4" />, color: 'bg-orange-500 text-white' }
