@@ -9,10 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { subscriberFormSchema, sanitizeInput } from "@/utils/inputValidation";
 import { trackSubscriberEdit } from "@/utils/piiTracking";
+import { Wifi, Lock } from "lucide-react";
 
 interface AddSubscriberModalProps {
   open: boolean;
@@ -35,7 +37,22 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
     issueType: "",
     issueDescription: "",
     estimatedRepairCost: "",
+    macAddress: "",
+    macLocked: false,
   });
+
+  // Validate MAC address format
+  const isValidMac = (mac: string) => {
+    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+    return macRegex.test(mac) || mac === '';
+  };
+
+  // Format MAC address as user types
+  const formatMacAddress = (value: string) => {
+    const cleaned = value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    const formatted = cleaned.match(/.{1,2}/g)?.join(':') || cleaned;
+    return formatted.substring(0, 17);
+  };
 
   // استخراج الإحداثيات من رابط خرائط جوجل
   const parseLocationFromLink = (link: string): { lat: number | null; lng: number | null } => {
@@ -92,6 +109,12 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
       
       const { lat, lng } = parseLocationFromLink(formData.locationLink);
       
+      // Validate MAC if provided
+      if (formData.macAddress && !isValidMac(formData.macAddress)) {
+        toast.error('صيغة MAC Address غير صحيحة');
+        return;
+      }
+
       const { data: newSubscriber, error } = await supabase.from('subscribers').insert({
         name: sanitizeInput(formData.name),
         phone: sanitizeInput(formData.phone),
@@ -104,10 +127,23 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         status_comment: formData.statusComment ? sanitizeInput(formData.statusComment) : null,
         latitude: lat,
         longitude: lng,
+        mac_address: formData.macAddress || null,
+        mac_locked: formData.macLocked,
         created_by: user?.id,
       }).select().single();
 
       if (error) throw error;
+      
+      // Log MAC address if added
+      if (newSubscriber && formData.macAddress) {
+        await supabase.from('mac_address_history').insert({
+          subscriber_id: newSubscriber.id,
+          mac_address: formData.macAddress,
+          action: formData.macLocked ? 'locked' : 'added',
+          changed_by: user?.id,
+          notes: 'إضافة عند التسجيل'
+        });
+      }
       
       if (newSubscriber) {
         await trackSubscriberEdit(newSubscriber.id, ['name', 'phone', 'email', 'address']);
@@ -129,6 +165,8 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
         issueType: "",
         issueDescription: "",
         estimatedRepairCost: "",
+        macAddress: "",
+        macLocked: false,
       });
       onSuccess?.();
     } catch (error: any) {
@@ -308,6 +346,50 @@ export const AddSubscriberModal = ({ open, onOpenChange, onSuccess }: AddSubscri
                   onChange={(e) => setFormData({ ...formData, statusComment: e.target.value })}
                   placeholder="أي ملاحظات عن حالة المشترك أو الخدمة"
                   className="h-11"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* MAC Address */}
+          <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-cyan-500/5 to-transparent border border-cyan-500/10">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+              <Wifi className="h-4 w-4" />
+              MAC Address
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="macAddress" className="font-medium">MAC Address</Label>
+                <Input
+                  id="macAddress"
+                  value={formData.macAddress}
+                  onChange={(e) => setFormData({ ...formData, macAddress: formatMacAddress(e.target.value) })}
+                  placeholder="XX:XX:XX:XX:XX:XX"
+                  className="h-11 font-mono"
+                  dir="ltr"
+                  maxLength={17}
+                />
+                {formData.macAddress && !isValidMac(formData.macAddress) && (
+                  <p className="text-xs text-destructive">صيغة MAC Address غير صحيحة</p>
+                )}
+                {formData.macAddress && isValidMac(formData.macAddress) && (
+                  <p className="text-xs text-green-600">✓ صيغة صحيحة</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">قفل MAC Address</p>
+                    <p className="text-xs text-muted-foreground">منع تغيير MAC Address لاحقاً</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formData.macLocked}
+                  onCheckedChange={(checked) => setFormData({ ...formData, macLocked: checked })}
                 />
               </div>
             </div>

@@ -17,8 +17,9 @@ import {
   Search, Filter, Download, RefreshCw, ChevronLeft, ChevronRight, 
   ArrowUpDown, ArrowUp, ArrowDown, UserCheck, UserX, CreditCard,
   TrendingUp, TrendingDown, Building, Eye, FileText, MoreHorizontal,
-  X, CheckCircle, AlertCircle, Clock, Wifi, WifiOff
+  X, CheckCircle, AlertCircle, Clock, Wifi, WifiOff, Lock, Unlock
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AddSubscriberModal } from "@/components/modals/AddSubscriberModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { SubscriberAuditModal } from "@/components/modals/SubscriberAuditModal";
@@ -49,6 +50,8 @@ type Subscriber = {
   updated_at?: string;
   created_by?: string;
   agent_id?: string;
+  mac_address?: string | null;
+  mac_locked?: boolean | null;
   agents?: { name: string; region: string } | null;
 };
 
@@ -185,7 +188,8 @@ const Subscribers = () => {
         s.phone.includes(query) ||
         s.username?.toLowerCase().includes(query) ||
         s.email?.toLowerCase().includes(query) ||
-        s.address?.toLowerCase().includes(query)
+        s.address?.toLowerCase().includes(query) ||
+        s.mac_address?.toLowerCase().includes(query)
       );
     }
 
@@ -667,6 +671,7 @@ const Subscribers = () => {
                                         الخطة {getSortIcon('plan')}
                                       </div>
                                     </TableHead>
+                                    <TableHead>MAC Address</TableHead>
                                     <TableHead>الحالة</TableHead>
                                     <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('balance')}>
                                       <div className="flex items-center gap-2">
@@ -733,6 +738,29 @@ const Subscribers = () => {
                                           </Badge>
                                         ) : (
                                           <span className="text-muted-foreground">-</span>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        {subscriber.mac_address ? (
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <div className="flex items-center gap-2">
+                                                  <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                                                    {subscriber.mac_address}
+                                                  </span>
+                                                  {subscriber.mac_locked && (
+                                                    <Lock className="h-3 w-3 text-amber-500" />
+                                                  )}
+                                                </div>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                {subscriber.mac_locked ? 'MAC مقفل' : 'MAC غير مقفل'}
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        ) : (
+                                          <span className="text-muted-foreground text-xs">-</span>
                                         )}
                                       </TableCell>
                                       <TableCell>
