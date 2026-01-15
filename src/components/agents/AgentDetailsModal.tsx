@@ -204,7 +204,7 @@ export function AgentDetailsModal({ open, onOpenChange, agent }: AgentDetailsMod
         </AlertDialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
-          {loading ? (
+          {loading || !stats ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
