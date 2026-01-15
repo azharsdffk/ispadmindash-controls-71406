@@ -456,23 +456,38 @@ export function AgentDetailsModal({ open, onOpenChange, agent }: AgentDetailsMod
 
                     {/* Map Location */}
                     {agent.latitude && agent.longitude && (
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-5 w-5 text-primary" />
-                          <span>إحداثيات الموقع</span>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-5 w-5 text-primary" />
+                            <span>إحداثيات الموقع</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-mono text-muted-foreground" dir="ltr">
+                              {agent.latitude.toFixed(6)}, {agent.longitude.toFixed(6)}
+                            </span>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => window.open(`https://www.google.com/maps?q=${agent.latitude},${agent.longitude}`, '_blank')}
+                            >
+                              <ExternalLink className="h-4 w-4 ml-1" />
+                              فتح في خرائط جوجل
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-mono text-muted-foreground" dir="ltr">
-                            {agent.latitude.toFixed(6)}, {agent.longitude.toFixed(6)}
-                          </span>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => window.open(`https://www.google.com/maps?q=${agent.latitude},${agent.longitude}`, '_blank')}
-                          >
-                            <MapPin className="h-4 w-4 ml-1" />
-                            الخريطة
-                          </Button>
+                        
+                        {/* Embedded Map */}
+                        <div className="rounded-lg overflow-hidden border">
+                          <iframe
+                            width="100%"
+                            height="250"
+                            frameBorder="0"
+                            style={{ border: 0 }}
+                            src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${agent.latitude},${agent.longitude}&zoom=15`}
+                            allowFullScreen
+                            title="موقع الوكيل"
+                          />
                         </div>
                       </div>
                     )}
