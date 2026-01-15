@@ -16,6 +16,7 @@ import {
 import { TechniciansTable } from './TechniciansTable';
 import { TicketDetailsModal } from '@/components/modals/TicketDetailsModal';
 import { TechnicianStats } from '@/components/technician/TechnicianStats';
+import { TechnicianLiveMapbox } from './TechnicianLiveMapbox';
 
 interface TechnicianLocation {
   id: string;
@@ -755,76 +756,91 @@ export const AdminTechnicianView = () => {
       )}
 
       {activeView === 'map' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              مواقع الفنيين
-            </CardTitle>
-            <CardDescription>تتبع مواقع الفنيين في الوقت الفعلي</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الفني</TableHead>
-                  <TableHead>الهاتف</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>آخر تحديث</TableHead>
-                  <TableHead>التذاكر الجارية</TableHead>
-                  <TableHead>الإجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {technicianLocations.map((location) => {
-                  const techTickets = tickets.filter(t => t.technician_id === location.user_id && (t.status === 'open' || t.status === 'in_progress'));
-                  return (
-                    <TableRow key={location.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <div className={`h-2 w-2 rounded-full ${isActiveRecently(location.recorded_at) ? 'bg-green-500' : 'bg-gray-400'}`} />
-                          {location.profile?.full_name || 'غير معروف'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {location.profile?.phone && (
-                          <a href={`tel:${location.profile.phone}`} className="flex items-center gap-1 text-primary hover:underline">
-                            <Phone className="h-4 w-4" />
-                            {location.profile.phone}
-                          </a>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {isActiveRecently(location.recorded_at) ? (
-                          <Badge className="bg-green-500/10 text-green-600">نشط</Badge>
-                        ) : (
-                          <Badge variant="secondary">غير نشط</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(location.recorded_at).toLocaleString('ar-IQ')}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{techTickets.length}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => openGoogleMaps(location.latitude, location.longitude)}>
-                            <Navigation className="h-4 w-4 ml-1" />
-                            الخريطة
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => viewTechnicianDashboard(location.user_id)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
+        <div className="space-y-4">
+          {/* Live Map with Mapbox */}
+          <TechnicianLiveMapbox onSelectTechnician={viewTechnicianDashboard} />
+          
+          {/* Technicians List Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                قائمة الفنيين ومواقعهم
+              </CardTitle>
+              <CardDescription>تتبع مواقع الفنيين في الوقت الفعلي</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>الفني</TableHead>
+                    <TableHead>الهاتف</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead>آخر تحديث</TableHead>
+                    <TableHead>التذاكر الجارية</TableHead>
+                    <TableHead>الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {technicianLocations.map((location) => {
+                    const techTickets = tickets.filter(t => t.technician_id === location.user_id && (t.status === 'open' || t.status === 'in_progress'));
+                    return (
+                      <TableRow key={location.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <div className={`h-2 w-2 rounded-full ${isActiveRecently(location.recorded_at) ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                            {location.profile?.full_name || 'غير معروف'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {location.profile?.phone && (
+                            <a href={`tel:${location.profile.phone}`} className="flex items-center gap-1 text-primary hover:underline">
+                              <Phone className="h-4 w-4" />
+                              {location.profile.phone}
+                            </a>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isActiveRecently(location.recorded_at) ? (
+                            <Badge className="bg-green-500/10 text-green-600">🟢 نشط</Badge>
+                          ) : (
+                            <Badge variant="secondary">⚫ غير نشط</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(location.recorded_at).toLocaleString('ar-IQ')}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{techTickets.length}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => openGoogleMaps(location.latitude, location.longitude)}>
+                              <Navigation className="h-4 w-4 ml-1" />
+                              الخريطة
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => viewTechnicianDashboard(location.user_id)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {technicianLocations.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-2 opacity-50" />
+                        <p className="text-muted-foreground">لا توجد مواقع مسجلة للفنيين</p>
+                        <p className="text-xs text-muted-foreground mt-1">سيتم تحديث المواقع تلقائياً عند تفعيل تتبع الموقع من تطبيق الفني</p>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {activeView === 'tickets' && (
