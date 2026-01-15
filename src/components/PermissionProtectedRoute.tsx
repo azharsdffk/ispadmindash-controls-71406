@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface PermissionProtectedRouteProps {
   children: ReactNode;
@@ -18,7 +19,7 @@ export const PermissionProtectedRoute = ({
   requireAll = false 
 }: PermissionProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, isSuperAdmin, loading: roleLoading } = useUserRole();
   const { hasPermission, hasAnyPermission, hasAllPermissions, loading: permissionsLoading } = usePermissions();
 
   if (authLoading || permissionsLoading || roleLoading) {
@@ -33,8 +34,8 @@ export const PermissionProtectedRoute = ({
     return <Navigate to="/auth" replace />;
   }
 
-  // المدراء لديهم وصول كامل لجميع الصفحات
-  if (isAdmin) {
+  // المدراء العامين والمدراء لديهم وصول كامل لجميع الصفحات
+  if (isAdmin || isSuperAdmin) {
     return <>{children}</>;
   }
 
@@ -47,13 +48,31 @@ export const PermissionProtectedRoute = ({
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            ليس لديك صلاحية الوصول إلى هذه الصفحة. يرجى التواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.
-          </AlertDescription>
-        </Alert>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="max-w-md w-full">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
+              <ShieldAlert className="h-10 w-10 text-destructive" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">غير مصرح بالوصول</h1>
+            <Alert variant="destructive" className="text-right">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                ليس لديك صلاحية الوصول إلى هذه الصفحة. 
+                <br />
+                يرجى التواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.
+              </AlertDescription>
+            </Alert>
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => window.history.back()}>
+                العودة
+              </Button>
+              <Button onClick={() => window.location.href = '/'}>
+                الصفحة الرئيسية
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

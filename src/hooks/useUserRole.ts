@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type AppRole = 'admin' | 'accountant' | 'technician' | 'client';
+export type AppRole = 'admin' | 'accountant' | 'technician' | 'client' | 'super_admin' | 'technical_manager' | 'finance_manager';
 
 export const useUserRole = () => {
   const { user } = useAuth();
@@ -59,18 +59,30 @@ export const useUserRole = () => {
   }, [user]);
 
   const hasRole = (role: AppRole) => roles.includes(role);
-  const isAdmin = hasRole('admin');
-  const isAccountant = hasRole('accountant');
-  const isTechnician = hasRole('technician');
+  
+  // المدراء العامين والمديرين لديهم كل الصلاحيات
+  const isSuperAdmin = hasRole('super_admin');
+  const isAdmin = hasRole('admin') || isSuperAdmin;
+  const isTechnicalManager = hasRole('technical_manager');
+  const isFinanceManager = hasRole('finance_manager');
+  const isAccountant = hasRole('accountant') || isFinanceManager;
+  const isTechnician = hasRole('technician') || isTechnicalManager;
   const isClient = hasRole('client');
+  
+  // التحقق من أن المستخدم مدير (أي نوع)
+  const isAnyManager = isSuperAdmin || isAdmin || isTechnicalManager || isFinanceManager;
 
   return { 
     roles, 
     hasRole, 
+    isSuperAdmin,
     isAdmin, 
+    isTechnicalManager,
+    isFinanceManager,
     isAccountant, 
     isTechnician,
     isClient,
+    isAnyManager,
     loading 
   };
 };

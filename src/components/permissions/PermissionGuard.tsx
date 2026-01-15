@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -19,9 +20,15 @@ export const PermissionGuard = ({
   hideOnNoPermission = false
 }: PermissionGuardProps) => {
   const { hasPermission, hasAnyPermission, hasAllPermissions, loading } = usePermissions();
+  const { isAdmin, isSuperAdmin, loading: roleLoading } = useUserRole();
 
-  if (loading) {
+  if (loading || roleLoading) {
     return null;
+  }
+
+  // المدراء العامين والمدراء لديهم وصول كامل
+  if (isAdmin || isSuperAdmin) {
+    return <>{children}</>;
   }
 
   const permissions = Array.isArray(permission) ? permission : [permission];
