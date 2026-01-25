@@ -1,7 +1,7 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Download, Calendar, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
+import { BarChart3, Download, Calendar, RefreshCw, Sparkles, TrendingUp, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,7 @@ import { KPICards } from "@/components/reports/KPICards";
 import { QuickReports } from "@/components/reports/QuickReports";
 import { AdvancedCharts } from "@/components/reports/AdvancedCharts";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { TechnicianRouteReports } from "@/components/reports/TechnicianRouteReports";
 import { Badge } from "@/components/ui/badge";
 
 const Reports = () => {
@@ -210,13 +211,17 @@ const Reports = () => {
             </Card>
 
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4 h-12">
+              <TabsList className="grid w-full grid-cols-5 h-12">
                 <TabsTrigger value="overview" className="text-base">نظرة عامة</TabsTrigger>
                 <TabsTrigger value="analytics" className="text-base gap-2">
                   <TrendingUp className="h-4 w-4" />
                   التحليلات المتقدمة
                 </TabsTrigger>
                 <TabsTrigger value="charts" className="text-base">الرسوم البيانية</TabsTrigger>
+                <TabsTrigger value="routes" className="text-base gap-2">
+                  <MapPin className="h-4 w-4" />
+                  مسارات الفنيين
+                </TabsTrigger>
                 <TabsTrigger value="reports" className="text-base">التقارير السريعة</TabsTrigger>
               </TabsList>
 
@@ -235,6 +240,10 @@ const Reports = () => {
                   stats={stats}
                   netProfit={netProfit}
                 />
+              </TabsContent>
+
+              <TabsContent value="routes" className="space-y-6">
+                <TechnicianRouteReports dateRange={dateRange} />
               </TabsContent>
 
               <TabsContent value="reports" className="space-y-6">
