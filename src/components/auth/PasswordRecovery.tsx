@@ -4,9 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Mail, Phone, Shield, ArrowRight, CheckCircle, KeyRound } from 'lucide-react';
+import { Mail, Phone, Shield, ArrowRight, CheckCircle, KeyRound, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeInput } from '@/utils/inputValidation';
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 
 interface PasswordRecoveryProps {
   onBack: () => void;
@@ -23,6 +24,22 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [sentTo, setSentTo] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [attemptsLeft, setAttemptsLeft] = useState(5);
+
+  // Start countdown timer for resend
+  const startResendTimer = () => {
+    setResendTimer(60);
+    const interval = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const handleEmailRecovery = async () => {
     if (!email) {
@@ -78,10 +95,15 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
       if (error) {
         toast.error('فشل إرسال رمز التحقق: ' + error.message);
       } else if (data?.error) {
-        toast.error('فشل إرسال رمز التحقق: ' + data.error);
+        if (data?.waitSeconds) {
+          toast.error(`الرجاء الانتظار ${data.waitSeconds} ثانية قبل إعادة المحاولة`);
+        } else {
+          toast.error('فشل إرسال رمز التحقق: ' + data.error);
+        }
       } else {
         setSentTo(formattedPhone);
         setStep('verify');
+        startResendTimer();
         toast.success('تم إرسال رمز التحقق إلى رقم هاتفك');
       }
     } catch (error: any) {
@@ -91,9 +113,31 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
     }
   };
 
+  const handleResendOTP = async () => {
+    if (resendTimer > 0) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-otp', {
+        body: { phone: sentTo }
+      });
+
+      if (error || data?.error) {
+        toast.error(data?.error || 'فشل إعادة إرسال الرمز');
+      } else {
+        startResendTimer();
+        toast.success('تم إرسال رمز جديد');
+      }
+    } catch (error) {
+      toast.error('حدث خطأ في إرسال الرسالة');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerifyCode = async () => {
-    if (!verificationCode || verificationCode.length < 4) {
-      toast.error('الرجاء إدخال رمز التحقق الصحيح');
+    if (!verificationCode || verificationCode.length < 6) {
+      toast.error('الرجاء إدخال رمز التحقق المكون من 6 أرقام');
       return;
     }
 
@@ -107,7 +151,7 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         return;
       }
 
-      // Verify the OTP code using verify-otp edge function
+      // Verify the OTP code using verify-otp edge function - only verify, don't create session
       const { data, error } = await supabase.functions.invoke('verify-otp', {
         body: {
           phone: sentTo,
@@ -118,10 +162,15 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
       if (error) {
         toast.error('رمز التحقق غير صحيح: ' + error.message);
       } else if (data?.error) {
-        toast.error('رمز التحقق غير صحيح: ' + data.error);
+        if (data?.attemptsLeft !== undefined) {
+          setAttemptsLeft(data.attemptsLeft);
+          toast.error(`رمز التحقق غير صحيح. المحاولات المتبقية: ${data.attemptsLeft}`);
+        } else {
+          toast.error('رمز التحقق غير صحيح: ' + data.error);
+        }
       } else if (data?.success) {
         setStep('newPassword');
-        toast.success('تم التحقق بنجاح');
+        toast.success('تم التحقق بنجاح - الآن أدخل كلمة المرور الجديدة');
       } else {
         toast.error('رمز التحقق غير صحيح');
       }
@@ -138,6 +187,16 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
       return;
     }
 
+    if (!/[A-Z]/.test(newPassword)) {
+      toast.error('كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل');
+      return;
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      toast.error('كلمة المرور يجب أن تحتوي على رقم واحد على الأقل');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       toast.error('كلمات المرور غير متطابقة');
       return;
@@ -145,6 +204,29 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
 
     setLoading(true);
     try {
+      // For phone recovery, use the new edge function to reset password
+      if (!sentTo.includes('@')) {
+        const { data, error } = await supabase.functions.invoke('reset-password-with-otp', {
+          body: {
+            phone: sentTo,
+            otp: verificationCode,
+            newPassword: newPassword
+          }
+        });
+
+        if (error || data?.error) {
+          toast.error(data?.error || 'فشل تحديث كلمة المرور');
+          return;
+        }
+
+        if (data?.success) {
+          toast.success('تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول');
+          onBack();
+          return;
+        }
+      }
+
+      // For email recovery, use the standard Supabase auth
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -194,7 +276,7 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
           <Phone className="h-6 w-6 text-green-500" />
         </div>
         <div className="text-right flex-1">
-          <p className="font-medium">الاسترداد عبر الهاتف</p>
+          <p className="font-medium">الاسترداد عبر الهاتف (OTP)</p>
           <p className="text-xs text-muted-foreground">إرسال رمز التحقق برسالة SMS</p>
         </div>
         <ArrowRight className="h-5 w-5 text-muted-foreground" />
@@ -203,17 +285,17 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-16 justify-start gap-4 hover:bg-primary/5 hover:border-primary transition-all opacity-60"
-        disabled
+        className="w-full h-16 justify-start gap-4 hover:bg-primary/5 hover:border-primary transition-all"
+        onClick={() => setStep('phone')}
       >
         <div className="p-2 rounded-full bg-purple-500/10">
           <Shield className="h-6 w-6 text-purple-500" />
         </div>
         <div className="text-right flex-1">
-          <p className="font-medium">المصادقة الثنائية</p>
-          <p className="text-xs text-muted-foreground">قريباً - استخدام تطبيق المصادقة</p>
+          <p className="font-medium">المصادقة الثنائية (2FA)</p>
+          <p className="text-xs text-muted-foreground">التحقق عبر رمز OTP للهاتف</p>
         </div>
-        <span className="text-xs bg-muted px-2 py-1 rounded">قريباً</span>
+        <ArrowRight className="h-5 w-5 text-muted-foreground" />
       </Button>
     </div>
   );
@@ -246,7 +328,14 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         disabled={loading || !email}
         className="w-full h-12 gradient-bg"
       >
-        {loading ? 'جارٍ الإرسال...' : 'إرسال رابط الاسترداد'}
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+            جارٍ الإرسال...
+          </>
+        ) : (
+          'إرسال رابط الاسترداد'
+        )}
       </Button>
 
       <Button
@@ -267,8 +356,15 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
           <Phone className="h-8 w-8 text-green-500" />
         </div>
         <p className="text-muted-foreground">
-          أدخل رقم الهاتف المرتبط بحسابك لإرسال رمز التحقق
+          أدخل رقم الهاتف المرتبط بحسابك لإرسال رمز التحقق (OTP)
         </p>
+      </div>
+
+      <div className="bg-muted/50 p-3 rounded-lg mb-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Shield className="h-4 w-4 text-primary" />
+          <span>سيتم إرسال رمز مكون من 6 أرقام صالح لمدة 5 دقائق</span>
+        </div>
       </div>
       
       <div className="space-y-2">
@@ -289,7 +385,14 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         disabled={loading || !phone}
         className="w-full h-12 gradient-bg"
       >
-        {loading ? 'جارٍ الإرسال...' : 'إرسال رمز التحقق'}
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+            جارٍ الإرسال...
+          </>
+        ) : (
+          'إرسال رمز التحقق (OTP)'
+        )}
       </Button>
 
       <Button
@@ -309,11 +412,11 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <CheckCircle className="h-8 w-8 text-primary" />
         </div>
-        <p className="font-medium">تم إرسال رمز التحقق</p>
+        <p className="font-medium">تم إرسال رمز التحقق (OTP)</p>
         <p className="text-sm text-muted-foreground mt-1">
           {sentTo.includes('@') 
             ? `تحقق من بريدك الإلكتروني ${sentTo}` 
-            : `تم إرسال رمز إلى ${sentTo}`}
+            : `تم إرسال رمز إلى +${sentTo}`}
         </p>
       </div>
 
@@ -333,15 +436,24 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         </div>
       ) : (
         <>
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">المحاولات المتبقية:</span>
+              <span className={`font-bold ${attemptsLeft <= 2 ? 'text-destructive' : 'text-primary'}`}>
+                {attemptsLeft}
+              </span>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="verification-code">رمز التحقق</Label>
+            <Label htmlFor="verification-code">رمز التحقق (OTP)</Label>
             <Input
               id="verification-code"
               type="text"
               value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
+              onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="أدخل الرمز المكون من 6 أرقام"
-              className="h-12 text-center text-2xl tracking-widest"
+              className="h-14 text-center text-2xl tracking-[0.5em] font-mono"
               maxLength={6}
               dir="ltr"
             />
@@ -349,20 +461,41 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
 
           <Button
             onClick={handleVerifyCode}
-            disabled={loading || verificationCode.length < 4}
+            disabled={loading || verificationCode.length < 6}
             className="w-full h-12 gradient-bg"
           >
-            {loading ? 'جارٍ التحقق...' : 'تأكيد الرمز'}
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                جارٍ التحقق...
+              </>
+            ) : (
+              'تأكيد الرمز'
+            )}
           </Button>
 
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setStep('select')}
-            className="w-full text-sm"
-          >
-            استخدام طريقة أخرى
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setStep('select')}
+              className="text-sm"
+            >
+              استخدام طريقة أخرى
+            </Button>
+            
+            <Button
+              type="button"
+              variant="link"
+              onClick={handleResendOTP}
+              disabled={resendTimer > 0 || loading}
+              className="text-sm"
+            >
+              {resendTimer > 0 
+                ? `إعادة الإرسال (${resendTimer}ث)` 
+                : 'إعادة إرسال الرمز'}
+            </Button>
+          </div>
         </>
       )}
     </div>
@@ -391,6 +524,7 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
           className="h-12"
           minLength={8}
         />
+        <PasswordStrengthIndicator password={newPassword} />
       </div>
 
       <div className="space-y-2">
@@ -404,6 +538,9 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
           className="h-12"
           minLength={8}
         />
+        {confirmPassword && newPassword !== confirmPassword && (
+          <p className="text-xs text-destructive">كلمات المرور غير متطابقة</p>
+        )}
       </div>
 
       <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 p-3 rounded-lg">
@@ -411,16 +548,24 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         <ul className="list-disc list-inside space-y-0.5">
           <li className={newPassword.length >= 8 ? 'text-green-600' : ''}>8 أحرف على الأقل</li>
           <li className={/[A-Z]/.test(newPassword) ? 'text-green-600' : ''}>حرف كبير واحد على الأقل</li>
+          <li className={/[a-z]/.test(newPassword) ? 'text-green-600' : ''}>حرف صغير واحد على الأقل</li>
           <li className={/[0-9]/.test(newPassword) ? 'text-green-600' : ''}>رقم واحد على الأقل</li>
         </ul>
       </div>
 
       <Button
         onClick={handleSetNewPassword}
-        disabled={loading || !newPassword || !confirmPassword}
+        disabled={loading || !newPassword || !confirmPassword || newPassword !== confirmPassword}
         className="w-full h-12 gradient-bg"
       >
-        {loading ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور الجديدة'}
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+            جارٍ الحفظ...
+          </>
+        ) : (
+          'حفظ كلمة المرور الجديدة'
+        )}
       </Button>
     </div>
   );
@@ -432,8 +577,8 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
         <CardDescription>
           {step === 'select' && 'اختر طريقة الاسترداد المناسبة'}
           {step === 'email' && 'الاسترداد عبر البريد الإلكتروني'}
-          {step === 'phone' && 'الاسترداد عبر رسالة SMS'}
-          {step === 'verify' && 'التحقق من الهوية'}
+          {step === 'phone' && 'المصادقة الثنائية عبر OTP'}
+          {step === 'verify' && 'التحقق من رمز OTP'}
           {step === 'newPassword' && 'إنشاء كلمة مرور جديدة'}
         </CardDescription>
       </CardHeader>
