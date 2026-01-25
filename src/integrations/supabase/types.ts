@@ -555,30 +555,36 @@ export type Database = {
           accuracy: number | null
           created_at: string | null
           device_info: Json | null
+          heading: number | null
           id: string
           latitude: number
           longitude: number
           recorded_at: string | null
+          speed: number | null
           user_id: string
         }
         Insert: {
           accuracy?: number | null
           created_at?: string | null
           device_info?: Json | null
+          heading?: number | null
           id?: string
           latitude: number
           longitude: number
           recorded_at?: string | null
+          speed?: number | null
           user_id: string
         }
         Update: {
           accuracy?: number | null
           created_at?: string | null
           device_info?: Json | null
+          heading?: number | null
           id?: string
           latitude?: number
           longitude?: number
           recorded_at?: string | null
+          speed?: number | null
           user_id?: string
         }
         Relationships: []
