@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { LocationTrackingStatus } from "@/components/location/LocationTrackingStatus";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ProfileModal } from "@/components/modals/ProfileModal";
 import { ComprehensiveSettingsModal } from "@/components/settings/ComprehensiveSettingsModal";
@@ -78,6 +79,9 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
             <span className="text-xs text-success">متصل</span>
           </div>
+          
+          {/* مؤشر تتبع الموقع */}
+          <LocationTrackingStatus />
           
           <NotificationBell />
 
