@@ -286,13 +286,57 @@ const TechnicianDashboard = () => {
   if (loading) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full" dir="rtl">
           <AppSidebar />
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground text-lg font-medium">جاري التحميل...</p>
-            </div>
+          <div className="flex-1">
+            <AppHeader onOpenSettings={() => {}} />
+            <main className="container mx-auto p-6 space-y-6">
+              {/* Header Skeleton */}
+              <div className="glass-card p-6 rounded-2xl animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-6 w-48 bg-muted rounded" />
+                    <div className="h-4 w-32 bg-muted/50 rounded" />
+                  </div>
+                </div>
+              </div>
+              {/* Filters Skeleton */}
+              <div className="flex gap-3">
+                <div className="flex-1 h-12 bg-muted rounded-lg animate-pulse" />
+                <div className="w-[180px] h-12 bg-muted rounded-lg animate-pulse" />
+                <div className="w-[180px] h-12 bg-muted rounded-lg animate-pulse" />
+              </div>
+              {/* Stats Skeleton */}
+              <div className="grid gap-4 md:grid-cols-5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="p-6 rounded-xl bg-card border animate-pulse">
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-2">
+                        <div className="h-4 w-20 bg-muted rounded" />
+                        <div className="h-8 w-12 bg-muted rounded" />
+                      </div>
+                      <div className="h-10 w-10 rounded-xl bg-muted" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Tickets Skeleton */}
+              <div className="space-y-4">
+                <div className="h-14 bg-muted rounded-xl animate-pulse" />
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="glass-card p-6 rounded-xl animate-pulse">
+                    <div className="flex justify-between">
+                      <div className="space-y-2">
+                        <div className="h-5 w-32 bg-muted rounded" />
+                        <div className="h-4 w-48 bg-muted/50 rounded" />
+                      </div>
+                      <div className="h-8 w-20 bg-muted rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </main>
           </div>
         </div>
       </SidebarProvider>

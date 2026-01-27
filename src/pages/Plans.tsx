@@ -153,8 +153,50 @@ const Plans = () => {
 
   if (roleLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        <div className="flex flex-1 w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-y-auto space-y-6">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-muted rounded" />
+                <div className="h-8 w-36 bg-muted rounded" />
+              </div>
+              <div className="h-10 w-36 bg-muted rounded" />
+            </div>
+            {/* Plans Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-6 rounded-xl bg-card border animate-pulse">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="h-6 w-6 bg-muted rounded" />
+                    <div className="h-6 w-28 bg-muted rounded" />
+                  </div>
+                  <div className="h-4 w-full bg-muted/50 rounded mb-6" />
+                  <div className="space-y-2 mb-6">
+                    <div className="h-10 w-32 bg-muted rounded" />
+                    <div className="h-5 w-24 bg-muted/50 rounded" />
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    {[1, 2, 3].map((j) => (
+                      <div key={j} className="flex items-center gap-2">
+                        <div className="h-4 w-4 bg-muted rounded" />
+                        <div className="h-4 w-24 bg-muted/50 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-4 border-t flex gap-2">
+                    <div className="flex-1 h-9 bg-muted rounded" />
+                    <div className="h-9 w-9 bg-muted rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     );
   }

@@ -344,6 +344,88 @@ const Invoices = () => {
     </Card>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        <div className="flex flex-1 w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-y-auto space-y-6">
+            {/* Header Skeleton */}
+            <div className="bg-gradient-to-l from-primary/10 via-primary/5 to-transparent rounded-2xl p-6 animate-pulse">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-muted w-14 h-14" />
+                  <div className="space-y-2">
+                    <div className="h-8 w-40 bg-muted rounded" />
+                    <div className="h-4 w-48 bg-muted/50 rounded" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-9 w-20 bg-muted rounded" />
+                  <div className="h-9 w-20 bg-muted rounded" />
+                  <div className="h-9 w-28 bg-muted rounded" />
+                </div>
+              </div>
+            </div>
+            {/* Stats Skeleton */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="p-4 rounded-xl bg-card border animate-pulse relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full -translate-y-1/2 translate-x-1/2 bg-muted/20" />
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <div className="h-3 w-20 bg-muted/50 rounded" />
+                      <div className="h-6 w-14 bg-muted rounded mt-1" />
+                      <div className="h-3 w-24 bg-muted/30 rounded mt-1" />
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted w-11 h-11" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Filters Skeleton */}
+            <div className="p-4 rounded-xl bg-card border animate-pulse">
+              <div className="flex gap-4">
+                <div className="flex-1 h-10 bg-muted rounded" />
+                <div className="w-40 h-10 bg-muted rounded" />
+                <div className="w-36 h-10 bg-muted rounded" />
+                <div className="w-36 h-10 bg-muted rounded" />
+              </div>
+            </div>
+            {/* Table Skeleton */}
+            <div className="rounded-xl bg-card border animate-pulse overflow-hidden">
+              <div className="bg-muted/30 p-4">
+                <div className="flex gap-6">
+                  {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <div key={i} className="h-4 w-20 bg-muted rounded" />
+                  ))}
+                </div>
+              </div>
+              <div className="p-4 space-y-3">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="flex items-center gap-6 py-3 border-b border-muted/20">
+                    <div className="h-4 w-24 bg-muted rounded" />
+                    <div className="space-y-1">
+                      <div className="h-4 w-28 bg-muted rounded" />
+                      <div className="h-3 w-20 bg-muted/50 rounded" />
+                    </div>
+                    <div className="h-5 w-20 bg-muted rounded" />
+                    <div className="h-4 w-20 bg-muted rounded" />
+                    <div className="h-4 w-20 bg-muted rounded" />
+                    <div className="h-6 w-16 bg-muted rounded-full" />
+                    <div className="h-8 w-8 bg-muted rounded ml-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+        </div>
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       <AppHeader onOpenSettings={() => setSettingsOpen(true)} />

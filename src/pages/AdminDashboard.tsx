@@ -171,9 +171,51 @@ const AdminDashboard = () => {
 
   if (loading || layoutLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen bg-slate-900 flex w-full" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="h-16 bg-slate-800/50 border-b border-blue-800/30 animate-pulse" />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 p-6 space-y-6">
+              {/* Header Skeleton */}
+              <div className="glass-card p-6 rounded-2xl animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-slate-700" />
+                  <div className="space-y-2">
+                    <div className="h-8 w-48 bg-slate-700 rounded" />
+                    <div className="h-4 w-32 bg-slate-700/50 rounded" />
+                  </div>
+                </div>
+              </div>
+              {/* Stats Skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="glass-card p-6 rounded-xl animate-pulse">
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-2">
+                        <div className="h-4 w-24 bg-slate-700 rounded" />
+                        <div className="h-8 w-16 bg-slate-700 rounded" />
+                      </div>
+                      <div className="h-12 w-12 rounded-xl bg-slate-700" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Charts Skeleton */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 glass-card p-6 rounded-xl animate-pulse">
+                  <div className="h-6 w-32 bg-slate-700 rounded mb-4" />
+                  <div className="h-64 bg-slate-700/50 rounded" />
+                </div>
+                <div className="glass-card p-6 rounded-xl animate-pulse">
+                  <div className="h-6 w-32 bg-slate-700 rounded mb-4" />
+                  <div className="h-64 bg-slate-700/50 rounded" />
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 

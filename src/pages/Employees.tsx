@@ -355,11 +355,74 @@ const Employees = () => {
     return name.split(' ').map(n => n[0]).join('').slice(0, 2);
   };
 
-  if (roleLoading) {
+  if (roleLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+            <main className="flex-1 overflow-auto p-6 space-y-6">
+              {/* Header Skeleton */}
+              <div className="flex justify-between items-center animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-muted w-14 h-14" />
+                  <div className="space-y-2">
+                    <div className="h-8 w-40 bg-muted rounded" />
+                    <div className="h-4 w-56 bg-muted/50 rounded" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-9 w-20 bg-muted rounded" />
+                  <div className="h-9 w-28 bg-muted rounded" />
+                </div>
+              </div>
+              {/* Stats Skeleton */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="p-4 rounded-xl bg-card border animate-pulse">
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <div className="h-3 w-16 bg-muted/50 rounded" />
+                        <div className="h-6 w-10 bg-muted rounded" />
+                      </div>
+                      <div className="p-3 rounded-xl bg-muted w-11 h-11" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Progress Skeleton */}
+              <div className="p-4 rounded-xl bg-card border animate-pulse">
+                <div className="flex justify-between mb-2">
+                  <div className="h-4 w-36 bg-muted rounded" />
+                  <div className="h-4 w-16 bg-muted/50 rounded" />
+                </div>
+                <div className="h-3 bg-muted rounded-full" />
+              </div>
+              {/* Table Skeleton */}
+              <div className="p-6 rounded-xl bg-card border animate-pulse space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-1 h-10 bg-muted rounded" />
+                  <div className="w-32 h-10 bg-muted rounded" />
+                  <div className="w-32 h-10 bg-muted rounded" />
+                </div>
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="flex items-center gap-4 py-3 border-b border-muted/20">
+                      <div className="h-10 w-10 rounded-full bg-muted" />
+                      <div className="h-4 w-28 bg-muted rounded" />
+                      <div className="h-4 w-20 bg-muted rounded" />
+                      <div className="h-6 w-14 bg-muted rounded-full" />
+                      <div className="h-6 w-14 bg-muted rounded-full" />
+                      <div className="h-4 w-16 bg-muted rounded ml-auto" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
