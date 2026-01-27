@@ -230,6 +230,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "complaints_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       connection_history: {
@@ -275,6 +282,13 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connection_history_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -356,6 +370,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contracts_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       coupon_usage: {
@@ -406,6 +427,13 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usage_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1010,6 +1038,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "invoices_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       location_tracking_settings: {
@@ -1111,6 +1146,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "loyalty_points_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: true
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       loyalty_transactions: {
@@ -1155,6 +1197,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "loyalty_transactions_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       mac_address_history: {
@@ -1193,6 +1242,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "mac_address_history_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       maintenance_tickets: {
@@ -1203,6 +1259,9 @@ export type Database = {
           id: string
           issue_description: string
           issue_type: string | null
+          latitude: number | null
+          location_address: string | null
+          longitude: number | null
           notes: string | null
           priority: Database["public"]["Enums"]["ticket_priority"] | null
           resolved_at: string | null
@@ -1221,6 +1280,9 @@ export type Database = {
           id?: string
           issue_description: string
           issue_type?: string | null
+          latitude?: number | null
+          location_address?: string | null
+          longitude?: number | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"] | null
           resolved_at?: string | null
@@ -1239,6 +1301,9 @@ export type Database = {
           id?: string
           issue_description?: string
           issue_type?: string | null
+          latitude?: number | null
+          location_address?: string | null
+          longitude?: number | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"] | null
           resolved_at?: string | null
@@ -1266,10 +1331,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "maintenance_tickets_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "maintenance_tickets_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_tickets_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_map_view"
             referencedColumns: ["id"]
           },
           {
@@ -1554,6 +1633,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "payments_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       permissions: {
@@ -1644,6 +1730,13 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pii_access_logs_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1814,10 +1907,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referrals_referrer_id_fkey"
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1906,6 +2013,13 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2189,6 +2303,13 @@ export type Database = {
             referencedRelation: "subscribers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "subscriber_audit_trail_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       subscriber_users: {
@@ -2216,6 +2337,13 @@ export type Database = {
             columns: ["subscriber_id"]
             isOneToOne: false
             referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriber_users_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2349,6 +2477,13 @@ export type Database = {
             foreignKeyName: "technician_locations_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: true
+            referencedRelation: "technicians_map_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_locations_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: true
             referencedRelation: "technicians_public"
             referencedColumns: ["id"]
           },
@@ -2357,6 +2492,13 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_locations_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2398,10 +2540,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "technician_ratings_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "technician_ratings_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_ratings_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_map_view"
             referencedColumns: ["id"]
           },
           {
@@ -2416,6 +2572,13 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: true
             referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_ratings_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: true
+            referencedRelation: "tickets_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2469,6 +2632,13 @@ export type Database = {
             foreignKeyName: "technician_stats_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: true
+            referencedRelation: "technicians_map_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_stats_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: true
             referencedRelation: "technicians_public"
             referencedColumns: ["id"]
           },
@@ -2479,27 +2649,36 @@ export type Database = {
           available: boolean | null
           created_at: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           phone: string
           specialization: string | null
+          status: string | null
           user_id: string | null
         }
         Insert: {
           available?: boolean | null
           created_at?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           phone: string
           specialization?: string | null
+          status?: string | null
           user_id?: string | null
         }
         Update: {
           available?: boolean | null
           created_at?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           phone?: string
           specialization?: string | null
+          status?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -2541,6 +2720,13 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_events_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2699,6 +2885,13 @@ export type Database = {
             foreignKeyName: "visit_logs_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
+            referencedRelation: "technicians_map_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_logs_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
             referencedRelation: "technicians_public"
             referencedColumns: ["id"]
           },
@@ -2707,6 +2900,13 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_logs_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2795,6 +2995,13 @@ export type Database = {
             referencedRelation: "maintenance_tickets"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "work_logs_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       work_photos: {
@@ -2834,6 +3041,13 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_photos_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
             referencedColumns: ["id"]
           },
           {
@@ -2909,10 +3123,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "work_reports_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers_map_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "work_reports_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_reports_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_map_view"
             referencedColumns: ["id"]
           },
           {
@@ -2927,6 +3155,13 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_reports_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
             referencedColumns: ["id"]
           },
           {
@@ -2967,6 +3202,61 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers_map_view: {
+        Row: {
+          address: string | null
+          agent_id: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          agent_id?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          agent_id?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscribers_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians_map_view: {
+        Row: {
+          available: boolean | null
+          heading: number | null
+          id: string | null
+          last_location_update: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string | null
+          phone: string | null
+          specialization: string | null
+          speed: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       technicians_public: {
         Row: {
           available: boolean | null
@@ -2988,6 +3278,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets_map_view: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          issue_description: string | null
+          latitude: number | null
+          location_address: string | null
+          longitude: number | null
+          priority: Database["public"]["Enums"]["ticket_priority"] | null
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["ticket_status"] | null
+          subscriber_address: string | null
+          subscriber_name: string | null
+          subscriber_phone: string | null
+          technician_id: string | null
+          technician_name: string | null
+          ticket_number: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_tickets_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_tickets_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_map_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_tickets_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       apply_discount_coupon: {
@@ -3001,6 +3333,10 @@ export type Database = {
           message: string
           success: boolean
         }[]
+      }
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
       }
       calculate_loyalty_points: {
         Args: { p_amount: number; p_subscriber_id: string }
@@ -3042,6 +3378,22 @@ export type Database = {
       clear_verification_attempts: {
         Args: { p_phone: string }
         Returns: undefined
+      }
+      find_nearest_technician: {
+        Args: {
+          max_distance_km?: number
+          target_lat: number
+          target_lng: number
+        }
+        Returns: {
+          distance_km: number
+          latitude: number
+          longitude: number
+          phone: string
+          status: string
+          technician_id: string
+          technician_name: string
+        }[]
       }
       generate_complaint_number: { Args: never; Returns: string }
       generate_contract_number: { Args: never; Returns: string }
