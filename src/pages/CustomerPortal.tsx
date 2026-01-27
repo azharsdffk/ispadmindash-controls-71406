@@ -121,8 +121,52 @@ const CustomerPortal = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        <div className="flex flex-1 w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header Skeleton */}
+              <div className="flex items-center gap-3 animate-pulse">
+                <div className="h-8 w-8 rounded bg-muted" />
+                <div className="h-8 w-40 bg-muted rounded" />
+              </div>
+              {/* Account Cards Skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-6 rounded-xl bg-card border animate-pulse">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-4 w-4 bg-muted rounded" />
+                      <div className="h-4 w-28 bg-muted rounded" />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="h-6 w-32 bg-muted rounded" />
+                      <div className="h-4 w-24 bg-muted/50 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Tabs Skeleton */}
+              <div className="h-12 bg-muted rounded-xl animate-pulse" />
+              {/* Table Skeleton */}
+              <div className="p-6 rounded-xl bg-card border animate-pulse">
+                <div className="h-6 w-32 bg-muted rounded mb-6" />
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex justify-between items-center py-3 border-b border-muted/20">
+                      <div className="h-4 w-24 bg-muted rounded" />
+                      <div className="h-4 w-20 bg-muted rounded" />
+                      <div className="h-4 w-16 bg-muted rounded" />
+                      <div className="h-6 w-16 bg-muted rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     );
   }

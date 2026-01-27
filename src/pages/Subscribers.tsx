@@ -331,11 +331,72 @@ const Subscribers = () => {
   const canManageSubscribers = isAdmin || isAccountant;
   const hasAccess = isAdmin || isAccountant || isTechnician;
 
-  if (roleLoading) {
+  if (roleLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <>
+        <Helmet>
+          <title>إدارة المشتركين - نظام الإنترنت</title>
+        </Helmet>
+        <SidebarProvider>
+          <div className="min-h-screen bg-background flex w-full" dir="rtl">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+              <main className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Header Skeleton */}
+                <div className="glass-card p-6 rounded-2xl animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-muted w-14 h-14" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-8 w-48 bg-muted rounded" />
+                      <div className="h-4 w-64 bg-muted/50 rounded" />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-9 w-20 bg-muted rounded" />
+                      <div className="h-9 w-28 bg-muted rounded" />
+                    </div>
+                  </div>
+                </div>
+                {/* Stats Skeleton */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="p-4 rounded-xl bg-card border animate-pulse">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-muted w-9 h-9" />
+                        <div className="space-y-1">
+                          <div className="h-3 w-20 bg-muted/50 rounded" />
+                          <div className="h-6 w-12 bg-muted rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Table Skeleton */}
+                <div className="p-6 rounded-xl bg-card border animate-pulse space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-1 h-10 bg-muted rounded" />
+                    <div className="w-40 h-10 bg-muted rounded" />
+                    <div className="w-40 h-10 bg-muted rounded" />
+                  </div>
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                      <div key={i} className="flex items-center gap-4 py-3 border-b border-muted/20">
+                        <div className="h-10 w-10 rounded-full bg-muted" />
+                        <div className="h-4 w-32 bg-muted rounded" />
+                        <div className="h-4 w-28 bg-muted rounded" />
+                        <div className="h-4 w-24 bg-muted rounded" />
+                        <div className="h-6 w-16 bg-muted rounded-full" />
+                        <div className="h-4 w-20 bg-muted rounded ml-auto" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </>
     );
   }
 

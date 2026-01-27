@@ -122,11 +122,61 @@ const Reports = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">جاري تحميل التقارير...</p>
+      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <AppHeader onOpenSettings={() => setSettingsOpen(true)} />
+        <div className="flex flex-1 w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header Skeleton */}
+              <div className="flex items-center justify-between animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-muted w-14 h-14" />
+                  <div className="space-y-2">
+                    <div className="h-8 w-56 bg-muted rounded" />
+                    <div className="h-4 w-40 bg-muted/50 rounded" />
+                  </div>
+                </div>
+                <div className="h-10 w-32 bg-muted rounded" />
+              </div>
+              {/* Date Filter Skeleton */}
+              <div className="p-6 rounded-xl bg-card border animate-pulse">
+                <div className="h-6 w-32 bg-muted rounded mb-4" />
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div className="h-4 w-12 bg-muted/50 rounded" />
+                    <div className="h-10 bg-muted rounded" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-12 bg-muted/50 rounded" />
+                    <div className="h-10 bg-muted rounded" />
+                  </div>
+                  <div className="flex items-end">
+                    <div className="h-10 w-full bg-muted rounded" />
+                  </div>
+                </div>
+              </div>
+              {/* Tabs Skeleton */}
+              <div className="h-12 bg-muted rounded-xl animate-pulse" />
+              {/* KPI Cards Skeleton */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="p-6 rounded-xl bg-card border animate-pulse">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <div className="h-4 w-24 bg-muted rounded" />
+                        <div className="h-8 w-20 bg-muted rounded" />
+                        <div className="h-3 w-16 bg-muted/50 rounded" />
+                      </div>
+                      <div className="h-12 w-12 rounded-xl bg-muted" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
         </div>
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     );
   }
