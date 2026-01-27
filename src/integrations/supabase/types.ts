@@ -3182,6 +3182,8 @@ export type Database = {
           permission_name: string
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       update_sms_log_status: {
         Args: { p_id: string; p_provider_response?: Json; p_status: string }
         Returns: boolean
