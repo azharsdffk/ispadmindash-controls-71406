@@ -58,8 +58,8 @@ const PhoneAuth = () => {
     try {
       const formattedPhone = formatPhoneForApi(phone);
       
-      const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { phone: formattedPhone },
+      const { data, error } = await supabase.functions.invoke('send-otp-verify', {
+        body: { to: formattedPhone, channel: 'sms' },
       });
 
       if (error) throw error;
