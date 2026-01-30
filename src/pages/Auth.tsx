@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Sparkles, Hexagon, Triangle, Circle, Users } from 'lucide-react';
+import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Shield } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
 import { MFAVerifyScreen } from '@/components/auth/MFAVerifyScreen';
@@ -17,32 +17,12 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     fullName: '',
     phone: '',
-    role: '' as 'client' | 'technician' | 'agent' | 'admin' | '',
   });
-
-  const roleOptions = [
-    { value: 'client', label: 'العميل', description: 'مستخدم عادي للخدمة' },
-    { value: 'technician', label: 'الفني', description: 'فني صيانة ودعم' },
-    { value: 'agent', label: 'الوكيل', description: 'وكيل مبيعات' },
-    { value: 'admin', label: 'المدير', description: 'مدير النظام' },
-  ];
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +45,6 @@ const Auth = () => {
             toast.error('فشل تسجيل الدخول: ' + error.message);
           }
         } else if (needsMFA) {
-          // MFA is required, the component will switch to MFA verification
           toast.info('يرجى إدخال رمز التحقق من تطبيق المصادقة');
         } else {
           toast.success('تم تسجيل الدخول بنجاح');
@@ -78,7 +57,6 @@ const Auth = () => {
           phone: formData.phone ? sanitizeInput(formData.phone) : undefined,
         });
         
-        // Check if password has been leaked
         toast.loading('جارٍ التحقق من أمان كلمة المرور...');
         const { isLeaked, count } = await checkPasswordLeaked(validatedData.password);
         toast.dismiss();
@@ -153,226 +131,181 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-background" dir="rtl">
-      {/* الخلفية - خطوط ذهبية علوية وسفلية */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* خط ذهبي علوي */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-        {/* خط ذهبي سفلي */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5" dir="rtl">
+      {/* خلفية زخرفية */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* دوائر زخرفية */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         
-        {/* توهج خفيف في الخلفية */}
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: `
-              radial-gradient(ellipse at 50% 0%, hsl(45 85% 55% / 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 100%, hsl(45 85% 55% / 0.1) 0%, transparent 40%)
-            `,
-          }}
-        />
+        {/* خطوط ذهبية */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
       </div>
 
       {/* المحتوى الرئيسي */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pt-8 pb-8 px-4 overflow-y-auto">
-        <div className="w-full max-w-[420px]">
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
           
-          {/* الشعار والعنوان */}
-          <div className="text-center mb-6">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-              <span className="text-primary">ISP Pro</span>
-              <span className="text-foreground"> قاعدة</span>
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              برنامج إدارة شبكات الانترنت المتقدمة
-            </p>
-          </div>
+          {/* البطاقة الرئيسية */}
+          <div className="bg-card/80 backdrop-blur-xl border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/10">
+            
+            {/* الشعار والعنوان */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-amber-600 mb-4 shadow-lg shadow-primary/30">
+                <Shield className="w-10 h-10 text-background" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">
+                ISP Pro System
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                نظام إدارة شبكات الإنترنت المتقدم
+              </p>
+            </div>
 
-          {/* علامات التبويب */}
-          <div className="relative mb-6">
-            <div className="flex bg-card rounded-full p-1 border border-primary/30">
+            {/* علامات التبويب */}
+            <div className="flex bg-muted/50 rounded-2xl p-1.5 mb-6">
+              <button
+                onClick={() => setIsLogin(true)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                  isLogin 
+                    ? 'bg-primary text-primary-foreground shadow-md' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <LogIn size={18} />
+                <span>تسجيل الدخول</span>
+              </button>
               <button
                 onClick={() => setIsLogin(false)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-bold transition-all duration-300 ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   !isLogin 
-                    ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-background shadow-lg' 
+                    ? 'bg-primary text-primary-foreground shadow-md' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <UserPlus size={18} />
                 <span>حساب جديد</span>
               </button>
-              <button
-                onClick={() => setIsLogin(true)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-bold transition-all duration-300 ${
-                  isLogin 
-                    ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-background shadow-lg' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <LogIn size={18} />
-                <span>امتياز</span>
-              </button>
             </div>
+
+            {/* النموذج */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <>
+                  {/* الاسم الكامل */}
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">الاسم الكامل</Label>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        required={!isLogin}
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        placeholder="أدخل اسمك الكامل"
+                        className="pr-4 pl-11 h-12 bg-background/50 border-border/50 rounded-xl focus:border-primary focus:ring-primary/20"
+                      />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+
+                  {/* رقم الهاتف */}
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">رقم الهاتف</Label>
+                    <div className="relative">
+                      <Input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="07xxxxxxxx"
+                        className="pr-4 pl-11 h-12 bg-background/50 border-border/50 rounded-xl focus:border-primary focus:ring-primary/20"
+                      />
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {/* البريد الإلكتروني */}
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm font-medium">البريد الإلكتروني</Label>
+                <div className="relative">
+                  <Input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="example@email.com"
+                    className="pr-4 pl-11 h-12 bg-background/50 border-border/50 rounded-xl focus:border-primary focus:ring-primary/20"
+                  />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+              
+              {/* كلمة المرور */}
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm font-medium">كلمة المرور</Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="••••••••"
+                    minLength={6}
+                    className="pr-4 pl-20 h-12 bg-background/50 border-border/50 rounded-xl focus:border-primary focus:ring-primary/20"
+                  />
+                  <Lock className="absolute left-12 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {!isLogin && formData.password && (
+                  <div className="pt-1">
+                    <PasswordStrengthIndicator password={formData.password} />
+                  </div>
+                )}
+              </div>
+
+              {isLogin && (
+                <div className="flex justify-start pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                  >
+                    نسيت كلمة المرور؟
+                  </button>
+                </div>
+              )}
+
+              {/* زر الإرسال */}
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-primary to-amber-600 hover:from-primary/90 hover:to-amber-600/90 text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 mt-6" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    <span>جارٍ التحميل...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {isLogin ? <LogIn className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+                    <span>{isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}</span>
+                  </div>
+                )}
+              </Button>
+            </form>
           </div>
 
-          {/* النموذج */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
-              <>
-                {/* الاسم الكامل */}
-                <div className="space-y-2">
-                  <Label className="text-foreground text-sm font-semibold block text-right">كامل</Label>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      required={!isLogin}
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      placeholder="أدخل الاسم بالكامل"
-                      className="pr-4 pl-12 h-14 bg-card border-primary/30 rounded-xl text-right"
-                    />
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  </div>
-                </div>
-
-                {/* رقم الهاتف */}
-                <div className="space-y-2">
-                  <Label className="text-foreground text-sm font-semibold block text-right">فوريل</Label>
-                  <div className="relative">
-                    <Input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="07xxxxxxxx"
-                      className="pr-4 pl-12 h-14 bg-card border-primary/30 rounded-xl text-right"
-                    />
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  </div>
-                </div>
-                
-                {/* حقل اختيار الدور */}
-                <div className="space-y-3">
-                  <Label className="text-foreground text-sm font-semibold block text-right">حساب غير رسمي</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {roleOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, role: option.value as any })}
-                        className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-                          formData.role === option.value
-                            ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20'
-                            : 'border-primary/30 bg-card hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center gap-2 text-center">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                            formData.role === option.value
-                              ? 'bg-gradient-to-br from-amber-500 to-yellow-600 text-background'
-                              : 'bg-primary/20 text-primary'
-                          }`}>
-                            <Users size={24} />
-                          </div>
-                          <div>
-                            <p className={`font-bold text-base ${
-                              formData.role === option.value ? 'text-primary' : 'text-foreground'
-                            }`}>
-                              {option.label}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {option.description}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {/* البريد الإلكتروني */}
-            <div className="space-y-2">
-              <Label className="text-foreground text-sm font-semibold block text-right">البريد الإلكتروني</Label>
-              <div className="relative">
-                <Input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="example@email.com"
-                  className="pr-4 pl-12 h-14 bg-card border-primary/30 rounded-xl text-right"
-                />
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-            
-            {/* كلمة المرور */}
-            <div className="space-y-2">
-              <Label className="text-foreground text-sm font-semibold block text-right">كلمة المرور</Label>
-              <div className="relative">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                  minLength={6}
-                  className="pr-4 pl-20 h-14 bg-card border-primary/30 rounded-xl text-right"
-                />
-                <Lock className="absolute left-12 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              {!isLogin && formData.password && (
-                <div className="pt-2">
-                  <PasswordStrengthIndicator password={formData.password} />
-                </div>
-              )}
-            </div>
-
-            {isLogin && (
-              <div className="flex justify-start">
-                <button
-                  type="button"
-                  onClick={() => setIsForgotPassword(true)}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors font-semibold"
-                >
-                  نسيت كلمة المرور؟
-                </button>
-              </div>
-            )}
-
-            {/* زر الإرسال */}
-            <Button 
-              type="submit" 
-              className="relative w-full h-14 text-base font-bold rounded-xl overflow-hidden group/btn bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-background shadow-lg" 
-              disabled={loading}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
-              {loading ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
-                  <span>جارٍ التحميل...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  {isLogin ? <LogIn className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-                  <span>{isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}</span>
-                </div>
-              )}
-            </Button>
-          </form>
-
-
           {/* حقوق الملكية */}
-          <p className="mt-8 text-center text-xs text-muted-foreground/60">
+          <p className="mt-6 text-center text-xs text-muted-foreground">
             © 2024 ISP Pro System • جميع الحقوق محفوظة
           </p>
         </div>
