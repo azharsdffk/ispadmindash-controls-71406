@@ -87,6 +87,7 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
 
       // Call send-otp edge function (doesn't require authentication)
       const { data, error } = await supabase.functions.invoke('send-otp', {
+        method: 'POST',
         body: {
           phone: formattedPhone
         }
@@ -119,6 +120,7 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-otp', {
+        method: 'POST',
         body: { phone: sentTo }
       });
 
@@ -153,9 +155,12 @@ export const PasswordRecovery = ({ onBack }: PasswordRecoveryProps) => {
 
       // Verify the OTP code using verify-otp edge function - only verify, don't create session
       const { data, error } = await supabase.functions.invoke('verify-otp', {
+        method: 'POST',
         body: {
           phone: sentTo,
-          otp: verificationCode
+          otp: verificationCode,
+          // compatibility (some clients label it as `code`)
+          code: verificationCode,
         }
       });
 
