@@ -18,7 +18,7 @@ interface AuthContextType {
   mfaRequired: MFARequiredState | null;
   refreshUserData: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any; mfaRequired?: boolean }>;
-  signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, phone?: string, requestedRole?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   completeMFASignIn: (factorId: string, code: string) => Promise<{ error: any }>;
   clearMFARequired: () => void;
@@ -228,8 +228,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setMfaRequired(null);
   };
 
-  const signUp = async (email: string, password: string, fullName: string, phone?: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, fullName: string, phone?: string, requestedRole?: string) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -237,9 +237,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         data: {
           full_name: fullName,
           phone: phone,
+          requested_role: requestedRole,
         }
       }
     });
+    
+    if (!error && data.user && requestedRole) {
+      // إضافة الدور المطلوب للمستخدم الجديد مباشرة (سيحتاج للموافقة من المدير)
+      // يمكن للمدير تعديل هذا لاحقاً
+      try {
+        await supabase.from('user_roles').insert([{
+          user_id: data.user.id,
+          role: requestedRole as any,
+        }]);
+      } catch (roleError) {
+        console.error('Error assigning initial role:', roleError);
+      }
+    }
+    
     if (!error) {
       // توجيه المستخدم الجديد إلى صفحة انتظار الموافقة
       navigate('/pending-approval');

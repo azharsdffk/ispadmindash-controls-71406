@@ -103,6 +103,15 @@ const Auth = () => {
     fullName: '',
     phone: '',
   });
+  const [selectedSignupRole, setSelectedSignupRole] = useState<string | null>(null);
+
+  // الأدوار المتاحة للتسجيل
+  const signupRoles = [
+    { key: 'client', label: 'العميل', icon: Users, gradient: 'from-blue-500 to-blue-600' },
+    { key: 'technician', label: 'الفني', icon: Wrench, gradient: 'from-green-500 to-green-600' },
+    { key: 'agent', label: 'الوكيل', icon: UserCog, gradient: 'from-purple-500 to-purple-600' },
+    { key: 'admin', label: 'المدير', icon: Building2, gradient: 'from-primary to-amber-600' },
+  ];
   
   // حالة اختيار الدور بعد تسجيل الدخول
   const [showRoleSelection, setShowRoleSelection] = useState(false);
@@ -161,6 +170,12 @@ const Auth = () => {
     try {
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase());
       
+      if (!isLogin && !selectedSignupRole) {
+        toast.error('يرجى اختيار نوع الحساب');
+        setLoading(false);
+        return;
+      }
+      
       if (isLogin) {
         const validatedData = loginSchema.parse({
           email: sanitizedEmail,
@@ -203,7 +218,8 @@ const Auth = () => {
           validatedData.email, 
           validatedData.password, 
           validatedData.fullName, 
-          validatedData.phone
+          validatedData.phone,
+          selectedSignupRole || undefined
         );
         
         if (error) {
@@ -408,6 +424,41 @@ const Auth = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <>
+                  {/* اختيار الدور للتسجيل */}
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">اختر نوع الحساب</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {signupRoles.map((role) => {
+                        const Icon = role.icon;
+                        const isSelected = selectedSignupRole === role.key;
+                        return (
+                          <button
+                            key={role.key}
+                            type="button"
+                            onClick={() => setSelectedSignupRole(role.key)}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 ${
+                              isSelected 
+                                ? `border-primary bg-primary/10 shadow-md` 
+                                : 'border-border/50 bg-background/50 hover:border-primary/50 hover:bg-primary/5'
+                            }`}
+                          >
+                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 shadow-sm`}>
+                              <Icon className="w-5 h-5 text-white" />
+                            </div>
+                            <span className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                              {role.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!selectedSignupRole && (
+                      <p className="text-xs text-muted-foreground text-center mt-1">
+                        يرجى اختيار نوع الحساب للمتابعة
+                      </p>
+                    )}
+                  </div>
+
                   {/* الاسم الكامل */}
                   <div className="space-y-2">
                     <Label className="text-foreground text-sm font-medium">الاسم الكامل</Label>
