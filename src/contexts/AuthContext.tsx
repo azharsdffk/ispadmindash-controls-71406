@@ -166,15 +166,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Error creating session record:', sessionError);
     }
     
-    // جلب دور المستخدم وتوجيهه للوحة المناسبة
+    // جلب دور المستخدم مع حالة الموافقة وتوجيهه للوحة المناسبة
     const { data: userRoles } = await supabase
       .from('user_roles')
-      .select('role')
+      .select('role, approved')
       .eq('user_id', data.user.id);
     
-    const userRolesList = userRoles?.map(r => r.role) || [];
+    // التحقق من وجود أدوار معتمدة
+    const approvedRoles = userRoles?.filter(r => r.approved === true) || [];
+    const userRolesList = approvedRoles.map(r => r.role);
     
-    // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
+    // إذا لم يكن للمستخدم أي دور معتمد، توجيهه لصفحة الانتظار
     if (userRolesList.length === 0) {
       navigate('/pending-approval');
     } else if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
@@ -243,12 +245,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
     
     if (!error && data.user && requestedRole) {
-      // إضافة الدور المطلوب للمستخدم الجديد مباشرة (سيحتاج للموافقة من المدير)
-      // يمكن للمدير تعديل هذا لاحقاً
+      // إضافة الدور المطلوب للمستخدم الجديد مع حالة غير معتمد (approved = false)
+      // المدير سيوافق على هذا الدور لاحقاً
       try {
         await supabase.from('user_roles').insert([{
           user_id: data.user.id,
           role: requestedRole as any,
+          approved: false, // الدور غير معتمد حتى يوافق المدير
         }]);
       } catch (roleError) {
         console.error('Error assigning initial role:', roleError);
