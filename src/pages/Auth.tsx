@@ -118,7 +118,7 @@ const Auth = () => {
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
 
-  // التحقق من المستخدم المسجل دخوله وجلب أدواره
+  // التحقق من المستخدم المسجل دخوله وجلب أدواره المعتمدة
   useEffect(() => {
     const checkUserRoles = async () => {
       if (user && !showRoleSelection) {
@@ -126,18 +126,20 @@ const Auth = () => {
         try {
           const { data: roles, error } = await supabase
             .from('user_roles')
-            .select('role')
+            .select('role, approved')
             .eq('user_id', user.id);
 
           if (error) throw error;
 
-          const rolesList = roles?.map(r => r.role) || [];
+          // فلترة الأدوار المعتمدة فقط
+          const approvedRoles = roles?.filter(r => r.approved === true) || [];
+          const rolesList = approvedRoles.map(r => r.role);
           
           if (rolesList.length === 0) {
-            // لا توجد أدوار - توجيه لصفحة الانتظار
+            // لا توجد أدوار معتمدة - توجيه لصفحة الانتظار
             navigate('/pending-approval');
           } else if (rolesList.length === 1) {
-            // دور واحد فقط - توجيه مباشر
+            // دور واحد معتمد فقط - توجيه مباشر
             const role = rolesList[0];
             const config = roleConfig[role];
             if (config) {
@@ -147,7 +149,7 @@ const Auth = () => {
               navigate('/');
             }
           } else {
-            // عدة أدوار - عرض شاشة الاختيار
+            // عدة أدوار معتمدة - عرض شاشة الاختيار
             setUserRoles(rolesList);
             setShowRoleSelection(true);
           }
