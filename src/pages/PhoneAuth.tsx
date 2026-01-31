@@ -58,8 +58,9 @@ const PhoneAuth = () => {
     try {
       const formattedPhone = formatPhoneForApi(phone);
       
-      const { data, error } = await supabase.functions.invoke('send-otp-verify', {
-        body: { to: formattedPhone, channel: 'sms' },
+      // Call the backend function that sends OTP via SMS (Twilio Verify)
+      const { data, error } = await supabase.functions.invoke('send-otp', {
+        body: { phone: formattedPhone },
       });
 
       if (error) throw error;
