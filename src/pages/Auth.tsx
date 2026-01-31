@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Shield, Users, Wrench, UserCog, Building2, CheckCircle, Loader2 } from 'lucide-react';
+import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Shield, Users, Wrench, UserCog, Building2, CheckCircle, Loader2, MapPin, Briefcase, Hash, Key } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
 import { MFAVerifyScreen } from '@/components/auth/MFAVerifyScreen';
@@ -104,6 +105,23 @@ const Auth = () => {
     phone: '',
   });
   const [selectedSignupRole, setSelectedSignupRole] = useState<string | null>(null);
+  
+  // الحقول الإضافية لكل دور
+  const [roleSpecificData, setRoleSpecificData] = useState({
+    // للوكيل
+    agentRegion: '',
+    // للفني
+    technicianSpecialty: '',
+    technicianRegion: '',
+    // للعميل
+    clientAddress: '',
+    subscriptionNumber: '',
+    // للمدير
+    adminSecretCode: '',
+  });
+
+  // الرمز السري للمدير
+  const ADMIN_SECRET_CODE = 'ADMIN2024';
 
   // الأدوار المتاحة للتسجيل
   const signupRoles = [
@@ -111,6 +129,25 @@ const Auth = () => {
     { key: 'technician', label: 'الفني', icon: Wrench, gradient: 'from-green-500 to-green-600' },
     { key: 'agent', label: 'الوكيل', icon: UserCog, gradient: 'from-purple-500 to-purple-600' },
     { key: 'admin', label: 'المدير', icon: Building2, gradient: 'from-primary to-amber-600' },
+  ];
+
+  // تخصصات الفنيين
+  const technicianSpecialties = [
+    { value: 'networks', label: 'شبكات' },
+    { value: 'maintenance', label: 'صيانة' },
+    { value: 'installation', label: 'تركيب' },
+    { value: 'support', label: 'دعم فني' },
+  ];
+
+  // المناطق المتاحة
+  const availableRegions = [
+    'الملحانية',
+    'الموصل',
+    'بغداد',
+    'البصرة',
+    'أربيل',
+    'النجف',
+    'كربلاء',
   ];
   
   // حالة اختيار الدور بعد تسجيل الدخول
@@ -177,6 +214,38 @@ const Auth = () => {
         setLoading(false);
         return;
       }
+
+      // التحقق من الحقول الإضافية حسب نوع الدور
+      if (!isLogin) {
+        if (selectedSignupRole === 'admin') {
+          if (roleSpecificData.adminSecretCode !== ADMIN_SECRET_CODE) {
+            toast.error('الرمز السري غير صحيح');
+            setLoading(false);
+            return;
+          }
+        }
+        if (selectedSignupRole === 'agent') {
+          if (!roleSpecificData.agentRegion) {
+            toast.error('يرجى اختيار المنطقة');
+            setLoading(false);
+            return;
+          }
+        }
+        if (selectedSignupRole === 'technician') {
+          if (!roleSpecificData.technicianSpecialty || !roleSpecificData.technicianRegion) {
+            toast.error('يرجى تحديد التخصص والمنطقة');
+            setLoading(false);
+            return;
+          }
+        }
+        if (selectedSignupRole === 'client') {
+          if (!roleSpecificData.clientAddress) {
+            toast.error('يرجى إدخال العنوان');
+            setLoading(false);
+            return;
+          }
+        }
+      }
       
       if (isLogin) {
         const validatedData = loginSchema.parse({
@@ -221,7 +290,8 @@ const Auth = () => {
           validatedData.password, 
           validatedData.fullName, 
           validatedData.phone,
-          selectedSignupRole || undefined
+          selectedSignupRole || undefined,
+          roleSpecificData
         );
         
         if (error) {
@@ -460,6 +530,122 @@ const Auth = () => {
                       </p>
                     )}
                   </div>
+
+                  {/* الحقول الإضافية حسب نوع الدور */}
+                  {selectedSignupRole === 'admin' && (
+                    <div className="space-y-2 p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
+                      <Label className="text-foreground text-sm font-medium flex items-center gap-2">
+                        <Key className="h-4 w-4 text-destructive" />
+                        الرمز السري للمدير
+                      </Label>
+                      <Input
+                        type="password"
+                        required
+                        value={roleSpecificData.adminSecretCode}
+                        onChange={(e) => setRoleSpecificData({ ...roleSpecificData, adminSecretCode: e.target.value })}
+                        placeholder="أدخل الرمز السري"
+                        className="h-12 bg-background/50 border-border/50 rounded-xl focus:border-destructive focus:ring-destructive/20"
+                      />
+                      <p className="text-xs text-muted-foreground">يجب الحصول على الرمز من مدير النظام</p>
+                    </div>
+                  )}
+
+                  {selectedSignupRole === 'agent' && (
+                    <div className="space-y-2 p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                      <Label className="text-foreground text-sm font-medium flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-purple-500" />
+                        المنطقة
+                      </Label>
+                      <Select
+                        value={roleSpecificData.agentRegion}
+                        onValueChange={(value) => setRoleSpecificData({ ...roleSpecificData, agentRegion: value })}
+                      >
+                        <SelectTrigger className="h-12 bg-background/50 border-border/50 rounded-xl">
+                          <SelectValue placeholder="اختر منطقتك" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableRegions.map((region) => (
+                            <SelectItem key={region} value={region}>{region}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {selectedSignupRole === 'technician' && (
+                    <div className="space-y-3 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                      <div className="space-y-2">
+                        <Label className="text-foreground text-sm font-medium flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-green-500" />
+                          التخصص
+                        </Label>
+                        <Select
+                          value={roleSpecificData.technicianSpecialty}
+                          onValueChange={(value) => setRoleSpecificData({ ...roleSpecificData, technicianSpecialty: value })}
+                        >
+                          <SelectTrigger className="h-12 bg-background/50 border-border/50 rounded-xl">
+                            <SelectValue placeholder="اختر تخصصك" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {technicianSpecialties.map((specialty) => (
+                              <SelectItem key={specialty.value} value={specialty.value}>{specialty.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-foreground text-sm font-medium flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-green-500" />
+                          منطقة العمل
+                        </Label>
+                        <Select
+                          value={roleSpecificData.technicianRegion}
+                          onValueChange={(value) => setRoleSpecificData({ ...roleSpecificData, technicianRegion: value })}
+                        >
+                          <SelectTrigger className="h-12 bg-background/50 border-border/50 rounded-xl">
+                            <SelectValue placeholder="اختر منطقة عملك" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableRegions.map((region) => (
+                              <SelectItem key={region} value={region}>{region}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedSignupRole === 'client' && (
+                    <div className="space-y-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                      <div className="space-y-2">
+                        <Label className="text-foreground text-sm font-medium flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-blue-500" />
+                          العنوان
+                        </Label>
+                        <Input
+                          type="text"
+                          required
+                          value={roleSpecificData.clientAddress}
+                          onChange={(e) => setRoleSpecificData({ ...roleSpecificData, clientAddress: e.target.value })}
+                          placeholder="أدخل عنوانك الكامل"
+                          className="h-12 bg-background/50 border-border/50 rounded-xl focus:border-blue-500 focus:ring-blue-500/20"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-foreground text-sm font-medium flex items-center gap-2">
+                          <Hash className="h-4 w-4 text-blue-500" />
+                          رقم الاشتراك (اختياري)
+                        </Label>
+                        <Input
+                          type="text"
+                          value={roleSpecificData.subscriptionNumber}
+                          onChange={(e) => setRoleSpecificData({ ...roleSpecificData, subscriptionNumber: e.target.value })}
+                          placeholder="أدخل رقم اشتراكك إن وجد"
+                          className="h-12 bg-background/50 border-border/50 rounded-xl focus:border-blue-500 focus:ring-blue-500/20"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* الاسم الكامل */}
                   <div className="space-y-2">
