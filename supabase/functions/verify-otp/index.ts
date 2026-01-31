@@ -83,7 +83,7 @@ serve(async (req) => {
 
     const { phone, otp }: VerifyOTPRequest = await req.json();
 
-    // Format phone
+    // Format phone for Iraq
     let formattedPhone = phone.replace(/[^0-9]/g, '');
     if (formattedPhone.startsWith('0')) {
       formattedPhone = '964' + formattedPhone.substring(1);
@@ -117,23 +117,38 @@ serve(async (req) => {
       );
     }
 
-    // Get stored OTP from phone_otps table
-    const { data: otpRecord, error: otpError } = await supabase
-      .from('phone_otps')
-      .select('*')
-      .eq('phone', formattedPhone)
-      .eq('verified', false)
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Use Twilio Verify API to check the OTP
+    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const serviceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
 
-    if (otpError) {
-      console.error('OTP lookup error:', otpError);
-      throw new Error('خطأ في التحقق من الرمز');
+    if (!accountSid || !authToken || !serviceSid) {
+      console.error('Twilio Verify credentials not configured');
+      throw new Error('خدمة التحقق غير متوفرة حالياً');
     }
 
-    if (!otpRecord) {
+    const toE164 = `+${formattedPhone}`;
+    const twilioUrl = `https://verify.twilio.com/v2/Services/${serviceSid}/VerificationCheck`;
+
+    console.log('Checking OTP via Twilio Verify for:', toE164);
+
+    const response = await fetch(twilioUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        To: toE164,
+        Code: otp,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.status !== 'approved') {
+      console.error('Twilio Verify check failed:', result);
+      
       // Record failed attempt
       await supabase.rpc('record_failed_verification', { p_phone: formattedPhone });
       
@@ -141,38 +156,22 @@ serve(async (req) => {
         action: 'otp_verify_failed',
         ip_address: clientIp,
         user_agent: userAgent,
-        metadata: { phone: formattedPhone, reason: 'otp_not_found_or_expired' },
+        metadata: { phone: formattedPhone, reason: result.status || 'invalid_code', twilio_status: result.status },
       });
+
+      let errorMessage = 'الرمز غير صحيح';
+      if (result.status === 'pending') {
+        errorMessage = 'الرمز غير صحيح. يرجى المحاولة مرة أخرى';
+      } else if (result.status === 'expired') {
+        errorMessage = 'انتهت صلاحية الرمز. يرجى طلب رمز جديد';
+      } else if (result.status === 'max_attempts_reached') {
+        errorMessage = 'تم تجاوز عدد المحاولات المسموحة. يرجى طلب رمز جديد';
+      }
 
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'الرمز غير صالح أو منتهي الصلاحية',
-          attemptsLeft: attempts?.attempts_left || 4,
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Verify OTP
-    if (otpRecord.otp_code !== otp) {
-      // Record failed attempt
-      await supabase.rpc('record_failed_verification', { p_phone: formattedPhone });
-      
-      await supabase.from('security_audit_logs').insert({
-        action: 'otp_verify_failed',
-        ip_address: clientIp,
-        user_agent: userAgent,
-        metadata: { phone: formattedPhone, reason: 'wrong_otp' },
-      });
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'الرمز غير صحيح',
+          error: errorMessage,
           attemptsLeft: (attempts?.attempts_left || 5) - 1,
         }),
         { 
@@ -182,11 +181,7 @@ serve(async (req) => {
       );
     }
 
-    // OTP is correct - mark as verified
-    await supabase
-      .from('phone_otps')
-      .update({ verified: true })
-      .eq('id', otpRecord.id);
+    console.log('OTP verified successfully via Twilio Verify');
 
     // Clear verification attempts
     await supabase.rpc('clear_verification_attempts', { p_phone: formattedPhone });
@@ -200,29 +195,9 @@ serve(async (req) => {
 
     let userId: string;
     let isNewUser = false;
-    let session = null;
 
     if (existingProfile) {
       userId = existingProfile.id;
-      
-      // Generate sign-in link for existing user
-      const { data: signInData, error: signInError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: `${formattedPhone}@phone.local`,
-      });
-      
-      if (!signInError && signInData) {
-        // Get the session by signing in
-        const { data: sessionData } = await supabase.auth.admin.getUserById(userId);
-        if (sessionData?.user) {
-          // Create a session for the user
-          const { data: tokenData } = await supabase.auth.admin.generateLink({
-            type: 'magiclink',
-            email: sessionData.user.email || `${formattedPhone}@phone.local`,
-          });
-          session = tokenData;
-        }
-      }
     } else {
       // Create new user
       const tempEmail = `${formattedPhone}@phone.local`;
@@ -274,13 +249,10 @@ serve(async (req) => {
       user_id: userId,
       ip_address: clientIp,
       user_agent: userAgent,
-      metadata: { phone: formattedPhone, is_new_user: isNewUser },
+      metadata: { phone: formattedPhone, is_new_user: isNewUser, provider: 'twilio_verify' },
     });
 
     console.log('OTP verified successfully for:', formattedPhone, 'userId:', userId);
-
-    // Clean up old OTPs
-    await supabase.rpc('cleanup_expired_otps');
 
     return new Response(
       JSON.stringify({
