@@ -9,6 +9,15 @@ interface MFARequiredState {
   password: string;
 }
 
+interface RoleSpecificData {
+  agentRegion?: string;
+  technicianSpecialty?: string;
+  technicianRegion?: string;
+  clientAddress?: string;
+  subscriptionNumber?: string;
+  adminSecretCode?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -18,7 +27,7 @@ interface AuthContextType {
   mfaRequired: MFARequiredState | null;
   refreshUserData: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any; mfaRequired?: boolean }>;
-  signUp: (email: string, password: string, fullName: string, phone?: string, requestedRole?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, phone?: string, requestedRole?: string, roleSpecificData?: RoleSpecificData) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   completeMFASignIn: (factorId: string, code: string) => Promise<{ error: any }>;
   clearMFARequired: () => void;
@@ -230,7 +239,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setMfaRequired(null);
   };
 
-  const signUp = async (email: string, password: string, fullName: string, phone?: string, requestedRole?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone?: string, requestedRole?: string, roleSpecificData?: RoleSpecificData) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -240,6 +249,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           full_name: fullName,
           phone: phone,
           requested_role: requestedRole,
+          // حفظ البيانات الإضافية حسب الدور
+          agent_region: roleSpecificData?.agentRegion,
+          technician_specialty: roleSpecificData?.technicianSpecialty,
+          technician_region: roleSpecificData?.technicianRegion,
+          client_address: roleSpecificData?.clientAddress,
+          subscription_number: roleSpecificData?.subscriptionNumber,
         }
       }
     });
