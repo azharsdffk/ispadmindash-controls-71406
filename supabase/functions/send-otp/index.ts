@@ -1,30 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://sxmkrmidebylykaefmsl.lovableproject.com';
-
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get('origin') || '';
-  const allowedOrigins = [
-    ALLOWED_ORIGIN,
-    'http://localhost:5173',
-    'http://localhost:8080',
-    'https://www.ispadmindash.com',
-    'https://ispadmindash.com',
-  ];
-  
-  const isAllowed = allowedOrigins.some(allowed => 
-    origin === allowed || 
-    origin.endsWith('.lovableproject.com') || 
-    origin.endsWith('.lovable.app')
-  );
-  
-  return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Credentials': 'true',
-  };
-}
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 interface SendOTPRequest {
   phone: string;
