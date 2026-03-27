@@ -52,7 +52,16 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SMSNotifications = lazy(() => import("./pages/SMSNotifications"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
