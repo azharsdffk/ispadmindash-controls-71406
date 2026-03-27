@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -208,7 +209,12 @@ const Auth = () => {
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+        <motion.div 
+          initial={{ opacity: 0, y: 20, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="w-full max-w-md"
+        >
           <div className="bg-card/80 backdrop-blur-xl border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/10">
             {/* Logo */}
             <div className="text-center mb-8">
@@ -336,7 +342,7 @@ const Auth = () => {
           <p className="text-center text-xs text-muted-foreground mt-6">
             بتسجيل الدخول، أنت توافق على شروط الاستخدام وسياسة الخصوصية
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
