@@ -15,27 +15,8 @@ const PhoneAuth = () => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [attemptsLeft, setAttemptsLeft] = useState(5);
 
-  // تنسيق رقم الهاتف للعرض
-  const formatPhoneDisplay = (value: string) => {
-    const digits = value.replace(/[^0-9]/g, '');
-    return digits;
-  };
-
-  // تنسيق رقم الهاتف للإرسال
-  const formatPhoneForApi = (value: string) => {
-    let digits = value.replace(/[^0-9]/g, '');
-    if (digits.startsWith('0')) {
-      digits = '964' + digits.substring(1);
-    }
-    if (!digits.startsWith('964')) {
-      digits = '964' + digits;
-    }
-    return digits;
-  };
-
-  // العد التنازلي
+  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -43,12 +24,33 @@ const PhoneAuth = () => {
     }
   }, [countdown]);
 
-  // إرسال OTP
+  // Validate Iraqi phone number
+  const isValidPhone = (value: string): boolean => {
+    const digits = value.replace(/[^0-9]/g, '');
+    // Accept: 07xxxxxxxxx (11 digits) or 7xxxxxxxxx (10 digits)
+    return (digits.startsWith('07') && digits.length === 11) ||
+           (digits.startsWith('7') && digits.length === 10) ||
+           (digits.startsWith('9647') && digits.length >= 13);
+  };
+
+  // Format phone to E.164 for API
+  const formatPhoneE164 = (value: string): string => {
+    let digits = value.replace(/[^0-9]/g, '');
+    if (digits.startsWith('0')) {
+      digits = '964' + digits.substring(1);
+    }
+    if (!digits.startsWith('964')) {
+      digits = '964' + digits;
+    }
+    return '+' + digits;
+  };
+
+  // Send OTP
   const handleSendOTP = async () => {
-    if (!phone || phone.length < 10) {
+    if (!isValidPhone(phone)) {
       toast({
-        title: 'خطأ',
-        description: 'الرجاء إدخال رقم هاتف صحيح',
+        title: 'رقم هاتف غير صالح',
+        description: 'الرجاء إدخال رقم هاتف عراقي صحيح (مثل: 07xxxxxxxxx)',
         variant: 'destructive',
       });
       return;
@@ -56,34 +58,33 @@ const PhoneAuth = () => {
 
     setLoading(true);
     try {
-      const formattedPhone = formatPhoneForApi(phone);
-      
-      // Call the backend function that sends OTP via SMS (Twilio Verify)
+      const formattedPhone = formatPhoneE164(phone);
+      console.log('[PhoneAuth] Sending OTP to:', formattedPhone);
+
       const { data, error } = await supabase.functions.invoke('send-otp', {
-        method: 'POST',
         body: { phone: formattedPhone },
       });
 
       if (error) throw error;
 
-      if (data.success) {
+      if (data?.success) {
         setStep('otp');
         setCountdown(60);
         toast({
-          title: 'تم الإرسال',
-          description: 'تم إرسال رمز التحقق إلى هاتفك',
+          title: 'تم إرسال رمز التحقق',
+          description: 'تم إرسال رمز التحقق إلى هاتفك بنجاح',
         });
       } else {
-        if (data.waitSeconds) {
+        if (data?.waitSeconds) {
           setCountdown(data.waitSeconds);
         }
-        throw new Error(data.error);
+        throw new Error(data?.error || 'فشل في إرسال رمز التحقق');
       }
     } catch (error: any) {
-      console.error('Send OTP error:', error);
+      console.error('[PhoneAuth] Send OTP error:', error);
       toast({
-        title: 'خطأ',
-        description: error.message || 'فشل في إرسال رمز التحقق',
+        title: 'خطأ في الإرسال',
+        description: error.message || 'فشل في إرسال رمز التحقق. حاول مرة أخرى',
         variant: 'destructive',
       });
     } finally {
@@ -91,11 +92,11 @@ const PhoneAuth = () => {
     }
   };
 
-  // التحقق من OTP
+  // Verify OTP
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
       toast({
-        title: 'خطأ',
+        title: 'رمز غير مكتمل',
         description: 'الرجاء إدخال رمز التحقق المكون من 6 أرقام',
         variant: 'destructive',
       });
@@ -104,32 +105,29 @@ const PhoneAuth = () => {
 
     setLoading(true);
     try {
-      const formattedPhone = formatPhoneForApi(phone);
-      
+      const formattedPhone = formatPhoneE164(phone);
+      console.log('[PhoneAuth] Verifying OTP for:', formattedPhone);
+
       const { data, error } = await supabase.functions.invoke('verify-otp', {
-        method: 'POST',
-        body: { phone: formattedPhone, otp },
+        body: { phone: formattedPhone, code: otp },
       });
 
       if (error) throw error;
 
-      if (data.success) {
+      if (data?.success) {
         toast({
-          title: 'نجاح',
-          description: data.isNewUser ? 'تم إنشاء حسابك بنجاح' : 'تم تسجيل الدخول بنجاح',
+          title: 'تم التحقق بنجاح ✅',
+          description: data.message || 'تم تسجيل الدخول بنجاح',
         });
-
-        // توجيه المستخدم
         navigate('/pending-approval');
       } else {
-        setAttemptsLeft(data.attemptsLeft || attemptsLeft - 1);
-        throw new Error(data.error);
+        throw new Error(data?.error || 'فشل في التحقق من الرمز');
       }
     } catch (error: any) {
-      console.error('Verify OTP error:', error);
+      console.error('[PhoneAuth] Verify OTP error:', error);
       toast({
-        title: 'خطأ',
-        description: error.message || 'فشل في التحقق من الرمز',
+        title: 'فشل التحقق',
+        description: error.message || 'الرمز غير صحيح. حاول مرة أخرى',
         variant: 'destructive',
       });
       setOtp('');
@@ -138,7 +136,7 @@ const PhoneAuth = () => {
     }
   };
 
-  // إعادة إرسال OTP
+  // Resend OTP
   const handleResendOTP = async () => {
     if (countdown > 0) return;
     setOtp('');
@@ -147,28 +145,24 @@ const PhoneAuth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      {/* خلفية متحركة */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* البطاقة الرئيسية */}
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl">
-          {/* الشعار */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/60 mb-4">
               <Phone className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">ISP Pro</h1>
             <p className="text-white/60">
-              {step === 'phone' ? 'أدخل رقم هاتفك للمتابعة' : 'أدخل رمز التحقق'}
+              {step === 'phone' ? 'أدخل رقم هاتفك للمتابعة' : 'أدخل رمز التحقق المرسل إلى هاتفك'}
             </p>
           </div>
 
           {step === 'phone' ? (
-            /* شاشة إدخال رقم الهاتف */
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-white/80">رقم الهاتف</Label>
@@ -179,22 +173,22 @@ const PhoneAuth = () => {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="7xxxxxxxxx"
+                    placeholder="07xxxxxxxxx"
                     value={phone}
-                    onChange={(e) => setPhone(formatPhoneDisplay(e.target.value))}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                     className="pl-14 bg-white/10 border-white/20 text-white placeholder:text-white/40 h-12 text-lg"
                     dir="ltr"
                     maxLength={11}
                   />
                 </div>
                 <p className="text-xs text-white/40">
-                  سيتم إرسال رمز تحقق مكون من 6 أرقام
+                  سيتم إرسال رمز تحقق مكون من 6 أرقام عبر SMS
                 </p>
               </div>
 
               <Button
                 onClick={handleSendOTP}
-                disabled={loading || phone.length < 10}
+                disabled={loading || !isValidPhone(phone)}
                 className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold"
               >
                 {loading ? (
@@ -206,24 +200,17 @@ const PhoneAuth = () => {
               </Button>
             </div>
           ) : (
-            /* شاشة إدخال OTP */
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="text-center">
-                  <p className="text-white/60 text-sm mb-4">
-                    تم إرسال الرمز إلى
-                  </p>
+                  <p className="text-white/60 text-sm mb-2">تم إرسال الرمز إلى</p>
                   <p className="text-white font-mono text-lg" dir="ltr">
-                    +{formatPhoneForApi(phone)}
+                    {formatPhoneE164(phone)}
                   </p>
                 </div>
 
                 <div className="flex justify-center" dir="ltr">
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={setOtp}
-                  >
+                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                     <InputOTPGroup className="gap-2">
                       {[0, 1, 2, 3, 4, 5].map((index) => (
                         <InputOTPSlot
@@ -235,10 +222,6 @@ const PhoneAuth = () => {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
-
-                <p className="text-center text-xs text-white/40">
-                  المحاولات المتبقية: {attemptsLeft}
-                </p>
               </div>
 
               <Button
@@ -251,15 +234,12 @@ const PhoneAuth = () => {
                 ) : (
                   <Shield className="w-5 h-5 ml-2" />
                 )}
-                تأكيد
+                تأكيد الرمز
               </Button>
 
               <div className="flex items-center justify-between">
                 <button
-                  onClick={() => {
-                    setStep('phone');
-                    setOtp('');
-                  }}
+                  onClick={() => { setStep('phone'); setOtp(''); }}
                   className="text-white/60 hover:text-white text-sm"
                 >
                   تغيير الرقم
@@ -280,7 +260,6 @@ const PhoneAuth = () => {
           )}
         </div>
 
-        {/* رابط تسجيل الدخول بالإيميل */}
         <div className="text-center mt-6">
           <button
             onClick={() => navigate('/auth')}
