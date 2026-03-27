@@ -17,9 +17,9 @@ export function useSupabaseQuery<T = any>(
   return useQuery({
     queryKey: key,
     queryFn: async () => {
-      let query = supabase
-        .from(tableName)
-        .select(options?.select || '*');
+      let query = (supabase
+        .from(tableName as any)
+        .select(options?.select || '*')) as any;
 
       if (options?.filters) {
         Object.entries(options.filters).forEach(([col, val]) => {
@@ -60,8 +60,8 @@ export function useSupabaseMutation(
 
   const insertMutation = useMutation({
     mutationFn: async (data: Record<string, any>) => {
-      const { data: result, error } = await supabase
-        .from(tableName)
+      const { data: result, error } = await (supabase
+        .from(tableName as any) as any)
         .insert(data)
         .select()
         .single();
@@ -79,8 +79,8 @@ export function useSupabaseMutation(
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Record<string, any> }) => {
-      const { data: result, error } = await supabase
-        .from(tableName)
+      const { data: result, error } = await (supabase
+        .from(tableName as any) as any)
         .update(data)
         .eq('id', id)
         .select()
@@ -99,8 +99,8 @@ export function useSupabaseMutation(
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from(tableName)
+      const { error } = await (supabase
+        .from(tableName as any) as any)
         .delete()
         .eq('id', id);
       if (error) throw error;
