@@ -61,12 +61,13 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <AuthProvider>
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -154,6 +155,7 @@ const App = () => (
       </TooltipProvider>
     </HelmetProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
