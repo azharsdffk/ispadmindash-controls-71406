@@ -97,7 +97,7 @@ export const mapDataApi = {
         address: s.address,
         latitude: Number(s.latitude),
         longitude: Number(s.longitude),
-        agent_id: s.agent_id,
+        agent_id: (s as any).agent_id,
       }));
     } catch (error) {
       console.error('Error fetching subscribers:', error);
@@ -138,7 +138,7 @@ export const mapDataApi = {
         subscriber_name: t.subscriber_name,
         subscriber_phone: t.subscriber_phone,
         subscriber_address: t.subscriber_address,
-        technician_name: t.technician_name,
+        technician_name: (t as any).technician_name,
         technician_id: t.technician_id,
         created_at: t.created_at,
       }));
