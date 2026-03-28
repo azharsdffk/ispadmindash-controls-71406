@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { LogIn, Eye, EyeOff, UserPlus, Mail, Lock, User, Phone, Shield, Loader2 } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import appLogo from '@/assets/logo.png';
 import { PasswordRecovery } from '@/components/auth/PasswordRecovery';
 import { MFAVerifyScreen } from '@/components/auth/MFAVerifyScreen';
 import { RoleSelectionGrid, roleConfig } from '@/components/auth/RoleSelectionGrid';
@@ -193,13 +194,10 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5" dir="rtl">
-      {/* Decorative background */}
+    <div className="min-h-screen relative overflow-hidden bg-background" dir="rtl">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
@@ -209,13 +207,11 @@ const Auth = () => {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="w-full max-w-md"
         >
-          <div className="bg-card/80 backdrop-blur-xl border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/10">
+          <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
             {/* Logo */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-amber-600 mb-4 shadow-lg shadow-primary/30">
-                <Shield className="w-10 h-10 text-background" />
-              </div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">ISP Pro System</h1>
+              <img src={appLogo} alt="ISP Pro" className="w-20 h-20 mx-auto mb-4 object-contain" />
+              <h1 className="text-2xl font-bold text-foreground mb-1">ISP Pro System</h1>
               <p className="text-muted-foreground text-sm">نظام إدارة شبكات الإنترنت المتقدم</p>
             </div>
 
@@ -317,7 +313,7 @@ const Auth = () => {
               )}
 
               <Button type="submit" disabled={loading}
-                className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-primary to-amber-600 hover:from-primary/90 hover:to-amber-600/90 text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 mt-6">
+                className="w-full h-12 text-base font-semibold rounded-lg mt-6">
                 {loading ? (
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />

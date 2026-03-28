@@ -18,16 +18,16 @@ export const ChartCard = ({
 }: ChartCardProps) => {
   return (
     <Card 
-      className={`animate-slide-up glass-effect hover:shadow-xl transition-all duration-300 ${className}`}
+      className={`animate-slide-up ${className}`}
       style={{ animationDelay: delay }}
     >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-gradient-primary">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           {icon && <span>{icon}</span>}
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="custom-scrollbar">
+      <CardContent>
         {children}
       </CardContent>
     </Card>

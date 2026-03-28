@@ -2,134 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Royal Golden Dark Design System - نظام التصميم الذهبي الفاخر */
+/* Professional ISP Pro Design System */
 
 @layer base {
   :root {
-    /* خلفية داكنة فاخرة */
-    --background: 220 25% 8%;
-    --foreground: 45 30% 96%;
+    /* خلفية فاتحة مريحة */
+    --background: 220 15% 96%;
+    --foreground: 220 25% 15%;
     
-    /* البطاقات بلون داكن مع لمسة ذهبية */
-    --card: 220 20% 12%;
-    --card-foreground: 45 30% 96%;
+    /* البطاقات بيضاء نظيفة */
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 15%;
     
-    --popover: 220 20% 14%;
-    --popover-foreground: 45 30% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 15%;
     
-    /* اللون الأساسي - ذهبي فاخر */
-    --primary: 45 85% 55%;
-    --primary-foreground: 220 25% 8%;
-    --primary-hover: 45 85% 50%;
-    --primary-light: 45 40% 20%;
+    /* اللون الأساسي - أزرق داكن احترافي */
+    --primary: 220 55% 30%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 220 55% 25%;
+    --primary-light: 220 40% 92%;
     
-    /* الثانوي - نحاسي */
-    --secondary: 30 50% 25%;
-    --secondary-foreground: 45 30% 96%;
+    /* الثانوي - رمادي فاتح */
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 25% 25%;
     
-    /* Accent - ذهبي وردي */
-    --accent: 35 60% 20%;
-    --accent-foreground: 45 80% 70%;
+    /* Accent - ذهبي */
+    --accent: 45 85% 55%;
+    --accent-foreground: 220 25% 12%;
     
     /* ألوان الحالة */
-    --success: 160 60% 45%;
-    --success-foreground: 220 25% 8%;
+    --success: 160 60% 40%;
+    --success-foreground: 0 0% 100%;
     
-    --warning: 35 100% 55%;
-    --warning-foreground: 220 25% 8%;
+    --warning: 35 90% 52%;
+    --warning-foreground: 220 25% 12%;
     
-    --info: 200 80% 55%;
-    --info-foreground: 220 25% 8%;
+    --info: 200 80% 50%;
+    --info-foreground: 0 0% 100%;
     
-    --muted: 220 15% 18%;
-    --muted-foreground: 45 15% 60%;
+    --muted: 220 12% 92%;
+    --muted-foreground: 220 10% 45%;
     
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 45 30% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
     
-    --border: 45 30% 20%;
-    --input: 220 15% 18%;
-    --ring: 45 85% 55%;
+    --border: 220 15% 88%;
+    --input: 220 15% 90%;
+    --ring: 220 55% 30%;
     
-    --radius: 0.875rem;
+    --radius: 0.75rem;
     
-    /* الشريط الجانبي */
-    --sidebar-background: 220 25% 6%;
-    --sidebar-foreground: 45 30% 96%;
+    /* الشريط الجانبي - أزرق داكن */
+    --sidebar-background: 220 55% 22%;
+    --sidebar-foreground: 220 15% 92%;
     --sidebar-primary: 45 85% 55%;
-    --sidebar-primary-foreground: 220 25% 8%;
-    --sidebar-accent: 35 60% 18%;
-    --sidebar-accent-foreground: 45 80% 80%;
-    --sidebar-border: 45 25% 15%;
+    --sidebar-primary-foreground: 220 25% 12%;
+    --sidebar-accent: 220 45% 30%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 40% 28%;
     --sidebar-ring: 45 85% 55%;
     
-    /* الظلال الذهبية */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
-    --shadow: 0 2px 8px 0 hsl(0 0% 0% / 0.5), 0 1px 3px -1px hsl(45 85% 55% / 0.1);
-    --shadow-md: 0 4px 12px -1px hsl(0 0% 0% / 0.5), 0 2px 6px -2px hsl(45 85% 55% / 0.15);
-    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.5), 0 6px 12px -4px hsl(45 85% 55% / 0.15);
-    --shadow-xl: 0 24px 40px -8px hsl(0 0% 0% / 0.5), 0 12px 20px -8px hsl(45 85% 55% / 0.15);
-    --shadow-glow: 0 0 30px hsl(45 85% 55% / 0.25), 0 0 60px hsl(45 85% 55% / 0.1);
-    --shadow-glow-gold: 0 0 40px hsl(45 85% 55% / 0.3);
+    /* الظلال */
+    --shadow-sm: 0 1px 2px 0 hsl(220 15% 50% / 0.06);
+    --shadow: 0 1px 3px 0 hsl(220 15% 50% / 0.1), 0 1px 2px -1px hsl(220 15% 50% / 0.1);
+    --shadow-md: 0 4px 6px -1px hsl(220 15% 50% / 0.1), 0 2px 4px -2px hsl(220 15% 50% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(220 15% 50% / 0.1), 0 4px 6px -4px hsl(220 15% 50% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(220 15% 50% / 0.1), 0 8px 10px -6px hsl(220 15% 50% / 0.1);
+    --shadow-glow: 0 0 15px hsl(220 55% 30% / 0.15);
   }
   
   .dark {
-    /* نفس التصميم الذهبي */
-    --background: 220 25% 8%;
-    --foreground: 45 30% 96%;
+    --background: 220 20% 10%;
+    --foreground: 220 10% 92%;
     
-    --card: 220 20% 12%;
-    --card-foreground: 45 30% 96%;
+    --card: 220 18% 14%;
+    --card-foreground: 220 10% 92%;
     
-    --popover: 220 20% 14%;
-    --popover-foreground: 45 30% 96%;
+    --popover: 220 18% 14%;
+    --popover-foreground: 220 10% 92%;
     
-    --primary: 45 85% 55%;
-    --primary-foreground: 220 25% 8%;
-    --primary-hover: 45 85% 50%;
-    --primary-light: 45 40% 20%;
+    --primary: 220 55% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 220 55% 45%;
+    --primary-light: 220 40% 20%;
     
-    --secondary: 30 50% 25%;
-    --secondary-foreground: 45 30% 96%;
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 220 10% 85%;
     
-    --accent: 35 60% 20%;
-    --accent-foreground: 45 80% 70%;
+    --accent: 45 85% 55%;
+    --accent-foreground: 220 25% 12%;
     
     --success: 160 60% 45%;
-    --success-foreground: 220 25% 8%;
+    --success-foreground: 0 0% 100%;
     
-    --warning: 35 100% 55%;
-    --warning-foreground: 220 25% 8%;
+    --warning: 35 90% 52%;
+    --warning-foreground: 220 25% 12%;
     
     --info: 200 80% 55%;
-    --info-foreground: 220 25% 8%;
+    --info-foreground: 0 0% 100%;
     
-    --muted: 220 15% 18%;
-    --muted-foreground: 45 15% 60%;
+    --muted: 220 12% 20%;
+    --muted-foreground: 220 10% 55%;
     
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 45 30% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
     
-    --border: 45 30% 20%;
+    --border: 220 15% 22%;
     --input: 220 15% 18%;
-    --ring: 45 85% 55%;
+    --ring: 220 55% 50%;
     
-    --sidebar-background: 220 25% 6%;
-    --sidebar-foreground: 45 30% 96%;
+    --sidebar-background: 220 25% 8%;
+    --sidebar-foreground: 220 10% 88%;
     --sidebar-primary: 45 85% 55%;
-    --sidebar-primary-foreground: 220 25% 8%;
-    --sidebar-accent: 35 60% 18%;
-    --sidebar-accent-foreground: 45 80% 80%;
-    --sidebar-border: 45 25% 15%;
+    --sidebar-primary-foreground: 220 25% 12%;
+    --sidebar-accent: 220 30% 16%;
+    --sidebar-accent-foreground: 220 10% 88%;
+    --sidebar-border: 220 20% 16%;
     --sidebar-ring: 45 85% 55%;
     
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.5);
-    --shadow: 0 2px 8px 0 hsl(0 0% 0% / 0.6), 0 1px 3px -1px hsl(45 85% 55% / 0.1);
-    --shadow-md: 0 4px 12px -1px hsl(0 0% 0% / 0.6), 0 2px 6px -2px hsl(45 85% 55% / 0.15);
-    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.6), 0 6px 12px -4px hsl(45 85% 55% / 0.15);
-    --shadow-xl: 0 24px 40px -8px hsl(0 0% 0% / 0.6), 0 12px 20px -8px hsl(45 85% 55% / 0.15);
-    --shadow-glow: 0 0 30px hsl(45 85% 55% / 0.3), 0 0 60px hsl(45 85% 55% / 0.12);
-    --shadow-glow-gold: 0 0 40px hsl(45 85% 55% / 0.35);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 15px hsl(220 55% 50% / 0.2);
   }
 }
 
@@ -147,47 +144,52 @@
 }
 
 @layer utilities {
-  /* Royal Card Effect - تأثير البطاقة الملكية */
+  /* Glass effect for cards */
   .glass {
-    @apply bg-card/90 backdrop-blur-xl border border-primary/20 shadow-lg;
+    @apply bg-card border border-border shadow-md;
   }
   
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-primary/15 shadow-lg rounded-xl transition-all duration-300;
-    background: linear-gradient(145deg, hsl(220 20% 14% / 0.9), hsl(220 20% 10% / 0.95));
+    @apply bg-card border border-border shadow-md rounded-xl transition-all duration-300;
   }
   
   .glass-card:hover {
-    @apply border-primary/40;
-    box-shadow: var(--shadow-glow);
+    @apply border-primary/30 shadow-lg;
   }
   
   .glass-effect {
-    @apply bg-card/70 backdrop-blur-xl border border-primary/10;
+    @apply bg-card border border-border;
   }
   
-  /* Golden Text - نص ذهبي متوهج */
+  /* Gradient text */
   .gradient-text {
-    @apply bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent;
-    text-shadow: 0 0 30px hsl(45 85% 55% / 0.3);
+    @apply text-primary font-bold;
   }
   
-  /* Golden Background */
+  /* Gradient background */
   .gradient-bg {
-    @apply bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600;
+    @apply bg-primary;
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(220 55% 30%), hsl(220 55% 38%));
   }
   
-  /* Glow Effects - تأثيرات التوهج الذهبي */
+  .text-gradient-primary {
+    @apply text-primary font-bold;
+  }
+  
+  /* Glow Effects */
   .glow {
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-lg);
   }
   
   .glow-gold {
-    box-shadow: var(--shadow-glow-gold);
+    box-shadow: 0 0 20px hsl(45 85% 55% / 0.2);
   }
   
   .glow-hover:hover {
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-lg);
   }
   
   /* Hover Effects */
@@ -196,31 +198,30 @@
   }
   
   .stat-card-hover {
-    @apply transition-all duration-300 hover:border-primary/50;
+    @apply transition-all duration-300 hover:border-primary/40;
   }
   
   .stat-card-hover:hover {
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
   
-  /* Royal Scrollbar */
+  /* Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-card/50 rounded-full;
+    @apply bg-transparent;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/40 rounded-full border-2 border-transparent;
-    background-clip: padding-box;
+    @apply bg-primary/20 rounded-full;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/60;
+    @apply bg-primary/40;
   }
   
   /* Animations */
@@ -229,19 +230,13 @@
   }
   
   @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
+    50% { transform: translateY(-6px); }
   }
   
   @keyframes shimmer {
@@ -250,12 +245,8 @@
   }
   
   @keyframes pulse-glow {
-    0%, 100% { 
-      box-shadow: 0 0 20px hsl(45 85% 55% / 0.2);
-    }
-    50% { 
-      box-shadow: 0 0 40px hsl(45 85% 55% / 0.4);
-    }
+    0%, 100% { box-shadow: 0 0 10px hsl(220 55% 30% / 0.15); }
+    50% { box-shadow: 0 0 20px hsl(220 55% 30% / 0.25); }
   }
   
   .animate-float {
@@ -263,7 +254,7 @@
   }
   
   .animate-shimmer {
-    background: linear-gradient(90deg, transparent, hsl(45 85% 55% / 0.1), transparent);
+    background: linear-gradient(90deg, transparent, hsl(220 55% 30% / 0.05), transparent);
     background-size: 200% 100%;
     animation: shimmer 3s infinite;
   }
@@ -272,70 +263,43 @@
     animation: pulse-glow 3s ease-in-out infinite;
   }
   
-  /* Golden Border */
-  .border-gradient {
-    position: relative;
-  }
-  
-  .border-gradient::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1.5px;
-    background: linear-gradient(135deg, hsl(45 85% 65%), hsl(35 80% 50%), hsl(45 85% 55%));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.6;
-    transition: opacity 0.3s;
-  }
-  
-  .border-gradient:hover::before {
-    opacity: 1;
-  }
-  
-  /* Royal Button Variants */
+  /* Button variants */
   .btn-futuristic {
-    @apply bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-background transition-all duration-300 font-bold;
-    box-shadow: 0 4px 20px hsl(45 85% 55% / 0.3);
+    @apply bg-primary text-primary-foreground transition-all duration-300 font-bold;
+    box-shadow: 0 2px 8px hsl(220 55% 30% / 0.2);
   }
   
   .btn-futuristic:hover {
-    @apply from-amber-400 via-yellow-400 to-amber-500;
-    box-shadow: 0 6px 30px hsl(45 85% 55% / 0.5);
-    transform: translateY(-2px);
+    @apply bg-primary-hover;
+    box-shadow: 0 4px 12px hsl(220 55% 30% / 0.3);
+    transform: translateY(-1px);
   }
   
-  /* Golden Button Variants */
   .btn-gold {
-    @apply bg-primary hover:bg-primary-hover text-background transition-all duration-300 font-bold;
-    box-shadow: 0 4px 15px hsl(45 85% 55% / 0.25);
+    @apply bg-accent text-accent-foreground transition-all duration-300 font-bold;
+    box-shadow: 0 2px 8px hsl(45 85% 55% / 0.2);
   }
   
   .btn-gold:hover {
-    box-shadow: 0 6px 25px hsl(45 85% 55% / 0.4);
+    box-shadow: 0 4px 12px hsl(45 85% 55% / 0.3);
     transform: translateY(-1px);
   }
   
   .btn-gold-outline {
-    @apply border-2 border-primary text-primary hover:bg-primary hover:text-background transition-all duration-300 font-semibold;
+    @apply border-2 border-accent text-accent-foreground hover:bg-accent transition-all duration-300 font-semibold;
   }
   
-  /* Text enhancements for readability */
   .text-gold {
-    color: hsl(45 85% 60%);
+    color: hsl(45 85% 45%);
   }
   
   .text-gold-light {
-    color: hsl(45 70% 75%);
+    color: hsl(45 70% 50%);
   }
 }
 
-/* ============= Professional Print Styles ============= */
+/* ============= Print Styles ============= */
 @media print {
-  /* إخفاء العناصر غير الضرورية */
   .no-print,
   [data-sidebar],
   header,
@@ -352,7 +316,6 @@
     display: none !important;
   }
 
-  /* إعدادات الصفحة */
   @page {
     size: A4;
     margin: 15mm 12mm 25mm 12mm;
@@ -362,7 +325,6 @@
     margin-top: 12mm;
   }
 
-  /* إعدادات الجسم */
   body {
     background: white !important;
     color: #0f172a !important;
@@ -374,7 +336,6 @@
     font-family: 'Cairo', 'Tajawal', 'Arial', sans-serif !important;
   }
 
-  /* الحاوية الرئيسية */
   .print-container,
   main {
     width: 100% !important;
@@ -383,12 +344,11 @@
     margin: 0 !important;
   }
 
-  /* ===== الترويسة الاحترافية المتطورة ===== */
   .print-professional-header {
     display: block !important;
     margin-bottom: 25px !important;
     background: white !important;
-    border: 3px solid #1e3a8a !important;
+    border: 3px solid #1e3a6e !important;
     border-radius: 16px !important;
     overflow: hidden !important;
     position: relative !important;
@@ -401,7 +361,7 @@
     left: 0 !important;
     right: 0 !important;
     height: 8px !important;
-    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 25%, #60a5fa 50%, #3b82f6 75%, #1e3a8a 100%) !important;
+    background: linear-gradient(90deg, #1e3a6e 0%, #2d5aa0 50%, #1e3a6e 100%) !important;
   }
 
   .print-logo-section {
@@ -410,55 +370,31 @@
     justify-content: center !important;
     gap: 20px !important;
     padding: 25px 30px 15px !important;
-    background: linear-gradient(180deg, #f0f9ff 0%, white 100%) !important;
   }
 
   .print-logo {
     width: 80px !important;
     height: 80px !important;
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+    background: linear-gradient(135deg, #1e3a6e 0%, #2d5aa0 100%) !important;
     border-radius: 20px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4) !important;
-    transform: rotate(-5deg) !important;
-  }
-
-  .print-logo-icon {
-    width: 55px !important;
-    height: 55px !important;
-  }
-
-  .print-logo-icon circle {
-    fill: transparent !important;
-  }
-
-  .print-logo-icon text {
-    fill: white !important;
-    font-size: 40px !important;
-  }
-
-  .print-company-info {
-    text-align: center !important;
+    box-shadow: 0 8px 25px rgba(30, 58, 110, 0.4) !important;
   }
 
   .print-company-name {
     font-size: 28pt !important;
     font-weight: 900 !important;
-    margin: 0 !important;
-    color: #1e3a8a !important;
-    letter-spacing: -1px !important;
-    text-shadow: 2px 2px 0 #dbeafe !important;
+    color: #1e3a6e !important;
   }
 
   .print-company-subtitle {
     font-size: 11pt !important;
-    color: #3b82f6 !important;
+    color: #2d5aa0 !important;
     margin: 5px 0 0 0 !important;
     letter-spacing: 3px !important;
     font-weight: 600 !important;
-    text-transform: uppercase !important;
   }
 
   .print-report-info {
@@ -466,53 +402,23 @@
     justify-content: center !important;
     gap: 40px !important;
     padding: 15px 30px !important;
-    background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 50%, #1e3a8a 100%) !important;
+    background: linear-gradient(90deg, #1e3a6e 0%, #2d5aa0 50%, #1e3a6e 100%) !important;
     color: white !important;
   }
 
   .print-report-title {
     font-size: 16pt !important;
     font-weight: bold !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-  }
-
-  .print-report-title::before {
-    content: "📋" !important;
-    font-size: 20pt !important;
   }
 
   .print-report-date,
   .print-report-time {
     font-size: 10pt !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
     background: rgba(255, 255, 255, 0.15) !important;
     padding: 8px 15px !important;
     border-radius: 8px !important;
   }
 
-  .print-report-date::before {
-    content: "📅" !important;
-  }
-
-  .print-report-time::before {
-    content: "⏰" !important;
-  }
-
-  .print-report-date span,
-  .print-report-time span {
-    opacity: 0.9 !important;
-  }
-
-  .print-report-date strong,
-  .print-report-time strong {
-    font-weight: 700 !important;
-  }
-
-  /* ===== قسم الملخص المتطور ===== */
   .print-summary-section {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -526,62 +432,29 @@
     gap: 12px !important;
     padding: 18px 20px !important;
     border-radius: 16px !important;
-    position: relative !important;
     overflow: hidden !important;
     border: none !important;
-  }
-
-  .print-summary-card::before {
-    content: "" !important;
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    width: 100px !important;
-    height: 100px !important;
-    border-radius: 50% !important;
-    transform: translate(30%, -30%) !important;
-    opacity: 0.15 !important;
   }
 
   .print-summary-card.print-income {
     background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25) !important;
   }
-
-  .print-summary-card.print-income::before {
-    background: #10b981 !important;
-  }
-
   .print-summary-card.print-expense {
     background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%) !important;
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25) !important;
   }
-
-  .print-summary-card.print-expense::before {
-    background: #ef4444 !important;
-  }
-
   .print-summary-card.print-balance {
     background: linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%) !important;
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25) !important;
   }
-
-  .print-summary-card.print-balance::before {
-    background: #3b82f6 !important;
-  }
-
   .print-summary-card.print-count {
     background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%) !important;
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25) !important;
   }
 
-  .print-summary-card.print-count::before {
-    background: #8b5cf6 !important;
-  }
-
   .print-summary-icon {
     font-size: 24pt !important;
-    font-weight: bold !important;
     width: 55px !important;
     height: 55px !important;
     display: flex !important;
@@ -592,79 +465,20 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
   }
 
-  .print-income .print-summary-icon { 
-    color: #059669 !important;
-    border: 2px solid #10b981 !important;
-  }
-  
-  .print-expense .print-summary-icon { 
-    color: #dc2626 !important;
-    border: 2px solid #ef4444 !important;
-  }
-  
-  .print-balance .print-summary-icon { 
-    color: #2563eb !important;
-    border: 2px solid #3b82f6 !important;
-  }
-  
-  .print-count .print-summary-icon { 
-    color: #7c3aed !important;
-    border: 2px solid #8b5cf6 !important;
-  }
-
-  .print-summary-content {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 3px !important;
-  }
+  .print-income .print-summary-icon { color: #059669 !important; border: 2px solid #10b981 !important; }
+  .print-expense .print-summary-icon { color: #dc2626 !important; border: 2px solid #ef4444 !important; }
+  .print-balance .print-summary-icon { color: #2563eb !important; border: 2px solid #3b82f6 !important; }
+  .print-count .print-summary-icon { color: #7c3aed !important; border: 2px solid #8b5cf6 !important; }
 
   .print-summary-label {
     font-size: 9pt !important;
     color: #64748b !important;
     font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
   }
-
   .print-summary-value {
     font-size: 14pt !important;
     font-weight: 900 !important;
     color: #0f172a !important;
-  }
-
-  /* ===== عنوان الجدول المتطور ===== */
-  .print-table-header {
-    margin-bottom: 15px !important;
-    position: relative !important;
-    padding-bottom: 15px !important;
-  }
-
-  .print-table-header h2 {
-    font-size: 16pt !important;
-    color: #1e3a8a !important;
-    margin: 0 !important;
-    font-weight: 800 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-  }
-
-  .print-table-header h2::before {
-    content: "📊" !important;
-    font-size: 18pt !important;
-  }
-
-  .print-table-line {
-    height: 4px !important;
-    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 30%, #60a5fa 50%, #3b82f6 70%, #1e3a8a 100%) !important;
-    border-radius: 4px !important;
-    margin-top: 10px !important;
-  }
-
-  /* ===== الجدول المتطور ===== */
-  .print-main-table {
-    border: none !important;
-    box-shadow: none !important;
   }
 
   table {
@@ -672,13 +486,13 @@
     border-collapse: separate !important;
     border-spacing: 0 !important;
     font-size: 10pt !important;
-    border: 2px solid #1e3a8a !important;
+    border: 2px solid #1e3a6e !important;
     border-radius: 12px !important;
     overflow: hidden !important;
   }
 
   thead {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important;
+    background: linear-gradient(135deg, #1e3a6e 0%, #2d5aa0 100%) !important;
   }
 
   th {
@@ -688,7 +502,6 @@
     font-weight: 700 !important;
     font-size: 11pt !important;
     border: none !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
   }
 
   td {
@@ -698,35 +511,9 @@
     font-size: 10pt !important;
   }
 
-  tbody tr:nth-child(even) {
-    background: #f8fafc !important;
-  }
+  tbody tr:nth-child(even) { background: #f8fafc !important; }
+  tbody tr:nth-child(odd) { background: white !important; }
 
-  tbody tr:nth-child(odd) {
-    background: white !important;
-  }
-
-  tbody tr:hover {
-    background: #f1f5f9 !important;
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none !important;
-  }
-
-  /* أنماط الشارات */
-  .print-badge,
-  [class*="badge"],
-  span[class*="bg-"] {
-    padding: 5px 12px !important;
-    border-radius: 20px !important;
-    font-size: 9pt !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-  }
-
-  /* ===== التذييل المتطور ===== */
   .print-professional-footer {
     position: fixed !important;
     bottom: 0 !important;
@@ -738,61 +525,24 @@
 
   .print-footer-line {
     height: 3px !important;
-    background: linear-gradient(90deg, transparent 0%, #1e3a8a 20%, #3b82f6 50%, #1e3a8a 80%, transparent 100%) !important;
+    background: linear-gradient(90deg, transparent, #1e3a6e, transparent) !important;
     margin-bottom: 10px !important;
-    border-radius: 3px !important;
-  }
-
-  .print-footer-content {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    font-size: 10pt !important;
-    color: #475569 !important;
   }
 
   .print-footer-center {
     font-weight: 700 !important;
-    color: #1e3a8a !important;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    color: #1e3a6e !important;
+    background: #eff6ff !important;
     padding: 6px 20px !important;
     border-radius: 20px !important;
-    border: 2px solid #1e3a8a !important;
+    border: 2px solid #1e3a6e !important;
   }
 
-  /* إظهار عناصر الطباعة */
-  .print-only {
-    display: block !important;
-  }
-
-  /* إخفاء الخلفيات والظلال - مع استثناءات */
-  .card,
-  [class*="Card"] {
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  /* قطع الصفحة */
-  .page-break {
-    page-break-before: always !important;
-  }
-
-  .avoid-break {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
+  .print-only { display: block !important; }
+  .card, [class*="Card"] { border: none !important; box-shadow: none !important; }
+  .page-break { page-break-before: always !important; }
+  .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; }
 }
 
-/* العناصر المخفية افتراضياً والظاهرة عند الطباعة */
-.print-only {
-  display: none;
-}
-
-.print-header,
-.print-footer,
-.print-professional-header,
-.print-professional-footer,
-.print-summary-section,
-.print-table-header {
-  display: none;
-}
+.print-only { display: none; }
+.print-header, .print-footer, .print-professional-header, .print-professional-footer, .print-summary-section, .print-table-header { display: none; }

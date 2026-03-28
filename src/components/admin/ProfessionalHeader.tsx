@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bell, Settings, Moon, Sun, User } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useState } from 'react';
 import {
@@ -24,16 +25,13 @@ export const ProfessionalHeader = ({ onOpenSettings }: { onOpenSettings: () => v
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="container flex h-16 items-center justify-between px-4">
-        {/* Logo and Company Name */}
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-primary text-primary-foreground shadow-md">
+      <div className="container flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-white font-bold text-xl shadow-lg">
-            ISP
-          </div>
+          <img src={logo} alt="ISP Pro" className="h-9 w-9 rounded-lg object-contain bg-white/10 p-0.5" />
           <div>
-            <h1 className="text-lg font-bold text-foreground">نظام إدارة الإنترنت</h1>
-            <p className="text-xs text-muted-foreground">Internet Management System</p>
+            <h1 className="text-base font-bold">نظام إدارة الإنترنت</h1>
+            <p className="text-[10px] text-primary-foreground/70">Internet Management System</p>
           </div>
         </div>
 

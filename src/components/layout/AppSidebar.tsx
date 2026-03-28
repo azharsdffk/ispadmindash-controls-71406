@@ -1,10 +1,10 @@
-import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature, Gift, Hexagon, Sparkles, Building2 } from "lucide-react";
+import { Home, Users, FileText, Wrench, DollarSign, BarChart3, Settings, UserCog, Download, Shield, Package, LayoutDashboard, User, Bell, MapPin, Calendar, Box, Key, UserCheck, Calculator, FileCheck, FileSignature, Gift, Building2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useUserRole, type AppRole } from "@/hooks/useUserRole";
 import { usePermissions } from "@/hooks/usePermissions";
+import logo from "@/assets/logo.png";
 
-// تنظيم القوائم حسب المجموعات المنطقية
 const menuGroups = {
   main: [
     { icon: Home, label: "الرئيسية", path: "/", permission: null, roles: ['admin', 'accountant', 'technician', 'client'] },
@@ -43,45 +43,36 @@ export const AppSidebar = () => {
   const { isAdmin, isAccountant, roles, loading: rolesLoading } = useUserRole();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
 
-  // عرض الـ skeleton فقط أثناء تحميل الأدوار
   const isLoading = rolesLoading || permissionsLoading;
 
   if (isLoading) {
     return (
-      <aside className="w-64 bg-sidebar border-l border-primary/15 flex-shrink-0 overflow-y-auto h-screen sticky top-0">
-        {/* الخلفية المتحركة */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-40 -left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
-        </div>
-        <nav className="relative z-10 p-4 space-y-6">
-          <div className="space-y-1">
-            <h3 className="px-4 text-[10px] font-bold text-primary/50 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
-              جاري التحميل...
-            </h3>
-            <div className="animate-pulse space-y-2">
-              {[...Array(10)].map((_, i) => (
-                <div key={i} className="h-12 bg-primary/5 rounded-xl" />
-              ))}
+      <aside className="w-60 bg-sidebar flex-shrink-0 overflow-y-auto h-screen sticky top-0">
+        <nav className="p-3 space-y-4">
+          <div className="flex items-center gap-3 p-3">
+            <div className="w-10 h-10 rounded-lg bg-sidebar-accent animate-pulse" />
+            <div className="space-y-1.5 flex-1">
+              <div className="h-4 bg-sidebar-accent rounded animate-pulse w-20" />
+              <div className="h-3 bg-sidebar-accent rounded animate-pulse w-28" />
             </div>
+          </div>
+          <div className="animate-pulse space-y-1.5">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-10 bg-sidebar-accent/50 rounded-lg" />
+            ))}
           </div>
         </nav>
       </aside>
     );
   }
 
-  // إذا لم يكن هناك أدوار، عرض رسالة مناسبة
   if (roles.length === 0) {
     return (
-      <aside className="w-64 bg-sidebar border-l border-primary/15 flex-shrink-0 overflow-y-auto h-screen sticky top-0">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-        </div>
-        <nav className="relative z-10 p-4 space-y-6">
-          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-destructive text-center">لم يتم تعيين صلاحيات لحسابك</p>
-            <p className="text-xs text-muted-foreground text-center mt-2">يرجى التواصل مع المدير</p>
+      <aside className="w-60 bg-sidebar flex-shrink-0 overflow-y-auto h-screen sticky top-0">
+        <nav className="p-3">
+          <div className="p-4 rounded-lg bg-destructive/20 border border-destructive/30">
+            <p className="text-sm text-destructive-foreground text-center">لم يتم تعيين صلاحيات</p>
+            <p className="text-xs text-sidebar-foreground/60 text-center mt-1">يرجى التواصل مع المدير</p>
           </div>
         </nav>
       </aside>
@@ -103,123 +94,90 @@ export const AppSidebar = () => {
         end={item.path === "/"}
         className={({ isActive }) =>
           cn(
-            "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
-            "text-foreground/70 hover:text-primary hover:bg-primary/10",
-            isActive && "bg-gradient-to-r from-primary/20 to-primary/10 text-primary font-bold border border-primary/30"
+            "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
+            "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+            isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-bold"
           )
         }
       >
-        {({ isActive }) => (
-          <>
-            {isActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
-            )}
-            <div className={cn(
-              "relative z-10 p-1.5 rounded-lg transition-all duration-300",
-              isActive ? "bg-primary/20 text-primary" : "text-foreground/50 group-hover:text-primary"
-            )}>
-              <item.icon className="h-5 w-5" />
-            </div>
-            <span className="relative z-10">{item.label}</span>
-            {isActive && (
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
-            )}
-          </>
-        )}
+        <item.icon className="h-4.5 w-4.5 flex-shrink-0" />
+        <span>{item.label}</span>
       </NavLink>
     );
   };
 
   const renderSectionTitle = (title: string) => (
-    <h3 className="px-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3 flex items-center gap-2">
-      <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
+    <h3 className="px-3 text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-wider mb-1.5 mt-1">
       {title}
     </h3>
   );
 
   return (
-    <aside className="w-64 bg-sidebar border-l border-primary/15 flex-shrink-0 overflow-y-auto h-screen sticky top-0 custom-scrollbar">
-      {/* الخلفية المتحركة */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-40 -left-10 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl" />
+    <aside className="w-60 bg-sidebar flex-shrink-0 overflow-y-auto h-screen sticky top-0 custom-scrollbar">
+      {/* Logo section */}
+      <div className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="ISP Pro" className="h-10 w-10 rounded-lg object-contain bg-white/10 p-0.5" />
+          <div>
+            <h2 className="text-sm font-bold text-sidebar-foreground">ISP Pro</h2>
+            <p className="text-[10px] text-sidebar-foreground/50">إدارة شبكات الإنترنت</p>
+          </div>
+        </div>
       </div>
       
-      <nav className="relative z-10 p-4 space-y-6">
-        {/* القائمة الرئيسية */}
-        <div className="space-y-1">
+      <nav className="p-3 space-y-4">
+        <div className="space-y-0.5">
           {renderSectionTitle("القائمة الرئيسية")}
           {menuGroups.main.map(renderMenuItem)}
         </div>
 
-        {/* العمليات */}
         {(isAdmin || isAccountant) && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {renderSectionTitle("العمليات اليومية")}
             {menuGroups.operations.map(renderMenuItem)}
           </div>
         )}
 
-        {/* الصيانة */}
         {(isAdmin || roles.includes('technician')) && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {renderSectionTitle("الصيانة والدعم")}
             {menuGroups.maintenance.map(renderMenuItem)}
           </div>
         )}
 
-        {/* الإدارة */}
         {(isAdmin || isAccountant) && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {renderSectionTitle("الإدارة والتقارير")}
             {menuGroups.management.map(renderMenuItem)}
           </div>
         )}
 
-        {/* النظام */}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {renderSectionTitle("النظام")}
           {menuGroups.system.map(renderMenuItem)}
         </div>
 
-        {/* الصلاحيات */}
         {(isAccountant || isAdmin) && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {renderSectionTitle("الصلاحيات")}
             <NavLink
               to="/accountant/permissions"
               className={({ isActive }) =>
                 cn(
-                  "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
-                  "text-foreground/70 hover:text-primary hover:bg-primary/10",
-                  isActive && "bg-gradient-to-r from-primary/20 to-primary/10 text-primary font-bold border border-primary/30"
+                  "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
+                  "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-bold"
                 )
               }
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
-                  )}
-                  <div className={cn(
-                    "relative z-10 p-1.5 rounded-lg transition-all duration-300",
-                    isActive ? "bg-primary/20 text-primary" : "text-foreground/50 group-hover:text-primary"
-                  )}>
-                    <FileCheck className="h-5 w-5" />
-                  </div>
-                  <span className="relative z-10">صلاحياتي</span>
-                  {isActive && (
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
-                  )}
-                </>
-              )}
+              <FileCheck className="h-4.5 w-4.5 flex-shrink-0" />
+              <span>صلاحياتي</span>
             </NavLink>
           </div>
         )}
         
-        {/* إدارة متقدمة - للمدراء فقط */}
         {isAdmin && (
-          <div className="space-y-1 border-t border-primary/15 pt-4">
+          <div className="space-y-0.5 border-t border-sidebar-border pt-3">
             {renderSectionTitle("إدارة متقدمة")}
             {[
               { path: "/agents", icon: Building2, label: "إدارة الوكلاء" },
@@ -232,42 +190,27 @@ export const AppSidebar = () => {
                 to={item.path}
                 className={({ isActive }) =>
                   cn(
-                    "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
-                    "text-foreground/70 hover:text-primary hover:bg-primary/10",
-                    isActive && "bg-gradient-to-r from-primary/20 to-primary/10 text-primary font-bold border border-primary/30"
+                    "group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm",
+                    "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+                    isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-bold"
                   )
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent" />
-                    )}
-                    <div className={cn(
-                      "relative z-10 p-1.5 rounded-lg transition-all duration-300",
-                      isActive ? "bg-primary/20 text-primary" : "text-foreground/50 group-hover:text-primary"
-                    )}>
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <span className="relative z-10">{item.label}</span>
-                    {isActive && (
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
-                    )}
-                  </>
-                )}
+                <item.icon className="h-4.5 w-4.5 flex-shrink-0" />
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </div>
         )}
         
-        {/* التذييل */}
-        <div className="pt-4 border-t border-primary/15">
-          <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-primary/15 to-amber-500/10 border border-primary/20">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs font-bold text-foreground">ISP Pro</span>
+        {/* Footer */}
+        <div className="pt-3 border-t border-sidebar-border">
+          <div className="px-3 py-2.5 rounded-lg bg-sidebar-accent/50">
+            <div className="flex items-center gap-2 mb-0.5">
+              <Sparkles className="h-3.5 w-3.5 text-sidebar-primary" />
+              <span className="text-xs font-bold text-sidebar-foreground">ISP Pro v1.0</span>
             </div>
-            <p className="text-[10px] text-muted-foreground">نظام إدارة متكامل</p>
+            <p className="text-[10px] text-sidebar-foreground/50">نظام إدارة متكامل</p>
           </div>
         </div>
       </nav>
