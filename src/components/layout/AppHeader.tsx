@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, User, LogOut, Wifi, Sparkles, ArrowRight } from "lucide-react";
+import { Settings, User, LogOut, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +15,8 @@ import { LocationTrackingStatus } from "@/components/location/LocationTrackingSt
 import { useNavigate, useLocation } from "react-router-dom";
 import { ProfileModal } from "@/components/modals/ProfileModal";
 import { ComprehensiveSettingsModal } from "@/components/settings/ComprehensiveSettingsModal";
+import logo from "@/assets/logo.png";
+
 interface AppHeaderProps {
   onOpenSettings?: () => void;
 }
@@ -26,11 +28,9 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   
-  // تحديد ما إذا كان يجب إظهار زر الرجوع (ليس في الصفحة الرئيسية)
   const showBackButton = location.pathname !== "/" && location.pathname !== "/dashboard";
   
   const handleGoBack = () => {
-    // إذا كان هناك تاريخ للتنقل، ارجع للخلف، وإلا اذهب للرئيسية
     if (window.history.length > 2) {
       navigate(-1);
     } else {
@@ -39,60 +39,44 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
   };
   
   return (
-    <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-primary/15">
-      {/* الخط المتوهج العلوي */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-      
-      <div className="flex items-center justify-between h-16 px-6 animate-fade-in">
-        <div className="flex items-center gap-4">
-          {/* زر الرجوع */}
+    <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-md">
+      <div className="flex items-center justify-between h-14 px-4">
+        <div className="flex items-center gap-3">
           {showBackButton && (
             <Button
               variant="ghost"
               size="icon"
               onClick={handleGoBack}
-              className="hover:bg-primary/10 hover:scale-110 transition-all rounded-xl border border-transparent hover:border-primary/20 group"
+              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 rounded-lg"
               title="رجوع"
             >
-              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="h-5 w-5" />
             </Button>
           )}
-          {/* الشعار */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-            <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 flex items-center justify-center shadow-lg">
-              <Wifi className="h-6 w-6 text-background" />
-            </div>
-          </div>
-          
+          <img src={logo} alt="ISP Pro" className="h-9 w-9 rounded-lg object-contain bg-white/10 p-0.5" />
           <div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
-              نظام ISP Pro
-            </h1>
-            <p className="text-xs text-muted-foreground">منصة إدارة شبكات الإنترنت</p>
+            <h1 className="text-base font-bold text-primary-foreground">ISP Pro</h1>
+            <p className="text-[10px] text-primary-foreground/70">نظام إدارة شبكات الإنترنت</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* مؤشر الحالة */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/20">
+        <div className="flex items-center gap-1.5">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-primary-foreground/10">
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span className="text-xs text-success">متصل</span>
+            <span className="text-xs text-primary-foreground/80">متصل</span>
           </div>
           
-          {/* مؤشر تتبع الموقع */}
           <LocationTrackingStatus />
-          
           <NotificationBell />
 
           <Button
             variant="ghost"
             size="icon"
-            className="hover:bg-primary/10 hover:scale-110 transition-all rounded-xl border border-transparent hover:border-primary/20"
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 rounded-lg"
             onClick={() => setSettingsOpen(true)}
-            title="الإعدادات (Alt+S)"
+            title="الإعدادات"
           >
-            <Settings className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+            <Settings className="h-5 w-5" />
           </Button>
 
           <DropdownMenu dir="rtl">
@@ -100,44 +84,34 @@ export const AppHeader = ({ onOpenSettings }: AppHeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-primary/10 hover:scale-110 transition-all rounded-xl border border-transparent hover:border-primary/20 overflow-hidden group"
+                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 rounded-lg"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors relative z-10" />
+                <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-card border-primary/20">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <span className="text-foreground">حسابي</span>
+                    <Sparkles className="h-4 w-4 text-accent" />
+                    <span>حسابي</span>
                   </div>
                   {user?.email && (
                     <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
                   )}
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-primary/15" />
-              <DropdownMenuItem 
-                onClick={() => setProfileOpen(true)} 
-                className="hover:bg-primary/10 cursor-pointer text-foreground"
-              >
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setProfileOpen(true)} className="cursor-pointer">
                 <User className="ml-2 h-4 w-4" />
                 الملف الشخصي
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setSettingsOpen(true)} 
-                className="hover:bg-primary/10 cursor-pointer text-foreground"
-              >
+              <DropdownMenuItem onClick={() => setSettingsOpen(true)} className="cursor-pointer">
                 <Settings className="ml-2 h-4 w-4" />
                 الإعدادات
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-primary/15" />
-              <DropdownMenuItem 
-                onClick={signOut} 
-                className="text-destructive hover:bg-destructive/10 cursor-pointer"
-              >
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
                 <LogOut className="ml-2 h-4 w-4" />
                 تسجيل الخروج
               </DropdownMenuItem>
