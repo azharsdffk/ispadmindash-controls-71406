@@ -546,3 +546,26 @@
 
 .print-only { display: none; }
 .print-header, .print-footer, .print-professional-header, .print-professional-footer, .print-summary-section, .print-table-header { display: none; }
+
+/* PWA / Mobile optimizations */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Mobile bottom nav spacing */
+@media (max-width: 767px) {
+  .mobile-content-with-nav {
+    padding-bottom: 5rem;
+  }
+}
+
+/* Standalone PWA adjustments */
+@media (display-mode: standalone) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 20px);
+  }
+}
