@@ -16,8 +16,6 @@ import { SignupRoleFields, type RoleSpecificData } from '@/components/auth/Signu
 import { signupSchema, loginSchema, sanitizeInput } from '@/utils/inputValidation';
 import { checkPasswordLeaked } from '@/utils/passwordStrength';
 
-const ADMIN_SECRET_CODE = 'ADMIN2024';
-
 const Auth = () => {
   const { user, signIn, signUp, mfaRequired, completeMFASignIn, clearMFARequired } = useAuth();
   const navigate = useNavigate();
@@ -75,9 +73,6 @@ const Auth = () => {
   }, [user, navigate, showRoleSelection]);
 
   const validateRoleFields = (): boolean => {
-    if (selectedSignupRole === 'admin' && roleSpecificData.adminSecretCode !== ADMIN_SECRET_CODE) {
-      toast.error('الرمز السري غير صحيح'); return false;
-    }
     if (selectedSignupRole === 'agent' && !roleSpecificData.agentRegion) {
       toast.error('يرجى اختيار المنطقة'); return false;
     }

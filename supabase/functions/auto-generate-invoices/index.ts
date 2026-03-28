@@ -19,7 +19,6 @@ interface Contract {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -27,12 +26,42 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+
+    // --- AUTH CHECK: require admin role ---
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ success: false, error: 'Authorization header required' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser()
+    if (userError || !user) {
+      return new Response(JSON.stringify({ success: false, error: 'Invalid or expired token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Check admin role using service client
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .in('role', ['admin', 'super_admin'])
+
+    if (!roles || roles.length === 0) {
+      return new Response(JSON.stringify({ success: false, error: 'Forbidden: admin role required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     console.log('🔄 بدء عملية إنشاء الفواتير التلقائية...')
 
-    // جلب جميع العقود النشطة
     const { data: contracts, error: contractsError } = await supabase
       .from('contracts')
       .select(`
@@ -56,8 +85,6 @@ Deno.serve(async (req) => {
     const currentDate = new Date()
     const currentMonth = currentDate.getMonth() + 1
     const currentYear = currentDate.getFullYear()
-    
-    // تاريخ الاستحقاق (نهاية الشهر الحالي)
     const dueDate = new Date(currentYear, currentMonth, 0)
     const dueDateStr = dueDate.toISOString().split('T')[0]
 
@@ -70,7 +97,6 @@ Deno.serve(async (req) => {
 
     for (const contract of (contracts || []) as unknown as Contract[]) {
       try {
-        // التحقق من عدم وجود فاتورة لهذا الشهر
         const monthStart = new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0]
         const monthEnd = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0]
 
@@ -83,12 +109,10 @@ Deno.serve(async (req) => {
           .single()
 
         if (existingInvoice) {
-          console.log(`⏭️ تم تخطي المشترك ${contract.subscriber?.name} - فاتورة موجودة`)
           results.skipped++
           continue
         }
 
-        // إنشاء رقم الفاتورة
         const { data: countData } = await supabase
           .from('invoices')
           .select('id', { count: 'exact', head: true })
@@ -96,7 +120,6 @@ Deno.serve(async (req) => {
         const invoiceCount = countData ? 1 : 1
         const invoiceNumber = `INV-${currentYear}${String(currentMonth).padStart(2, '0')}-${String(invoiceCount + results.created + 1).padStart(4, '0')}`
 
-        // إنشاء الفاتورة
         const { error: insertError } = await supabase
           .from('invoices')
           .insert({
@@ -112,15 +135,11 @@ Deno.serve(async (req) => {
           })
 
         if (insertError) {
-          console.error(`❌ خطأ في إنشاء فاتورة للمشترك ${contract.subscriber?.name}:`, insertError)
+          console.error(`❌ خطأ في إنشاء فاتورة:`, insertError)
           results.errors++
-          results.details.push(`فشل: ${contract.subscriber?.name} - ${insertError.message}`)
         } else {
-          console.log(`✅ تم إنشاء فاتورة للمشترك ${contract.subscriber?.name}`)
           results.created++
-          results.details.push(`نجاح: ${contract.subscriber?.name} - ${invoiceNumber}`)
 
-          // إنشاء إشعار للمشترك
           const { data: subscriberUser } = await supabase
             .from('subscriber_users')
             .select('user_id')
@@ -145,46 +164,31 @@ Deno.serve(async (req) => {
       }
     }
 
-    // تسجيل النتائج في سجل الاستيراد
     await supabase
       .from('import_logs')
       .insert({
         import_type: 'auto_invoice',
-        source: 'cron_job',
+        source: 'admin_triggered',
         status: results.errors > 0 ? 'partial' : 'completed',
         records_imported: results.created,
         records_failed: results.errors
       })
 
-    const summary = {
-      success: true,
-      message: `تم إنشاء ${results.created} فاتورة، تم تخطي ${results.skipped}، أخطاء: ${results.errors}`,
-      results
-    }
-
-    console.log('📊 ملخص العملية:', summary)
-
     return new Response(
-      JSON.stringify(summary),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({
+        success: true,
+        message: `تم إنشاء ${results.created} فاتورة، تم تخطي ${results.skipped}، أخطاء: ${results.errors}`,
+        results
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
   } catch (error: unknown) {
-    console.error('❌ خطأ عام في الدالة:', error)
+    console.error('❌ خطأ عام:', error)
     const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع'
-    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: errorMessage
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      JSON.stringify({ success: false, error: errorMessage }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })
