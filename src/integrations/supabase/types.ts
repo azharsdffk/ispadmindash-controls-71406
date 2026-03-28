@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_pins: {
+        Row: {
+          blocked_until: string | null
+          created_at: string | null
+          failed_attempts: number | null
+          id: string
+          pin_hash: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          pin_hash: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          pin_hash?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       agents: {
         Row: {
           active: boolean | null
@@ -3687,6 +3717,7 @@ export type Database = {
           permission_name: string
         }[]
       }
+      set_admin_pin: { Args: { p_pin: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       store_phone_otp: {
@@ -3700,6 +3731,13 @@ export type Database = {
       update_sms_log_status: {
         Args: { p_id: string; p_provider_response?: Json; p_status: string }
         Returns: boolean
+      }
+      verify_admin_pin: {
+        Args: { p_pin: string }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
       }
       verify_phone_otp: {
         Args: { p_code: string; p_phone: string }
