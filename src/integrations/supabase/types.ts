@@ -3268,47 +3268,68 @@ export type Database = {
       subscribers_map_view: {
         Row: {
           address: string | null
+          agent_id: string | null
           id: string | null
           latitude: number | null
           longitude: number | null
           name: string | null
-          phone: string | null
-          plan: string | null
         }
         Insert: {
           address?: string | null
+          agent_id?: string | null
           id?: string | null
           latitude?: number | null
           longitude?: number | null
           name?: string | null
-          phone?: string | null
-          plan?: string | null
         }
         Update: {
           address?: string | null
+          agent_id?: string | null
           id?: string | null
           latitude?: number | null
           longitude?: number | null
           name?: string | null
-          phone?: string | null
-          plan?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscribers_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       technicians_map_view: {
         Row: {
           available: boolean | null
-          heading: number | null
           id: string | null
-          last_location_update: string | null
           latitude: number | null
           longitude: number | null
           name: string | null
-          phone: string | null
           specialization: string | null
-          speed: number | null
           status: string | null
           user_id: string | null
+        }
+        Insert: {
+          available?: boolean | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          specialization?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          available?: boolean | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          specialization?: string | null
+          status?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3338,7 +3359,6 @@ export type Database = {
           created_at: string | null
           id: string | null
           issue_description: string | null
-          issue_type: string | null
           latitude: number | null
           location_address: string | null
           longitude: number | null
@@ -3346,27 +3366,12 @@ export type Database = {
           scheduled_date: string | null
           status: Database["public"]["Enums"]["ticket_status"] | null
           subscriber_address: string | null
-          subscriber_id: string | null
           subscriber_name: string | null
-          subscriber_phone: string | null
           technician_id: string | null
+          technician_name: string | null
           ticket_number: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "maintenance_tickets_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "maintenance_tickets_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: false
-            referencedRelation: "subscribers_map_view"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "maintenance_tickets_technician_id_fkey"
             columns: ["technician_id"]
