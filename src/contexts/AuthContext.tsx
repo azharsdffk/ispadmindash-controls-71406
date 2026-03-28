@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 interface MFARequiredState {
@@ -259,13 +260,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
     
     if (!error && data.user && requestedRole) {
-      // إضافة الدور المطلوب للمستخدم الجديد مع حالة غير معتمد (approved = false)
-      // المدير سيوافق على هذا الدور لاحقاً
+      // إضافة الدور المطلوب للمستخدم الجديد مباشرة بدون موافقة
       try {
         await supabase.from('user_roles').insert([{
           user_id: data.user.id,
           role: requestedRole as any,
-          approved: false, // الدور غير معتمد حتى يوافق المدير
+          approved: true,
         }]);
       } catch (roleError) {
         console.error('Error assigning initial role:', roleError);

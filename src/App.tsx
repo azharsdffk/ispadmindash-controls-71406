@@ -45,7 +45,7 @@ const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
 const CustomerAuth = lazy(() => import("./pages/CustomerAuth"));
 const Auth = lazy(() => import("./pages/Auth"));
 const PendingApproval = lazy(() => import("./pages/PendingApproval"));
-const PhoneAuth = lazy(() => import("./pages/PhoneAuth"));
+const Unauthorized = lazy(() => import("./pages/Unauthorized"));
 const Features = lazy(() => import("./pages/Features"));
 const CustomerTicketTracking = lazy(() => import("./pages/CustomerTicketTracking"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -85,12 +85,15 @@ const App = () => (
                 <Route path="/phone-auth" element={<PhoneAuth />} />
                 <Route path="/customer-login" element={<CustomerAuth />} />
                 <Route path="/pending-approval" element={<PendingApproval />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/contact" element={<CustomerContact />} />
-                <Route path="/my-portal" element={
-                  <ProtectedRoute allowedRoles={['client', 'admin']}><Index /></ProtectedRoute>
+                <Route path="/customer" element={
+                  <ProtectedRoute allowedRoles={['client', 'admin']}><CustomerPortal /></ProtectedRoute>
                 } />
+                <Route path="/my-portal" element={<Navigate to="/customer" replace />} />
+                <Route path="/portal" element={<Navigate to="/customer" replace />} />
                 <Route path="/ticket/:ticketId" element={
                   <ProtectedRoute allowedRoles={['client']}><CustomerTicketTracking /></ProtectedRoute>
                 } />
