@@ -51,6 +51,7 @@ const CustomerTicketTracking = lazy(() => import("./pages/CustomerTicketTracking
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SMSNotifications = lazy(() => import("./pages/SMSNotifications"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
+const AdminSecurityDashboard = lazy(() => import("./pages/AdminSecurityDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -156,6 +157,7 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/sms" element={<ProtectedRoute allowedRoles={['admin']}><SMSNotifications /></ProtectedRoute>} />
                 <Route path="/audit-log" element={<ProtectedRoute allowedRoles={['admin']}><AuditLog /></ProtectedRoute>} />
+                <Route path="/admin-security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurityDashboard /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
