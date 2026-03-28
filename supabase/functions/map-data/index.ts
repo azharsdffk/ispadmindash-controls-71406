@@ -165,15 +165,11 @@ async function handleGetTechnicians(supabase: any) {
   const technicians = data.map((t: any) => ({
     id: t.id,
     name: t.name,
-    phone: t.phone,
     specialization: t.specialization,
     latitude: Number(t.latitude),
     longitude: Number(t.longitude),
     status: t.status || 'offline',
     available: t.available,
-    last_location_update: t.last_location_update,
-    speed: t.speed,
-    heading: t.heading
   }));
 
   return new Response(
@@ -194,7 +190,6 @@ async function handleGetSubscribers(supabase: any) {
   const subscribers = data.map((s: any) => ({
     id: s.id,
     name: s.name,
-    phone: s.phone,
     address: s.address,
     latitude: Number(s.latitude),
     longitude: Number(s.longitude),
@@ -240,7 +235,6 @@ async function handleGetTickets(supabase: any, url: URL) {
     longitude: Number(t.longitude),
     location_address: t.location_address,
     subscriber_name: t.subscriber_name,
-    subscriber_phone: t.subscriber_phone,
     subscriber_address: t.subscriber_address,
     technician_name: t.technician_name,
     technician_id: t.technician_id,
