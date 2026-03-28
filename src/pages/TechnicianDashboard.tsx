@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import { MobileBottomNav } from '@/components/mobile/MobileBottomNav';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -441,6 +442,7 @@ const TechnicianDashboard = () => {
           </SheetContent>
         </Sheet>
       </div>
+      <MobileBottomNav role="technician" />
     </SidebarProvider>
   );
 };
