@@ -162,11 +162,42 @@ export default function CustomerContact() {
     
     setLoading(true);
     try {
-      const { data: subUser } = await supabase
+      let { data: subUser } = await supabase
         .from('subscriber_users')
         .select('subscriber_id')
         .eq('user_id', user.id)
         .maybeSingle();
+
+      // Auto-link if not found
+      if (!subUser) {
+        const phone = user.user_metadata?.phone || user.phone;
+        const subscriptionNumber = user.user_metadata?.subscription_number;
+        let subscriberId: string | null = null;
+
+        if (subscriptionNumber) {
+          const { data: sub } = await supabase
+            .from('subscribers')
+            .select('id')
+            .eq('username', subscriptionNumber)
+            .maybeSingle();
+          subscriberId = sub?.id || null;
+        }
+        if (!subscriberId && phone) {
+          const { data: sub } = await supabase
+            .from('subscribers')
+            .select('id')
+            .eq('phone', phone)
+            .maybeSingle();
+          subscriberId = sub?.id || null;
+        }
+        if (subscriberId) {
+          await supabase.from('subscriber_users').insert({
+            user_id: user.id,
+            subscriber_id: subscriberId
+          });
+          subUser = { subscriber_id: subscriberId };
+        }
+      }
 
       if (subUser) {
         await loadSubscriberData(subUser.subscriber_id);
