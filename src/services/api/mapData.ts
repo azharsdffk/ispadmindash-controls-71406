@@ -4,7 +4,7 @@ import { calculateDistance } from '@/utils/distanceCalculations';
 export interface MapTechnician {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   specialization?: string;
   latitude: number;
   longitude: number;
