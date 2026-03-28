@@ -53,6 +53,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SMSNotifications = lazy(() => import("./pages/SMSNotifications"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
 const AdminSecurityDashboard = lazy(() => import("./pages/AdminSecurityDashboard"));
+const AdminApproval = lazy(() => import("./pages/AdminApproval"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
