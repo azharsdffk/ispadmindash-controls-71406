@@ -16,7 +16,6 @@ const PhoneAuth = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -24,16 +23,13 @@ const PhoneAuth = () => {
     }
   }, [countdown]);
 
-  // Validate Iraqi phone number
   const isValidPhone = (value: string): boolean => {
     const digits = value.replace(/[^0-9]/g, '');
-    // Accept: 07xxxxxxxxx (11 digits) or 7xxxxxxxxx (10 digits)
     return (digits.startsWith('07') && digits.length === 11) ||
            (digits.startsWith('7') && digits.length === 10) ||
            (digits.startsWith('9647') && digits.length >= 13);
   };
 
-  // Format phone to E.164 for API
   const formatPhoneE164 = (value: string): string => {
     let digits = value.replace(/[^0-9]/g, '');
     if (digits.startsWith('0')) {
@@ -92,7 +88,7 @@ const PhoneAuth = () => {
     }
   };
 
-  // Verify OTP
+  // Verify OTP and create Supabase session
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
       toast({
@@ -108,20 +104,54 @@ const PhoneAuth = () => {
       const formattedPhone = formatPhoneE164(phone);
       console.log('[PhoneAuth] Verifying OTP for:', formattedPhone);
 
+      // Step 1: Verify OTP via edge function
       const { data, error } = await supabase.functions.invoke('verify-otp', {
         body: { phone: formattedPhone, code: otp },
       });
 
       if (error) throw error;
 
-      if (data?.success) {
+      if (!data?.success) {
+        throw new Error(data?.error || 'فشل في التحقق من الرمز');
+      }
+
+      console.log('[PhoneAuth] OTP verified, exchanging token for session...');
+
+      // Step 2: Exchange the magic link token for a real Supabase session
+      if (data.tokenHash) {
+        const { error: sessionError } = await supabase.auth.verifyOtp({
+          token_hash: data.tokenHash,
+          type: 'magiclink',
+        });
+
+        if (sessionError) {
+          console.error('[PhoneAuth] Session exchange error:', sessionError);
+          throw new Error('تم التحقق بنجاح لكن فشل إنشاء الجلسة. حاول مرة أخرى');
+        }
+
+        console.log('[PhoneAuth] ✅ Supabase session created successfully');
+
         toast({
           title: 'تم التحقق بنجاح ✅',
           description: data.message || 'تم تسجيل الدخول بنجاح',
         });
-        navigate('/pending-approval');
+
+        // AuthContext will detect the session change and redirect
+        // For new users or pending approval, navigate accordingly
+        if (data.isNewUser) {
+          navigate('/pending-approval');
+        } else {
+          // Let AuthContext handle redirection based on role
+          navigate('/auth');
+        }
       } else {
-        throw new Error(data?.error || 'فشل في التحقق من الرمز');
+        // Fallback if no token (shouldn't happen)
+        console.warn('[PhoneAuth] No tokenHash returned, navigating to pending');
+        toast({
+          title: 'تم التحقق بنجاح ✅',
+          description: data.message,
+        });
+        navigate('/pending-approval');
       }
     } catch (error: any) {
       console.error('[PhoneAuth] Verify OTP error:', error);
@@ -136,7 +166,6 @@ const PhoneAuth = () => {
     }
   };
 
-  // Resend OTP
   const handleResendOTP = async () => {
     if (countdown > 0) return;
     setOtp('');
@@ -156,7 +185,7 @@ const PhoneAuth = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/60 mb-4">
               <Phone className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">ISP Pro</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">ISP AZHAR</h1>
             <p className="text-white/60">
               {step === 'phone' ? 'أدخل رقم هاتفك للمتابعة' : 'أدخل رمز التحقق المرسل إلى هاتفك'}
             </p>

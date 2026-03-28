@@ -14,9 +14,7 @@ serve(async (req) => {
 
     console.log('[verify-otp] Start verification for phone:', phone);
 
-    // Validate input
     if (!phone || !code) {
-      console.log('[verify-otp] Missing phone or code');
       return new Response(
         JSON.stringify({ success: false, error: 'رقم الهاتف ورمز التحقق مطلوبان' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -83,8 +81,6 @@ serve(async (req) => {
         errorMessage = 'لم يتم العثور على طلب تحقق. يرجى إعادة إرسال الرمز';
       }
 
-      console.log('[verify-otp] Verification failed:', result.status || result.code);
-
       return new Response(
         JSON.stringify({ success: false, error: errorMessage, status: result.status }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -94,15 +90,15 @@ serve(async (req) => {
     // ✅ Verification approved
     console.log('[verify-otp] ✅ OTP verified successfully for:', formattedPhone);
 
-    // Connect to Supabase to find/create user
+    // Connect to Supabase with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Strip + for DB storage
     const phoneDigits = formattedPhone.replace('+', '');
+    const tempEmail = `${phoneDigits}@phone.local`;
 
-    // Check if user exists
+    // Check if user exists by phone in profiles
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('id')
@@ -116,65 +112,99 @@ serve(async (req) => {
       userId = existingProfile.id;
       console.log('[verify-otp] Existing user found:', userId);
     } else {
-      // Create new user
-      const tempEmail = `${phoneDigits}@phone.local`;
-      const tempPassword = crypto.randomUUID();
+      // Also check by email pattern (in case profile phone wasn't set)
+      const { data: { users: existingUsers } } = await supabase.auth.admin.listUsers();
+      const existingByEmail = existingUsers?.find(u => u.email === tempEmail);
 
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: tempEmail,
-        password: tempPassword,
-        email_confirm: true,
-        phone: formattedPhone,
-        phone_confirm: true,
-        user_metadata: {
-          phone: phoneDigits,
-          full_name: 'مستخدم جديد',
-        },
-      });
+      if (existingByEmail) {
+        userId = existingByEmail.id;
+        console.log('[verify-otp] Existing user found by email:', userId);
+        // Ensure profile phone is set
+        await supabase.from('profiles').update({ phone: phoneDigits }).eq('id', userId);
+      } else {
+        // Create new user
+        const tempPassword = crypto.randomUUID();
 
-      if (createError) {
-        console.error('[verify-otp] Failed to create user:', createError);
-        return new Response(
-          JSON.stringify({ success: false, error: 'فشل في إنشاء الحساب' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email: tempEmail,
+          password: tempPassword,
+          email_confirm: true,
+          phone: formattedPhone,
+          phone_confirm: true,
+          user_metadata: {
+            phone: phoneDigits,
+            full_name: 'مستخدم جديد',
+          },
+        });
+
+        if (createError) {
+          console.error('[verify-otp] Failed to create user:', createError);
+          return new Response(
+            JSON.stringify({ success: false, error: 'فشل في إنشاء الحساب' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        userId = newUser.user.id;
+        isNewUser = true;
+        console.log('[verify-otp] New user created:', userId);
+
+        // Update profile with phone
+        await supabase.from('profiles').update({ phone: phoneDigits }).eq('id', userId);
+
+        // Assign default 'client' role (pending approval)
+        await supabase.from('user_roles').upsert({
+          user_id: userId,
+          role: 'client',
+          approved: false,
+        }, { onConflict: 'user_id,role' });
+
+        console.log('[verify-otp] Default client role assigned to new user');
       }
-
-      userId = newUser.user.id;
-      isNewUser = true;
-      console.log('[verify-otp] New user created:', userId);
-
-      // Update profile with phone
-      await supabase
-        .from('profiles')
-        .update({ phone: phoneDigits })
-        .eq('id', userId);
     }
 
-    // Create session token
-    const sessionToken = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    // Generate a magic link token for seamless frontend sign-in
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: tempEmail,
+    });
 
+    if (linkError || !linkData) {
+      console.error('[verify-otp] Failed to generate magic link:', linkError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'فشل في إنشاء الجلسة' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const tokenHash = linkData.properties?.hashed_token;
+    console.log('[verify-otp] Magic link token generated for user:', userId, '| hasToken:', !!tokenHash);
+
+    // Log security event
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    await supabase.from('sessions').insert({
-      user_id: userId,
-      session_token: sessionToken,
-      expires_at: expiresAt.toISOString(),
-      ip_address: clientIp,
-      user_agent: userAgent,
-      device_name: 'Phone Auth',
-    });
-
-    console.log('[verify-otp] Session created for user:', userId);
+    try {
+      await supabase.rpc('insert_user_security_log', {
+        p_user_id: userId,
+        p_ip_address: clientIp,
+        p_user_agent: userAgent,
+        p_login_method: 'phone_otp',
+        p_login_status: 'success',
+        p_event_type: 'login',
+        p_metadata: { phone: formattedPhone, is_new_user: isNewUser },
+      });
+    } catch (logErr) {
+      console.warn('[verify-otp] Security log failed (non-critical):', logErr);
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
         isNewUser,
         userId,
-        sessionToken,
+        email: tempEmail,
+        tokenHash,
         message: isNewUser ? 'تم إنشاء حسابك بنجاح' : 'تم تسجيل الدخول بنجاح',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
