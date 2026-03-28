@@ -54,6 +54,7 @@ const SMSNotifications = lazy(() => import("./pages/SMSNotifications"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
 const AdminSecurityDashboard = lazy(() => import("./pages/AdminSecurityDashboard"));
 const AdminApproval = lazy(() => import("./pages/AdminApproval"));
+const InstallApp = lazy(() => import("./pages/InstallApp"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +92,7 @@ const App = () => (
                 <Route path="/admin-approval" element={<ProtectedRoute allowedRoles={['admin']}><AdminApproval /></ProtectedRoute>} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/features" element={<Features />} />
+                <Route path="/install" element={<InstallApp />} />
                 <Route path="/contact" element={<CustomerContact />} />
                 <Route path="/customer" element={
                   <ProtectedRoute allowedRoles={['client', 'admin']}><CustomerPortal /></ProtectedRoute>

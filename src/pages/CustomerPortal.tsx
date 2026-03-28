@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MobileBottomNav } from '@/components/mobile/MobileBottomNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -719,6 +720,7 @@ const CustomerPortal = () => {
           open={!!selectedTicket}
           onClose={() => setSelectedTicket(null)}
         />
+        <MobileBottomNav role="customer" />
       </div>
     </>
   );
