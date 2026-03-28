@@ -36,11 +36,45 @@ const CustomerPortal = () => {
       setLoading(true);
 
       // Get subscriber ID linked to this user
-      const { data: subscriberLink } = await supabase
+      let { data: subscriberLink } = await supabase
         .from('subscriber_users')
         .select('subscriber_id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
+
+      // If no link found, try to auto-link by phone or subscription_number from user metadata
+      if (!subscriberLink && user) {
+        const phone = user.user_metadata?.phone || user.phone;
+        const subscriptionNumber = user.user_metadata?.subscription_number;
+        
+        let subscriberId: string | null = null;
+        
+        if (subscriptionNumber) {
+          const { data: sub } = await supabase
+            .from('subscribers')
+            .select('id')
+            .eq('username', subscriptionNumber)
+            .maybeSingle();
+          subscriberId = sub?.id || null;
+        }
+        
+        if (!subscriberId && phone) {
+          const { data: sub } = await supabase
+            .from('subscribers')
+            .select('id')
+            .eq('phone', phone)
+            .maybeSingle();
+          subscriberId = sub?.id || null;
+        }
+        
+        if (subscriberId) {
+          await supabase.from('subscriber_users').insert({
+            user_id: user.id,
+            subscriber_id: subscriberId
+          });
+          subscriberLink = { subscriber_id: subscriberId };
+        }
+      }
 
       if (!subscriberLink) {
         setLoading(false);
