@@ -131,7 +131,7 @@ const App = () => (
                 <Route path="/inventory" element={
                   <PermissionProtectedRoute permission="view_inventory"><Inventory /></PermissionProtectedRoute>
                 } />
-                <Route path="/portal" element={<ProtectedRoute allowedRoles={['admin']}><CustomerPortal /></ProtectedRoute>} />
+                <Route path="/admin-portal" element={<ProtectedRoute allowedRoles={['admin']}><CustomerPortal /></ProtectedRoute>} />
                 <Route path="/plans" element={<ProtectedRoute allowedRoles={['admin']}><Plans /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute allowedRoles={['admin']}><Notifications /></ProtectedRoute>} />
                 <Route path="/tracking" element={<ProtectedRoute allowedRoles={['admin']}><EmployeeTracking /></ProtectedRoute>} />
