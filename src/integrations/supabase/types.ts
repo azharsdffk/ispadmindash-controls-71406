@@ -3474,6 +3474,35 @@ export type Database = {
       }
       generate_ticket_number: { Args: never; Returns: string }
       generate_voucher_number: { Args: never; Returns: string }
+      get_subscribers_map_data: {
+        Args: never
+        Returns: {
+          address: string
+          agent_id: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          phone: string
+          status: string
+        }[]
+      }
+      get_tickets_map_data: {
+        Args: never
+        Returns: {
+          id: string
+          issue_description: string
+          latitude: number
+          longitude: number
+          priority: string
+          status: string
+          subscriber_address: string
+          subscriber_name: string
+          subscriber_phone: string
+          technician_id: string
+          ticket_number: string
+        }[]
+      }
       has_permission: {
         Args: { _permission_name: string; _user_id: string }
         Returns: boolean
