@@ -18,7 +18,7 @@ export interface MapTechnician {
 export interface MapSubscriber {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   address?: string;
   latitude: number;
   longitude: number;
@@ -64,15 +64,11 @@ export const mapDataApi = {
         .map(t => ({
           id: t.id,
           name: t.name,
-          phone: t.phone,
           specialization: t.specialization,
           latitude: Number(t.latitude),
           longitude: Number(t.longitude),
           status: t.status || 'offline',
           available: t.available ?? true,
-          last_location_update: t.last_location_update,
-          speed: t.speed ? Number(t.speed) : undefined,
-          heading: t.heading ? Number(t.heading) : undefined,
         }));
     } catch (error) {
       console.error('Error fetching technicians:', error);
@@ -93,11 +89,10 @@ export const mapDataApi = {
       return (data || []).map(s => ({
         id: s.id,
         name: s.name,
-        phone: s.phone,
         address: s.address,
         latitude: Number(s.latitude),
         longitude: Number(s.longitude),
-        agent_id: (s as any).agent_id,
+        agent_id: s.agent_id,
       }));
     } catch (error) {
       console.error('Error fetching subscribers:', error);
@@ -136,9 +131,8 @@ export const mapDataApi = {
         longitude: Number(t.longitude),
         location_address: t.location_address,
         subscriber_name: t.subscriber_name,
-        subscriber_phone: t.subscriber_phone,
         subscriber_address: t.subscriber_address,
-        technician_name: (t as any).technician_name,
+        technician_name: t.technician_name,
         technician_id: t.technician_id,
         created_at: t.created_at,
       }));
