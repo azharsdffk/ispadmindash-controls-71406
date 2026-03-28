@@ -88,6 +88,7 @@ const App = () => (
                 <Route path="/customer-login" element={<CustomerAuth />} />
                 <Route path="/pending-approval" element={<PendingApproval />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
+                <Route path="/admin-approval" element={<ProtectedRoute allowedRoles={['admin']}><AdminApproval /></ProtectedRoute>} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/contact" element={<CustomerContact />} />
