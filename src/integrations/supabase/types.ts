@@ -2785,6 +2785,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_security_logs: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          device_info: string | null
+          event_type: string | null
+          id: string
+          ip_address: string | null
+          location: string | null
+          login_method: string | null
+          login_status: string | null
+          metadata: Json
+          os: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_info?: string | null
+          event_type?: string | null
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          login_method?: string | null
+          login_status?: string | null
+          metadata?: Json
+          os?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_info?: string | null
+          event_type?: string | null
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          login_method?: string | null
+          login_status?: string | null
+          metadata?: Json
+          os?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_security_settings: {
         Row: {
           allow_multiple_sessions: boolean
@@ -3452,6 +3506,25 @@ export type Database = {
         }
         Returns: string
       }
+      insert_user_security_log: {
+        Args: {
+          p_browser?: string
+          p_city?: string
+          p_country?: string
+          p_device_info?: string
+          p_event_type?: string
+          p_ip_address?: string
+          p_location?: string
+          p_login_method?: string
+          p_login_status?: string
+          p_metadata?: Json
+          p_os?: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      is_admin: { Args: never; Returns: boolean }
       log_admin_pii_access: {
         Args: {
           p_access_reason?: string
