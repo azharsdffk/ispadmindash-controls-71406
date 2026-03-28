@@ -190,8 +190,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate('/admin-approval');
     } else if (userRolesList.includes('accountant') || userRolesList.includes('finance_manager')) {
       navigate('/accountant');
-    } else if (userRolesList.includes('technician') || userRolesList.includes('technical_manager')) {
+    } else if (userRolesList.includes('technical_manager')) {
       navigate('/technician');
+    } else if (userRolesList.includes('technician')) {
+      navigate('/technician');
+    } else if (userRolesList.includes('agent')) {
+      navigate('/agent-dashboard');
     } else if (userRolesList.includes('client')) {
       navigate('/customer');
     } else {
