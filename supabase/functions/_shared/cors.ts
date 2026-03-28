@@ -15,6 +15,8 @@ export function getCorsHeaders(req: Request) {
     ...envAllowedOrigins,
     "http://localhost:5173",
     "http://localhost:8080",
+    "https://ispadmindash.com",
+    "https://www.ispadmindash.com",
   ].filter(Boolean);
 
   const isAllowedBySuffix =
