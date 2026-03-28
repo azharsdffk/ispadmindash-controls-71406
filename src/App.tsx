@@ -53,6 +53,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SMSNotifications = lazy(() => import("./pages/SMSNotifications"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
 const AdminSecurityDashboard = lazy(() => import("./pages/AdminSecurityDashboard"));
+const AdminApproval = lazy(() => import("./pages/AdminApproval"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +88,7 @@ const App = () => (
                 <Route path="/customer-login" element={<CustomerAuth />} />
                 <Route path="/pending-approval" element={<PendingApproval />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
+                <Route path="/admin-approval" element={<ProtectedRoute allowedRoles={['admin']}><AdminApproval /></ProtectedRoute>} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/contact" element={<CustomerContact />} />

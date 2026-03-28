@@ -8,8 +8,8 @@ const roleConfig: Record<string, { icon: any; label: string; description: string
   agent: { icon: UserCog, label: 'الوكيل', description: 'إدارة الوكلاء', gradient: 'from-purple-500 to-purple-600', bgHover: 'hover:bg-purple-500/10', borderHover: 'hover:border-purple-500/50', route: '/agent-dashboard' },
   accountant: { icon: Building2, label: 'المحاسب', description: 'لوحة المحاسبة', gradient: 'from-orange-500 to-orange-600', bgHover: 'hover:bg-orange-500/10', borderHover: 'hover:border-orange-500/50', route: '/accountant' },
   finance_manager: { icon: Building2, label: 'مدير المالية', description: 'إدارة المالية', gradient: 'from-yellow-500 to-yellow-600', bgHover: 'hover:bg-yellow-500/10', borderHover: 'hover:border-yellow-500/50', route: '/accountant' },
-  admin: { icon: Building2, label: 'المدير', description: 'لوحة التحكم', gradient: 'from-primary to-amber-600', bgHover: 'hover:bg-primary/10', borderHover: 'hover:border-primary/50', route: '/admin' },
-  super_admin: { icon: Shield, label: 'المدير العام', description: 'تحكم كامل', gradient: 'from-red-500 to-red-600', bgHover: 'hover:bg-red-500/10', borderHover: 'hover:border-red-500/50', route: '/admin' },
+  admin: { icon: Building2, label: 'المدير', description: 'لوحة التحكم', gradient: 'from-primary to-amber-600', bgHover: 'hover:bg-primary/10', borderHover: 'hover:border-primary/50', route: '/admin-approval' },
+  super_admin: { icon: Shield, label: 'المدير العام', description: 'تحكم كامل', gradient: 'from-red-500 to-red-600', bgHover: 'hover:bg-red-500/10', borderHover: 'hover:border-red-500/50', route: '/admin-approval' },
 };
 
 export { roleConfig };
