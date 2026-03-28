@@ -11,7 +11,7 @@ const menuGroups = {
     { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard", permission: "view_dashboard", roles: ['admin'] },
     { icon: Calculator, label: "لوحة المحاسب", path: "/accountant", permission: "view_accountant_dashboard", roles: ['admin', 'accountant'] },
     { icon: Wrench, label: "لوحة الفني", path: "/technician", permission: null, roles: ['technician'] },
-    { icon: User, label: "بوابة العميل", path: "/portal", permission: null, roles: ['client'] },
+    { icon: User, label: "بوابة العميل", path: "/customer", permission: null, roles: ['client'] },
   ],
   operations: [
     { icon: Users, label: "المشتركين", path: "/subscribers", permission: "view_subscribers", roles: ['admin', 'accountant'] },
