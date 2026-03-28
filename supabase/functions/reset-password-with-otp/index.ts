@@ -184,60 +184,31 @@ serve(async (req) => {
       );
     }
 
-    // Get stored OTP from phone_otps table
-    const { data: otpRecord, error: otpError } = await supabase
-      .from('phone_otps')
-      .select('*')
-      .eq('phone', formattedPhone)
-      .eq('verified', false)
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Verify OTP using secure database function (never exposes raw OTP)
+    const { data: verifyResult, error: verifyError } = await supabase
+      .rpc('verify_phone_otp', { p_phone: formattedPhone, p_code: otp });
 
-    if (otpError) {
-      console.error('OTP lookup error:', otpError);
+    if (verifyError) {
+      console.error('OTP verify error:', verifyError);
       throw new Error('خطأ في التحقق من الرمز');
     }
 
-    if (!otpRecord) {
+    const otpCheck = verifyResult?.[0];
+
+    if (!otpCheck || !otpCheck.is_valid) {
       await supabase.rpc('record_failed_verification', { p_phone: formattedPhone });
       
       await supabase.from('security_audit_logs').insert({
         action: 'password_reset_otp_failed',
         ip_address: clientIp,
         user_agent: userAgent,
-        metadata: { phone: formattedPhone, reason: 'otp_not_found_or_expired' },
+        metadata: { phone: formattedPhone, reason: otpCheck?.error_message || 'otp_invalid' },
       });
 
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'الرمز غير صالح أو منتهي الصلاحية',
-          attemptsLeft: attempts?.attempts_left || 4,
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Verify OTP
-    if (otpRecord.otp_code !== otp) {
-      await supabase.rpc('record_failed_verification', { p_phone: formattedPhone });
-      
-      await supabase.from('security_audit_logs').insert({
-        action: 'password_reset_otp_failed',
-        ip_address: clientIp,
-        user_agent: userAgent,
-        metadata: { phone: formattedPhone, reason: 'wrong_otp' },
-      });
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'الرمز غير صحيح',
+          error: otpCheck?.error_message || 'الرمز غير صالح أو منتهي الصلاحية',
           attemptsLeft: (attempts?.attempts_left || 5) - 1,
         }),
         { 
@@ -247,11 +218,7 @@ serve(async (req) => {
       );
     }
 
-    // OTP is correct - mark as verified
-    await supabase
-      .from('phone_otps')
-      .update({ verified: true })
-      .eq('id', otpRecord.id);
+    // OTP verified successfully by the secure function
 
     // Clear verification attempts
     await supabase.rpc('clear_verification_attempts', { p_phone: formattedPhone });
