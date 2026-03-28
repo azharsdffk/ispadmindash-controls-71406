@@ -169,6 +169,20 @@ const TechnicianDashboard = () => {
 
     setLoading(true);
     try {
+      // أولاً: جلب سجل الفني المرتبط بالمستخدم الحالي
+      const { data: techRecord } = await supabase
+        .from('technicians')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!techRecord) {
+        console.warn('No technician record found for user:', user.id);
+        setTickets([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('maintenance_tickets')
         .select(`
@@ -190,7 +204,7 @@ const TechnicianDashboard = () => {
             longitude
           )
         `)
-        .eq('technician_id', user.id)
+        .eq('technician_id', techRecord.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -206,7 +220,7 @@ const TechnicianDashboard = () => {
   useEffect(() => {
     fetchTickets();
 
-    // الاشتراك في التحديثات الفورية
+    // الاشتراك في التحديثات الفورية (بدون فلتر لأن الفلتر يحتاج technician.id وليس user.id)
     const channel = supabase
       .channel('technician_tickets')
       .on(
@@ -215,7 +229,6 @@ const TechnicianDashboard = () => {
           event: '*',
           schema: 'public',
           table: 'maintenance_tickets',
-          filter: `technician_id=eq.${user?.id}`
         },
         () => {
           fetchTickets();

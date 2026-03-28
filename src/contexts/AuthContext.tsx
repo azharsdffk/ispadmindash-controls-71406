@@ -187,7 +187,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (userRolesList.length === 0) {
       navigate('/unauthorized');
     } else if (userRolesList.includes('admin') || userRolesList.includes('super_admin')) {
-      navigate('/admin');
+      navigate('/admin-approval');
     } else if (userRolesList.includes('accountant') || userRolesList.includes('finance_manager')) {
       navigate('/accountant');
     } else if (userRolesList.includes('technician') || userRolesList.includes('technical_manager')) {
