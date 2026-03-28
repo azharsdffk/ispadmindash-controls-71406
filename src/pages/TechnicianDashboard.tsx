@@ -416,6 +416,7 @@ const TechnicianDashboard = () => {
                       key={ticket.id}
                       ticket={ticket}
                       onOpenDetails={handleOpenTicketDetails}
+                      onStatusUpdated={fetchTickets}
                     />
                   ))
                 )}
@@ -435,6 +436,7 @@ const TechnicianDashboard = () => {
                       key={ticket.id}
                       ticket={ticket}
                       onOpenDetails={handleOpenTicketDetails}
+                      onStatusUpdated={fetchTickets}
                     />
                   ))
                 )}
@@ -556,6 +558,7 @@ const TechnicianDashboard = () => {
                         handleOpenTicketDetails(id);
                         setAllTicketsSheetOpen(false);
                       }}
+                      onStatusUpdated={fetchTickets}
                     />
                   ))
                 )}
