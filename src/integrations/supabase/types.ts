@@ -1281,6 +1281,99 @@ export type Database = {
           },
         ]
       }
+      maintenance_reports: {
+        Row: {
+          after_photos: string[] | null
+          before_photos: string[] | null
+          created_at: string | null
+          customer_signature: string | null
+          diagnosis: string | null
+          id: string
+          labor_cost: number | null
+          notes: string | null
+          parts_cost: number | null
+          parts_used: Json | null
+          report_status: string | null
+          technician_id: string
+          ticket_id: string
+          total_cost: number | null
+          updated_at: string | null
+          work_performed: string
+        }
+        Insert: {
+          after_photos?: string[] | null
+          before_photos?: string[] | null
+          created_at?: string | null
+          customer_signature?: string | null
+          diagnosis?: string | null
+          id?: string
+          labor_cost?: number | null
+          notes?: string | null
+          parts_cost?: number | null
+          parts_used?: Json | null
+          report_status?: string | null
+          technician_id: string
+          ticket_id: string
+          total_cost?: number | null
+          updated_at?: string | null
+          work_performed: string
+        }
+        Update: {
+          after_photos?: string[] | null
+          before_photos?: string[] | null
+          created_at?: string | null
+          customer_signature?: string | null
+          diagnosis?: string | null
+          id?: string
+          labor_cost?: number | null
+          notes?: string | null
+          parts_cost?: number | null
+          parts_used?: Json | null
+          report_status?: string | null
+          technician_id?: string
+          ticket_id?: string
+          total_cost?: number | null
+          updated_at?: string | null
+          work_performed?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_reports_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_reports_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_map_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_reports_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_reports_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_reports_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_map_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_tickets: {
         Row: {
           agent_id: string | null

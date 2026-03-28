@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppSidebar } from '@/components/layout/AppSidebar';
@@ -15,16 +15,9 @@ import { TechnicianHeader } from '@/components/technician/TechnicianHeader';
 import { TechnicianFilters } from '@/components/technician/TechnicianFilters';
 import { TechnicianTicketCard } from '@/components/technician/TechnicianTicketCard';
 import { TechnicianStats } from '@/components/technician/TechnicianStats';
-import { 
-  CheckCircle, 
-  Clock, 
-  ListTodo, 
-  Bell,
-  MapPin,
-  CalendarClock,
-  Activity,
-  Wrench,
-  Search
+import {
+  CheckCircle, Clock, ListTodo, Bell, MapPin,
+  CalendarClock, Activity, Wrench, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +25,7 @@ interface Ticket {
   id: string;
   ticket_number: string;
   issue_description: string;
+  issue_type?: string | null;
   status: string;
   priority: string;
   scheduled_date: string | null;
@@ -48,23 +42,12 @@ interface Ticket {
   };
 }
 
-interface TechnicianProfile {
-  full_name: string;
-  phone: string | null;
-  username: string | null;
-}
-
-// حساب المسافة بين نقطتين GPS بالكيلومترات (Haversine formula)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // نصف قطر الأرض بالكيلومتر
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
 const TechnicianDashboard = () => {
@@ -72,231 +55,147 @@ const TechnicianDashboard = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [technicianProfile, setTechnicianProfile] = useState<TechnicianProfile | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [technicianProfile, setTechnicianProfile] = useState<{ full_name: string; phone: string | null } | null>(null);
+  const [technicianRecordId, setTechnicianRecordId] = useState<string | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [locationTracking, setLocationTracking] = useState<number | null>(null);
   const [allTicketsSheetOpen, setAllTicketsSheetOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  // جلب الموقع الحالي للفني وتتبعه تلقائياً
+  // GPS tracking
   useEffect(() => {
-    if (navigator.geolocation) {
-      // موقع أولي
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setCurrentLocation(newLocation);
-          toast.success('✅ تم تحديد موقعك بنجاح');
-          
-          // حفظ الموقع في قاعدة البيانات
-          if (user) {
-            supabase.from('employee_locations').insert({
-              user_id: user.id,
-              latitude: newLocation.lat,
-              longitude: newLocation.lng,
-              accuracy: position.coords.accuracy
-            });
-          }
-        },
-        (error) => {
-          console.error('خطأ في تحديد الموقع:', error);
-          toast.error('⚠️ تعذر تحديد موقعك الحالي');
-        },
-        { enableHighAccuracy: true }
-      );
-
-      // تتبع الموقع كل 5 دقائق
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setCurrentLocation(newLocation);
-          
-          // تحديث الموقع في قاعدة البيانات
-          if (user) {
-            supabase.from('employee_locations').insert({
-              user_id: user.id,
-              latitude: newLocation.lat,
-              longitude: newLocation.lng,
-              accuracy: position.coords.accuracy
-            });
-          }
-        },
-        (error) => console.error('خطأ في تتبع الموقع:', error),
-        { enableHighAccuracy: true, maximumAge: 300000, timeout: 10000 }
-      );
-
-      setLocationTracking(watchId);
-
-      return () => {
-        if (watchId) navigator.geolocation.clearWatch(watchId);
-      };
-    }
+    if (!navigator.geolocation || !user) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        supabase.from('employee_locations').insert({
+          user_id: user.id,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true }
+    );
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        supabase.from('employee_locations').insert({
+          user_id: user.id,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 300000, timeout: 10000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
   }, [user]);
 
-  // جلب بيانات الفني
+  // Fetch profile + technician record
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('full_name, phone, username')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('خطأ في جلب بيانات الفني:', error);
-      } else {
-        setTechnicianProfile(data);
-      }
-    };
-
-    fetchProfile();
-  }, [user]);
-
-  // جلب التذاكر
-  const fetchTickets = async () => {
     if (!user) return;
+    const init = async () => {
+      const [profileRes, techRes] = await Promise.all([
+        supabase.from('profiles').select('full_name, phone').eq('id', user.id).single(),
+        supabase.from('technicians').select('id').eq('user_id', user.id).maybeSingle(),
+      ]);
+      if (profileRes.data) setTechnicianProfile(profileRes.data);
+      if (techRes.data) setTechnicianRecordId(techRes.data.id);
+    };
+    init();
+  }, [user]);
 
+  // Fetch tickets
+  const fetchTickets = useCallback(async () => {
+    if (!user || !technicianRecordId) return;
     setLoading(true);
     try {
-      // أولاً: جلب سجل الفني المرتبط بالمستخدم الحالي
-      const { data: techRecord } = await supabase
-        .from('technicians')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!techRecord) {
-        console.warn('No technician record found for user:', user.id);
-        setTickets([]);
-        setLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('maintenance_tickets')
-        .select(`
-          id,
-          ticket_number,
-          issue_description,
-          status,
-          priority,
-          scheduled_date,
-          created_at,
-          subscriber_id,
-          notes,
-          subscribers (
-            id,
-            name,
-            phone,
-            address,
-            latitude,
-            longitude
-          )
-        `)
-        .eq('technician_id', techRecord.id)
+        .select(`id, ticket_number, issue_description, issue_type, status, priority, scheduled_date, created_at, subscriber_id, notes,
+          subscribers (id, name, phone, address, latitude, longitude)`)
+        .eq('technician_id', technicianRecordId)
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setTickets(data || []);
-    } catch (error) {
-      console.error('خطأ في جلب التذاكر:', error);
+    } catch (e) {
+      console.error(e);
       toast.error('فشل تحميل التذاكر');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, technicianRecordId]);
 
-  useEffect(() => {
-    fetchTickets();
-
-    // الاشتراك في التحديثات الفورية (بدون فلتر لأن الفلتر يحتاج technician.id وليس user.id)
-    const channel = supabase
-      .channel('technician_tickets')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'maintenance_tickets',
-        },
-        () => {
-          fetchTickets();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('read', false)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    setNotifications(data || []);
   }, [user]);
 
-  // فتح نافذة تفاصيل التذكرة
+  useEffect(() => {
+    if (!technicianRecordId) return;
+    fetchTickets();
+    fetchNotifications();
+
+    const channel = supabase
+      .channel('tech_tickets_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tickets' }, () => fetchTickets())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => fetchNotifications())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [technicianRecordId, fetchTickets, fetchNotifications]);
+
   const handleOpenTicketDetails = (ticketId: string) => {
     setSelectedTicketId(ticketId);
     setDetailsModalOpen(true);
   };
 
-  // تصفية وترتيب التذاكر حسب البحث والفلاتر والمسافة
   const filteredAndSortedTickets = useMemo(() => {
-    let filtered = tickets.filter(ticket => {
-      // البحث
-      const matchesSearch = 
-        ticket.ticket_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.subscribers?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.subscribers?.phone?.includes(searchQuery);
-      
-      // فلتر الحالة
-      const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-      
-      // فلتر الأولوية
-      const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
-      
-      return matchesSearch && matchesStatus && matchesPriority;
+    let filtered = tickets.filter(t => {
+      const matchSearch = !searchQuery ||
+        t.ticket_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.subscribers?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.subscribers?.phone?.includes(searchQuery);
+      const matchStatus = statusFilter === 'all' || t.status === statusFilter;
+      const matchPriority = priorityFilter === 'all' || t.priority === priorityFilter;
+      return matchSearch && matchStatus && matchPriority;
     });
 
-    // حساب المسافة وإضافتها لكل تذكرة
     if (currentLocation) {
-      filtered = filtered.map(ticket => ({
-        ...ticket,
-        distance: ticket.subscribers?.latitude && ticket.subscribers?.longitude
-          ? calculateDistance(
-              currentLocation.lat,
-              currentLocation.lng,
-              ticket.subscribers.latitude,
-              ticket.subscribers.longitude
-            )
-          : 999999
+      filtered = filtered.map(t => ({
+        ...t,
+        distance: t.subscribers?.latitude && t.subscribers?.longitude
+          ? calculateDistance(currentLocation.lat, currentLocation.lng, t.subscribers.latitude, t.subscribers.longitude)
+          : 999999,
       }));
-
-      // ترتيب حسب الأولوية أولاً ثم المسافة
       filtered.sort((a, b) => {
-        const priorityOrder: Record<string, number> = { urgent: 1, high: 2, medium: 3, low: 4 };
-        const priorityDiff = (priorityOrder[a.priority] || 3) - (priorityOrder[b.priority] || 3);
-        
-        if (priorityDiff !== 0) return priorityDiff;
+        const po: Record<string, number> = { urgent: 1, high: 2, medium: 3, low: 4 };
+        const pd = (po[a.priority] || 3) - (po[b.priority] || 3);
+        if (pd !== 0) return pd;
         return ((a as any).distance || 0) - ((b as any).distance || 0);
       });
     }
-
     return filtered;
   }, [tickets, searchQuery, statusFilter, priorityFilter, currentLocation]);
 
-  const openTickets = filteredAndSortedTickets.filter(t => t.status === 'open' || t.status === 'in_progress');
-  const completedTickets = filteredAndSortedTickets.filter(t => t.status === 'resolved' || t.status === 'closed');
+  const activeTickets = filteredAndSortedTickets.filter(t => !['resolved', 'closed'].includes(t.status));
+  const completedTickets = filteredAndSortedTickets.filter(t => ['resolved', 'closed'].includes(t.status));
   const scheduledTickets = filteredAndSortedTickets.filter(t => t.scheduled_date);
 
-  if (loading) {
+  if (loading && tickets.length === 0) {
     return (
       <SidebarProvider>
         <div className="flex min-h-screen w-full" dir="rtl">
@@ -304,8 +203,7 @@ const TechnicianDashboard = () => {
           <div className="flex-1">
             <AppHeader onOpenSettings={() => {}} />
             <main className="container mx-auto p-6 space-y-6">
-              {/* Header Skeleton */}
-              <div className="glass-card p-6 rounded-2xl animate-pulse">
+              <div className="p-6 rounded-2xl animate-pulse bg-card border">
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-muted" />
                   <div className="flex-1 space-y-2">
@@ -314,41 +212,22 @@ const TechnicianDashboard = () => {
                   </div>
                 </div>
               </div>
-              {/* Filters Skeleton */}
-              <div className="flex gap-3">
-                <div className="flex-1 h-12 bg-muted rounded-lg animate-pulse" />
-                <div className="w-[180px] h-12 bg-muted rounded-lg animate-pulse" />
-                <div className="w-[180px] h-12 bg-muted rounded-lg animate-pulse" />
-              </div>
-              {/* Stats Skeleton */}
-              <div className="grid gap-4 md:grid-cols-5">
-                {[1, 2, 3, 4, 5].map((i) => (
+              <div className="grid gap-4 md:grid-cols-4">
+                {[1, 2, 3, 4].map(i => (
                   <div key={i} className="p-6 rounded-xl bg-card border animate-pulse">
-                    <div className="flex justify-between items-center">
-                      <div className="space-y-2">
-                        <div className="h-4 w-20 bg-muted rounded" />
-                        <div className="h-8 w-12 bg-muted rounded" />
-                      </div>
-                      <div className="h-10 w-10 rounded-xl bg-muted" />
-                    </div>
+                    <div className="h-4 w-20 bg-muted rounded mb-2" />
+                    <div className="h-8 w-12 bg-muted rounded" />
                   </div>
                 ))}
               </div>
-              {/* Tickets Skeleton */}
-              <div className="space-y-4">
-                <div className="h-14 bg-muted rounded-xl animate-pulse" />
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="glass-card p-6 rounded-xl animate-pulse">
-                    <div className="flex justify-between">
-                      <div className="space-y-2">
-                        <div className="h-5 w-32 bg-muted rounded" />
-                        <div className="h-4 w-48 bg-muted/50 rounded" />
-                      </div>
-                      <div className="h-8 w-20 bg-muted rounded" />
-                    </div>
+              {[1, 2, 3].map(i => (
+                <div key={i} className="p-6 rounded-xl bg-card border animate-pulse">
+                  <div className="flex justify-between">
+                    <div className="space-y-2"><div className="h-5 w-32 bg-muted rounded" /><div className="h-4 w-48 bg-muted/50 rounded" /></div>
+                    <div className="h-8 w-20 bg-muted rounded" />
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </main>
           </div>
         </div>
@@ -362,13 +241,12 @@ const TechnicianDashboard = () => {
         <AppSidebar />
         <div className="flex-1">
           <AppHeader onOpenSettings={() => {}} />
-          
           <main className="container mx-auto p-6 space-y-6">
             <TechnicianHeader
               fullName={technicianProfile?.full_name || 'الفني'}
               phone={technicianProfile?.phone || null}
               currentLocation={currentLocation}
-              openTicketsCount={openTickets.length}
+              openTicketsCount={activeTickets.length}
               completedTicketsCount={completedTickets.length}
               scheduledTicketsCount={scheduledTickets.length}
             />
@@ -384,37 +262,56 @@ const TechnicianDashboard = () => {
 
             <TechnicianStats
               totalTickets={tickets.length}
-              openTickets={openTickets.length}
+              openTickets={activeTickets.length}
               completedTickets={completedTickets.length}
               scheduledTickets={scheduledTickets.length}
             />
 
-            <Tabs defaultValue="open" className="space-y-4">
-              <TabsList className="glass-card grid w-full grid-cols-3 h-14">
-                <TabsTrigger value="open" className="text-sm font-semibold data-[state=active]:gradient-bg data-[state=active]:text-white">
-                  📋 الجارية ({openTickets.length})
+            {/* Notifications banner */}
+            {notifications.length > 0 && (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Bell className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">إشعارات جديدة ({notifications.length})</span>
+                  </div>
+                  <div className="space-y-1">
+                    {notifications.slice(0, 3).map(n => (
+                      <p key={n.id} className="text-xs text-muted-foreground">• {n.message}</p>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Tabs defaultValue="active" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3 h-12">
+                <TabsTrigger value="active" className="text-sm font-semibold">
+                  📋 الجارية ({activeTickets.length})
                 </TabsTrigger>
-                <TabsTrigger value="completed" className="text-sm font-semibold data-[state=active]:bg-green-500 data-[state=active]:text-white">
+                <TabsTrigger value="completed" className="text-sm font-semibold">
                   ✅ المكتملة ({completedTickets.length})
                 </TabsTrigger>
-                <TabsTrigger value="tracking" className="text-sm font-semibold data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+                <TabsTrigger value="tracking" className="text-sm font-semibold">
                   🗺️ التتبع
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="open" className="space-y-4 animate-fade-in">
-                {openTickets.length === 0 ? (
-                  <Card className="glass-card border-dashed">
+              <TabsContent value="active" className="space-y-4">
+                {activeTickets.length === 0 ? (
+                  <Card className="border-dashed">
                     <CardContent className="pt-6 text-center py-16">
-                      <Clock className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-                      <p className="text-muted-foreground text-lg font-medium">لا توجد تذاكر جارية</p>
+                      <Clock className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+                      <p className="text-muted-foreground text-lg font-medium">لا توجد تذاكر جارية حالياً</p>
+                      <p className="text-sm text-muted-foreground/70 mt-1">ستظهر هنا عند تعيين طلبات صيانة جديدة لك</p>
                     </CardContent>
                   </Card>
                 ) : (
-                  openTickets.map((ticket) => (
+                  activeTickets.map(ticket => (
                     <TechnicianTicketCard
                       key={ticket.id}
                       ticket={ticket}
+                      technicianId={technicianRecordId || undefined}
                       onOpenDetails={handleOpenTicketDetails}
                       onStatusUpdated={fetchTickets}
                     />
@@ -422,19 +319,20 @@ const TechnicianDashboard = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="completed" className="space-y-4 animate-fade-in">
+              <TabsContent value="completed" className="space-y-4">
                 {completedTickets.length === 0 ? (
-                  <Card className="glass-card border-dashed">
+                  <Card className="border-dashed">
                     <CardContent className="pt-6 text-center py-16">
-                      <CheckCircle className="h-16 w-16 mx-auto text-success mb-4 opacity-50" />
+                      <CheckCircle className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
                       <p className="text-muted-foreground text-lg font-medium">لا توجد تذاكر مكتملة</p>
                     </CardContent>
                   </Card>
                 ) : (
-                  completedTickets.map((ticket) => (
+                  completedTickets.map(ticket => (
                     <TechnicianTicketCard
                       key={ticket.id}
                       ticket={ticket}
+                      technicianId={technicianRecordId || undefined}
                       onOpenDetails={handleOpenTicketDetails}
                       onStatusUpdated={fetchTickets}
                     />
@@ -442,52 +340,40 @@ const TechnicianDashboard = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="tracking" className="space-y-4 animate-fade-in">
-                <Card className="glass-card">
+              <TabsContent value="tracking" className="space-y-4">
+                <Card>
                   <CardContent className="pt-6">
                     {currentLocation ? (
                       <div className="space-y-4">
-                        <div className="p-4 glass-card rounded-xl border border-green-500/20">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Activity className="h-5 w-5 text-green-500 animate-pulse" />
-                            <p className="font-bold text-green-500">🟢 التتبع نشط</p>
+                        <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50">
+                          <div className="flex items-center gap-3 mb-1">
+                            <Activity className="h-5 w-5 text-emerald-600 animate-pulse" />
+                            <p className="font-bold text-emerald-700">التتبع نشط</p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            الإحداثيات: <span className="font-mono font-bold">{currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}</span>
+                          <p className="text-sm text-emerald-600 font-mono">
+                            {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
                           </p>
                         </div>
-                        
-                        <div className="rounded-2xl overflow-hidden glass-card">
+                        <div className="rounded-xl overflow-hidden border">
                           <iframe
-                            width="100%"
-                            height="400"
-                            frameBorder="0"
-                            style={{ border: 0 }}
+                            width="100%" height="400" frameBorder="0" style={{ border: 0 }}
                             src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${currentLocation.lat},${currentLocation.lng}&zoom=16`}
-                            allowFullScreen
-                            title="موقعك الحالي"
+                            allowFullScreen title="موقعك الحالي"
                           />
                         </div>
-
                         <div className="grid grid-cols-2 gap-3">
-                          <Button 
-                            variant="outline"
-                            onClick={() => window.open(`https://www.google.com/maps?q=${currentLocation.lat},${currentLocation.lng}`, '_blank')}
-                          >
+                          <Button variant="outline" onClick={() => window.open(`https://www.google.com/maps?q=${currentLocation.lat},${currentLocation.lng}`, '_blank')}>
                             🗺️ Google Maps
                           </Button>
-                          <Button 
-                            variant="outline"
-                            onClick={() => window.open(`https://waze.com/ul?ll=${currentLocation.lat},${currentLocation.lng}&navigate=yes`, '_blank')}
-                          >
+                          <Button variant="outline" onClick={() => window.open(`https://waze.com/ul?ll=${currentLocation.lat},${currentLocation.lng}&navigate=yes`, '_blank')}>
                             🧭 Waze
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <div className="text-center py-16">
-                        <MapPin className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-                        <p className="text-muted-foreground text-lg font-medium">يتم تحديد موقعك...</p>
+                        <MapPin className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+                        <p className="text-muted-foreground text-lg">يتم تحديد موقعك...</p>
                       </div>
                     )}
                   </CardContent>
@@ -497,7 +383,6 @@ const TechnicianDashboard = () => {
           </main>
         </div>
 
-        {/* نافذة تفاصيل التذكرة */}
         <TicketDetailsModal
           ticketId={selectedTicketId}
           open={detailsModalOpen}
@@ -505,59 +390,48 @@ const TechnicianDashboard = () => {
           onTicketUpdated={fetchTickets}
         />
 
+        {/* FAB */}
         <Button
           onClick={() => setAllTicketsSheetOpen(true)}
-          className="fixed left-6 bottom-6 h-16 w-16 rounded-full shadow-glow bg-gradient-to-br from-primary to-primary-hover z-50 group hover:scale-110 transition-all"
+          className="fixed left-6 bottom-6 h-14 w-14 rounded-full shadow-lg z-50 hover:scale-110 transition-transform"
           size="icon"
         >
           <div className="relative">
-            <Wrench className="h-7 w-7 text-white" />
-            <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full">
-              {tickets.length}
-            </Badge>
+            <Wrench className="h-6 w-6" />
+            {tickets.length > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-destructive text-destructive-foreground text-xs rounded-full">
+                {tickets.length}
+              </Badge>
+            )}
           </div>
         </Button>
 
         <Sheet open={allTicketsSheetOpen} onOpenChange={setAllTicketsSheetOpen}>
-          <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto glass-card border-primary/20">
+          <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader>
-              <SheetTitle className="text-2xl font-bold gradient-text flex items-center gap-2">
-                <Wrench className="h-6 w-6" />
-                جميع التذاكر ({tickets.length})
+              <SheetTitle className="text-xl font-bold flex items-center gap-2">
+                <Wrench className="h-5 w-5" /> جميع التذاكر ({tickets.length})
               </SheetTitle>
-              <SheetDescription>
-                قائمة كاملة بجميع تذاكر الصيانة المسندة إليك
-              </SheetDescription>
+              <SheetDescription>قائمة كاملة بجميع تذاكر الصيانة المسندة إليك</SheetDescription>
             </SheetHeader>
-
             <div className="mt-6 space-y-4">
-              {/* شريط البحث داخل الـ Sheet */}
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="ابحث عن تذكرة..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
-                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="ابحث عن تذكرة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-10" />
               </div>
-
-              {/* قائمة التذاكر */}
               <div className="space-y-3">
                 {filteredAndSortedTickets.length === 0 ? (
                   <div className="text-center py-12">
-                    <ListTodo className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+                    <ListTodo className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
                     <p className="text-muted-foreground">لا توجد تذاكر</p>
                   </div>
                 ) : (
-                  filteredAndSortedTickets.map((ticket) => (
+                  filteredAndSortedTickets.map(ticket => (
                     <TechnicianTicketCard
                       key={ticket.id}
                       ticket={ticket}
-                      onOpenDetails={(id) => {
-                        handleOpenTicketDetails(id);
-                        setAllTicketsSheetOpen(false);
-                      }}
+                      technicianId={technicianRecordId || undefined}
+                      onOpenDetails={id => { handleOpenTicketDetails(id); setAllTicketsSheetOpen(false); }}
                       onStatusUpdated={fetchTickets}
                     />
                   ))
