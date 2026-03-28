@@ -1672,6 +1672,7 @@ export type Database = {
           expires_at: string
           id: string
           otp_code: string
+          otp_hash: string | null
           phone: string
           verified: boolean | null
         }
@@ -1680,6 +1681,7 @@ export type Database = {
           expires_at: string
           id?: string
           otp_code: string
+          otp_hash?: string | null
           phone: string
           verified?: boolean | null
         }
@@ -1688,6 +1690,7 @@ export type Database = {
           expires_at?: string
           id?: string
           otp_code?: string
+          otp_hash?: string | null
           phone?: string
           verified?: boolean | null
         }
@@ -3395,6 +3398,33 @@ export type Database = {
           },
         ]
       }
+      user_security_settings_admin: {
+        Row: {
+          allow_multiple_sessions: boolean | null
+          created_at: string | null
+          id: string | null
+          two_factor_enabled: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          allow_multiple_sessions?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          allow_multiple_sessions?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       apply_discount_coupon: {
@@ -3659,9 +3689,25 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      store_phone_otp: {
+        Args: {
+          p_expires_minutes?: number
+          p_otp_code: string
+          p_phone: string
+        }
+        Returns: string
+      }
       update_sms_log_status: {
         Args: { p_id: string; p_provider_response?: Json; p_status: string }
         Returns: boolean
+      }
+      verify_phone_otp: {
+        Args: { p_code: string; p_phone: string }
+        Returns: {
+          error_message: string
+          is_valid: boolean
+          otp_id: string
+        }[]
       }
     }
     Enums: {
