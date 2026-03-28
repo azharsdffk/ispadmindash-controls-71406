@@ -157,6 +157,7 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/sms" element={<ProtectedRoute allowedRoles={['admin']}><SMSNotifications /></ProtectedRoute>} />
                 <Route path="/audit-log" element={<ProtectedRoute allowedRoles={['admin']}><AuditLog /></ProtectedRoute>} />
+                <Route path="/admin-security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurityDashboard /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
