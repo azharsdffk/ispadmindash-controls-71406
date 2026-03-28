@@ -46,6 +46,7 @@ const CustomerAuth = lazy(() => import("./pages/CustomerAuth"));
 const Auth = lazy(() => import("./pages/Auth"));
 const PendingApproval = lazy(() => import("./pages/PendingApproval"));
 const Unauthorized = lazy(() => import("./pages/Unauthorized"));
+const PhoneAuth = lazy(() => import("./pages/PhoneAuth"));
 const Features = lazy(() => import("./pages/Features"));
 const CustomerTicketTracking = lazy(() => import("./pages/CustomerTicketTracking"));
 const NotFound = lazy(() => import("./pages/NotFound"));
