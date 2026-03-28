@@ -44,11 +44,10 @@ const Auth = () => {
 
           if (error) throw error;
 
-          const approvedRoles = roles?.filter(r => r.approved === true) || [];
-          const rolesList = approvedRoles.map(r => r.role);
+          const rolesList = roles?.map(r => r.role) || [];
 
           if (rolesList.length === 0) {
-            navigate('/pending-approval');
+            navigate('/unauthorized');
           } else if (rolesList.length === 1) {
             const config = roleConfig[rolesList[0]];
             if (config) {

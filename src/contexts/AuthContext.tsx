@@ -181,21 +181,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .select('role, approved')
       .eq('user_id', data.user.id);
     
-    // التحقق من وجود أدوار معتمدة
-    const approvedRoles = userRoles?.filter(r => r.approved === true) || [];
-    const userRolesList = approvedRoles.map(r => r.role);
+    const userRolesList = userRoles?.map(r => r.role) || [];
     
-    // إذا لم يكن للمستخدم أي دور معتمد، توجيهه لصفحة الانتظار
     if (userRolesList.length === 0) {
-      navigate('/pending-approval');
-    } else if (userRolesList.includes('accountant') && !userRolesList.includes('admin')) {
+      navigate('/unauthorized');
+    } else if (userRolesList.includes('admin') || userRolesList.includes('super_admin')) {
+      navigate('/admin');
+    } else if (userRolesList.includes('accountant') || userRolesList.includes('finance_manager')) {
       navigate('/accountant');
-    } else if (userRolesList.includes('technician') && !userRolesList.includes('admin')) {
+    } else if (userRolesList.includes('technician') || userRolesList.includes('technical_manager')) {
       navigate('/technician');
-    } else if (userRolesList.includes('client') && !userRolesList.includes('admin')) {
-      navigate('/portal');
+    } else if (userRolesList.includes('client')) {
+      navigate('/customer');
     } else {
-      navigate('/');
+      navigate('/unauthorized');
     }
   };
 
@@ -244,7 +243,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/pending-approval`,
+        emailRedirectTo: `${window.location.origin}/auth`,
         data: {
           full_name: fullName,
           phone: phone,
@@ -274,8 +273,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     if (!error) {
-      // توجيه المستخدم الجديد إلى صفحة انتظار الموافقة
-      navigate('/pending-approval');
+      toast.success('تم إنشاء الحساب. يرجى تأكيد بريدك الإلكتروني ثم تسجيل الدخول.');
     }
     return { error };
   };
