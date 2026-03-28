@@ -51,6 +51,7 @@ const CustomerTicketTracking = lazy(() => import("./pages/CustomerTicketTracking
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SMSNotifications = lazy(() => import("./pages/SMSNotifications"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
+const AdminSecurityDashboard = lazy(() => import("./pages/AdminSecurityDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
