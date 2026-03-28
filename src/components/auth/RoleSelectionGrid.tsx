@@ -2,14 +2,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Shield, Users, Wrench, UserCog, Building2, CheckCircle } from 'lucide-react';
 
 const roleConfig: Record<string, { icon: any; label: string; description: string; gradient: string; bgHover: string; borderHover: string; route: string }> = {
-  client: { icon: Users, label: 'العميل', description: 'بوابة العملاء', gradient: 'from-blue-500 to-blue-600', bgHover: 'hover:bg-blue-500/10', borderHover: 'hover:border-blue-500/50', route: '/portal' },
+  client: { icon: Users, label: 'العميل', description: 'بوابة العملاء', gradient: 'from-blue-500 to-blue-600', bgHover: 'hover:bg-blue-500/10', borderHover: 'hover:border-blue-500/50', route: '/customer' },
   technician: { icon: Wrench, label: 'الفني', description: 'لوحة الفنيين', gradient: 'from-green-500 to-green-600', bgHover: 'hover:bg-green-500/10', borderHover: 'hover:border-green-500/50', route: '/technician' },
   technical_manager: { icon: Wrench, label: 'مدير التقنية', description: 'إدارة الفنيين', gradient: 'from-teal-500 to-teal-600', bgHover: 'hover:bg-teal-500/10', borderHover: 'hover:border-teal-500/50', route: '/admin' },
   agent: { icon: UserCog, label: 'الوكيل', description: 'إدارة الوكلاء', gradient: 'from-purple-500 to-purple-600', bgHover: 'hover:bg-purple-500/10', borderHover: 'hover:border-purple-500/50', route: '/agent-dashboard' },
   accountant: { icon: Building2, label: 'المحاسب', description: 'لوحة المحاسبة', gradient: 'from-orange-500 to-orange-600', bgHover: 'hover:bg-orange-500/10', borderHover: 'hover:border-orange-500/50', route: '/accountant' },
   finance_manager: { icon: Building2, label: 'مدير المالية', description: 'إدارة المالية', gradient: 'from-yellow-500 to-yellow-600', bgHover: 'hover:bg-yellow-500/10', borderHover: 'hover:border-yellow-500/50', route: '/accountant' },
-  admin: { icon: Building2, label: 'المدير', description: 'لوحة التحكم', gradient: 'from-primary to-amber-600', bgHover: 'hover:bg-primary/10', borderHover: 'hover:border-primary/50', route: '/' },
-  super_admin: { icon: Shield, label: 'المدير العام', description: 'تحكم كامل', gradient: 'from-red-500 to-red-600', bgHover: 'hover:bg-red-500/10', borderHover: 'hover:border-red-500/50', route: '/' },
+  admin: { icon: Building2, label: 'المدير', description: 'لوحة التحكم', gradient: 'from-primary to-amber-600', bgHover: 'hover:bg-primary/10', borderHover: 'hover:border-primary/50', route: '/admin' },
+  super_admin: { icon: Shield, label: 'المدير العام', description: 'تحكم كامل', gradient: 'from-red-500 to-red-600', bgHover: 'hover:bg-red-500/10', borderHover: 'hover:border-red-500/50', route: '/admin' },
 };
 
 export { roleConfig };

@@ -25,9 +25,9 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/auth" replace />;
   }
 
-  // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة الانتظار
+  // إذا لم يكن للمستخدم أي دور، توجيهه لصفحة غير مصرح
   if (roles.length === 0) {
-    return <Navigate to="/pending-approval" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
   // المدراء العامين والمديرين لديهم وصول لكل الصفحات

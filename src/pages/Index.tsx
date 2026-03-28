@@ -125,7 +125,7 @@ const Index = () => {
   useEffect(() => {
     if (!loading) {
       if (isClient && !isAdmin) {
-        navigate('/my-portal');
+        navigate('/customer');
       } else if (isTechnician && !isAdmin) {
         navigate('/technician');
       } else if (isAccountant && !isAdmin) {
